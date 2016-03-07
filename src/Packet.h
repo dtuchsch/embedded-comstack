@@ -60,7 +60,7 @@
  *******************************************************************************/
 
 /**
- * @brief Packet class for unified data transport.
+ * @brief Packet class for unified data (network) transport.
  * @tparam Size of the container
  */
 template< std::size_t Size >
@@ -92,7 +92,7 @@ public:
      * @return true if there is enough space in the container to store the
      * bytes, false if the bytes would exceed the Packet.
      */
-    bool is_writable(const std::size_t bytes_to_write) noexcept
+    bool is_writable(const std::size_t bytes_to_write) const noexcept
     {
         const auto write_pos_new = m_write_pos + bytes_to_write;
         return (write_pos_new <= m_data.size()) && (bytes_to_write > 0);
@@ -104,7 +104,7 @@ public:
      * @return true if there are bytes left to read or false if the end of
      * the Packet is reached.
      */
-    bool is_readable(const std::size_t bytes_to_read) noexcept
+    bool is_readable(const std::size_t bytes_to_read) const noexcept
     {
         const auto read_pos_new = m_read_pos + bytes_to_read;
         return (read_pos_new <= m_data.size()) && (bytes_to_read > 0);
@@ -131,7 +131,8 @@ public:
     }
 
     /**
-     *
+     * @brief Appends the container with a char array.
+     * @param[in] data the char array.
      */
     void append(const char* data) noexcept
     {
@@ -152,6 +153,7 @@ public:
      * @brief Extract a boolean from this packet to host byte order.
      * @param[out] data is a reference to a variable to store the extracted
      * data from the container in.
+     * @return the current packet object.
      */
     Packet& operator >>(bool& data) noexcept
     {
@@ -176,6 +178,7 @@ public:
      * @brief Extract an unsigned byte from this packet to host byte order.
      * @param[out] data is a reference to a variable to store the extracted
      * data from the container in.
+     * @return the packet object
      */
     Packet& operator >>(uint8& data) noexcept
     {
@@ -194,6 +197,7 @@ public:
      * @brief Extract a signed byte from this packet to host byte order.
      * @param[out] data is a reference to a variable to store the extracted
      * data from the container in.
+     * @return the packet object
      */
     Packet& operator >>(sint8& data) noexcept
     {
@@ -212,6 +216,7 @@ public:
      * @brief Extract an unsigned word from this packet to host byte order.
      * @param[out] data is a reference to a variable to store the extracted
      * data from the container in.
+     * @return the packet object
      */
     Packet& operator >>(uint16& data) noexcept
     {
@@ -231,6 +236,7 @@ public:
      * @brief Extract a singed word from this packet to host byte order.
      * @param[out] data is a reference to a variable to store the extracted
      * data from the container in.
+     * @return the packet object
      */
     Packet& operator >>(sint16& data) noexcept
     {
@@ -251,6 +257,7 @@ public:
      * packet to host byte order.
      * @param[out] data is a reference to a variable to store the extracted
      * data from the container in.
+     * @return the packet object
      */
     Packet& operator >>(uint32& data) noexcept
     {
@@ -268,6 +275,9 @@ public:
 
     /**
      * @brief Extract a signed double word from this packet to host byte order.
+     * @param[out] data is a reference to a variable to store the extracted
+     * data from the container in.
+     * @return the packet object
      */
     Packet& operator >>(sint32& data) noexcept
     {
@@ -285,6 +295,9 @@ public:
 
     /**
      * @brief Extract an unsigned quad word from this packet to host byte order.
+     * @param[out] data is a reference to a variable to store the extracted
+     * data from the container in.
+     * @return the packet object
      */
     Packet& operator >>(uint64& data) noexcept
     {
@@ -302,6 +315,9 @@ public:
 
     /**
      * @brief Extract a signed quad word from this packet to host byte order.
+     * @param[out] data is a reference to a variable where the data from the
+     * packet is stored.
+     * @return the packet object.
      */
     Packet& operator >>(sint64& data) noexcept
     {
@@ -318,7 +334,10 @@ public:
     }
 
     /**
-     * @brief Extract a floating point from this packet to host byte order.
+     * @brief Extract a floating point of 32 bits from this packet
+     * to host byte order.
+     * @param[out] data the variable where to store the float32 in.
+     * @return this object.
      */
     Packet& operator >>(float32& data) noexcept
     {
@@ -336,6 +355,7 @@ public:
 
     /**
      * @brief Extract a floating point from this packet to host byte order.
+     * @param[out] data the variable where to store the float64 in.
      */
     Packet& operator >>(float64& data) noexcept
     {
@@ -355,6 +375,7 @@ public:
 
     /**
      * @brief Extract a char array from this packet.
+     * @param[out] data the array were to store the C-array in.
      */
     Packet& operator >>(char* data) noexcept
     {
@@ -378,6 +399,7 @@ public:
     /**
      * @brief Store a unsigned int of 8 bytes in this packet in network
      * byte order.
+     * @param[in] data the unsigned byte to store in the packet.
      */
     Packet& operator <<(uint8& data) noexcept
     {
@@ -388,6 +410,8 @@ public:
     /**
      * @brief Store a signed int of 8 bytes in this packet in network
      * byte order.
+     * @param[in] data is the rhs and the signed byte to store in the
+     * packet.
      */
     Packet& operator <<(sint8& data) noexcept
     {
@@ -398,6 +422,9 @@ public:
     /**
      * @brief Store a boolean in this packet in network
      * byte order.
+     * @param[in] data is the rhs and the boolean to store in the
+     * packet.
+     * @return the packet object.
      */
     Packet& operator <<(bool& data) noexcept
     {
@@ -419,6 +446,8 @@ public:
     /**
      * @brief Store a unsigned int of 16 bytes in this packet in network
      * byte order.
+     * @param[in] data is the rhs and the unsigned word to store in the
+     * packet.
      */
     Packet& operator <<(uint16& data) noexcept
     {
@@ -430,6 +459,8 @@ public:
     /**
      * @brief Store a signed int of 16 bytes in this packet in network
      * byte order.
+     * @param[in] data is the rhs and the signed word to store in the
+     * packet.
      */
     Packet& operator <<(sint16& data) noexcept
     {
@@ -441,6 +472,8 @@ public:
     /**
      * @brief Store a unsigned int of 32 bytes in this packet in network
      * byte order.
+     * @param[in] data is the rhs and the signed double word to store in the
+     * packet.
      */
     Packet& operator <<(uint32& data) noexcept
     {
@@ -452,6 +485,7 @@ public:
     /**
      * @brief Store a signed int of 32 bytes in this packet in network
      * byte order.
+     * @param[in] data the signed double word to store in the packet.
      */
     Packet& operator <<(sint32& data) noexcept
     {
@@ -463,6 +497,7 @@ public:
     /**
      * @brief Store a unsigned int of 64 bytes in this packet in network
      * byte order.
+     * @param[in] the unsigned quad word to store in the packet.
      */
     Packet& operator <<(uint64& data) noexcept
     {
@@ -474,6 +509,7 @@ public:
     /**
      * @brief Store a unsigned int of 64 bytes in this packet in network
      * byte order.
+     * @param[in] data the signed quad word to store in the packet.
      */
     Packet& operator <<(sint64& data) noexcept
     {
@@ -485,6 +521,7 @@ public:
     /**
      * @brief Store a floating point of 32 bytes in this packet in network
      * byte order.
+     * @param[in] data the float to store.
      */
     Packet& operator <<(float32& data) noexcept
     {
@@ -496,6 +533,7 @@ public:
     /**
      * @brief Store a floating point of 64 bytes in this packet in network
      * byte order.
+     * @param[in] data the double to store
      */
     Packet& operator <<(float64& data) noexcept
     {
@@ -507,6 +545,7 @@ public:
     /**
      * @brief Store a char array in this packet in network
      * byte order.
+     * @param[in] data the C-string to store in the packet
      */
     Packet& operator <<(const char* data) noexcept
     {
@@ -520,6 +559,9 @@ private:
 
     //! Current position where data is appended in the packet.
     uint32 m_write_pos;
+
+    //! current position where data is read from, until this packet is completely
+    //! read.
     uint32 m_read_pos;
 };
 
