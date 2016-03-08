@@ -76,56 +76,115 @@ enum class EndianType
 template< typename T, size_t Sz >
 T swap_bytes(const T& val) noexcept
 {
+    printf("called %f\n", val);
     return val;
 }
 
+/**
+ * @brief template specialization to swap an unsigned byte.
+ * @return this will only return the byte again.
+ */
 template< >
 inline uint8 swap_bytes< uint8, 1 >(const uint8& val) noexcept
 {
     return val;
 }
 
+/**
+ * @brief template specialization to swap an unsgined word.
+ * @return an unsigned word with swapped bytes.
+ */
 template< >
 inline uint16 swap_bytes< uint16, 2 >(const uint16& val) noexcept
 {
     uint16 temp = 0U;
-    temp = ((val >> 8U) & 0x00FFU);
+    temp  = ((val >> 8U) & 0x00FFU);
     temp |= ((val << 8U) & 0xFFFFU);
     return temp;
 }
 
+/**
+ * @brief template specialization to swap an unsgined word.
+ * @return a signed word with swapped bytes.
+ */
 template< >
 inline sint16 swap_bytes< sint16, 2 >(const sint16& val) noexcept
 {
     sint16 temp = 0;
-    temp = ((val >> 8) & 0x00FF);
+    temp  = ((val >> 8) & 0x00FF);
     temp |= ((val << 8) & 0xFFFF);
     return temp;
 }
 
+/**
+ * @brief Template specialization for swapping 4 bytes of an unsgined double word.
+ * @param[in] val the value to byte-swap
+ * @return a byte-swapped unsigned double word
+ */
 template< >
 inline uint32 swap_bytes< uint32, 4 >(const uint32& val) noexcept
 {
-    uint32 temp = 0U;
-    temp = ((val >> 24U) & 0x000000FFUL); // byte 3 to 0
+    uint32 temp = 0UL;
+    temp  = ((val >> 24U) & 0x000000FFUL); // byte 3 to 0
     temp |= ((val << 24U) & 0xFF000000UL); // byte 0 to 3
-    temp |= ((val >> 8U) & 0x0000FF00UL); // byte 2 to 1
-    temp |= ((val << 8U) & 0x00FF0000UL); // byte 1 to 2
+    temp |= ((val >> 8U)  & 0x0000FF00UL); // byte 2 to 1
+    temp |= ((val << 8U)  & 0x00FF0000UL); // byte 1 to 2
     return temp;
 }
 
+/**
+ * @brief Template specialization for swapping 4 bytes of a double word.
+ * @param[in] val the value to byte-swap
+ * @return a byte-swapped unsigned double word
+ */
+template< >
+inline sint32 swap_bytes< sint32, 4 >(const sint32& val) noexcept
+{
+    sint32 temp = 0L;
+    temp  = ((val >> 24) & 0x000000FFL); // byte 3 to 0
+    temp |= ((val << 24) & 0xFF000000L); // byte 0 to 3
+    temp |= ((val >> 8)  & 0x0000FF00L); // byte 2 to 1
+    temp |= ((val << 8)  & 0x00FF0000L); // byte 1 to 2
+    return temp;
+}
+
+/**
+ * @brief Template specialization for swapping 8 bytes of unsigned quad word.
+ * @param[in] val to swap the bytes
+ * @return the swapped value
+ */
 template< >
 inline uint64 swap_bytes< uint64, 8 >(const uint64& val) noexcept
 {
-    uint64 temp = 0U;
-    temp = ((val >> 56U) & 0x00000000000000FFULL); // byte 7 to 0
+    uint64 temp = 0ULL;
+    temp  = ((val >> 56U) & 0x00000000000000FFULL); // byte 7 to 0
     temp |= ((val << 56U) & 0xFF00000000000000ULL); // byte 0 to 7
     temp |= ((val >> 40U) & 0x000000000000FF00ULL); // byte 6 to 1
     temp |= ((val << 40U) & 0x00FF000000000000ULL); // byte 1 to 6
     temp |= ((val >> 24U) & 0x0000000000FF0000ULL); // byte 5 to 2
     temp |= ((val << 24U) & 0x0000FF0000000000ULL); // byte 2 to 5
-    temp |= ((val >> 8U) & 0x00000000FF000000ULL); // byte 4 to 3
-    temp |= ((val << 8U) & 0x000000FF00000000ULL); // byte 3 to 4
+    temp |= ((val >> 8U)  & 0x00000000FF000000ULL); // byte 4 to 3
+    temp |= ((val << 8U)  & 0x000000FF00000000ULL); // byte 3 to 4
+    return temp;
+}
+
+/**
+ * @brief Template specialization for swapping 8 bytes of a signed quad word.
+ * @param[in] val to swap the bytes
+ * @return the swapped value
+ */
+template< >
+inline sint64 swap_bytes< sint64, 8 >(const sint64& val) noexcept
+{
+    sint64 temp = 0LL;
+    temp  = ((val >> 56U) & 0x00000000000000FFULL); // byte 7 to 0
+    temp |= ((val << 56U) & 0xFF00000000000000ULL); // byte 0 to 7
+    temp |= ((val >> 40U) & 0x000000000000FF00ULL); // byte 6 to 1
+    temp |= ((val << 40U) & 0x00FF000000000000ULL); // byte 1 to 6
+    temp |= ((val >> 24U) & 0x0000000000FF0000ULL); // byte 5 to 2
+    temp |= ((val << 24U) & 0x0000FF0000000000ULL); // byte 2 to 5
+    temp |= ((val >> 8U)  & 0x00000000FF000000ULL); // byte 4 to 3
+    temp |= ((val << 8U)  & 0x000000FF00000000ULL); // byte 3 to 4
     return temp;
 }
 

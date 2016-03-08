@@ -138,7 +138,7 @@ public:
     {
         // determine the length of the char array
         uint32 bytes_to_write = static_cast< uint32 >(std::strlen(data));
-        
+
         // store the length first
         *this << bytes_to_write;
 
@@ -345,8 +345,11 @@ public:
 
         if ( is_readable(bytes_to_read) )
         {
-            float32* data_ptr = reinterpret_cast< float32* >(&m_data[m_read_pos]);
-            data = from_network< float32 >(*data_ptr);
+            uint32 f_as_num = *(reinterpret_cast< uint32* >(&m_data[m_read_pos]));
+            f_as_num = from_network< uint32 >(f_as_num);
+            std::memcpy(&data, &f_as_num, bytes_to_read);
+
+            // update the read position
             m_read_pos += bytes_to_read;
         }
 
@@ -363,11 +366,10 @@ public:
 
         if ( is_readable(bytes_to_read) )
         {
-            float64* data_ptr = reinterpret_cast< float64* >(&m_data[m_read_pos]);
-            data = from_network< float64 >(*data_ptr);
-            
-            // update read position
-            m_read_pos += bytes_to_read;
+            uint64 f_as_num = *(reinterpret_cast< uint64* >(&m_data[m_read_pos]));
+            f_as_num = from_network< uint64 >(f_as_num);
+            std::memcpy(&data, &f_as_num, bytes_to_read);
+            m_read_pos += bytes_to_read;    // update the read position
         }
 
         return *this;
@@ -451,7 +453,7 @@ public:
      */
     Packet& operator <<(uint16& data) noexcept
     {
-        uint16 network_data = to_network(data);
+        uint16 network_data = to_network< uint16 >(data);
         append< uint16 >(network_data);
         return *this;
     }
@@ -464,7 +466,7 @@ public:
      */
     Packet& operator <<(sint16& data) noexcept
     {
-        sint16 network_data = to_network(data);
+        sint16 network_data = to_network< sint16 >(data);
         append< sint16 >(network_data);
         return *this;
     }
@@ -477,7 +479,7 @@ public:
      */
     Packet& operator <<(uint32& data) noexcept
     {
-        uint32 network_data = to_network(data);
+        uint32 network_data = to_network< uint32 >(data);
         append< uint32 >(network_data);
         return *this;
     }
@@ -489,7 +491,7 @@ public:
      */
     Packet& operator <<(sint32& data) noexcept
     {
-        sint32 network_data = to_network(data);
+        sint32 network_data = to_network< sint32 >(data);
         append< uint32 >(network_data);
         return *this;
     }
@@ -501,7 +503,7 @@ public:
      */
     Packet& operator <<(uint64& data) noexcept
     {
-        uint64 network_data = to_network(data);
+        uint64 network_data = to_network< uint64 >(data);
         append< uint64 >(network_data);
         return *this;
     }
@@ -513,7 +515,7 @@ public:
      */
     Packet& operator <<(sint64& data) noexcept
     {
-        sint64 network_data = to_network(data);
+        sint64 network_data = to_network< sint64 >(data);
         append< sint64 >(network_data);
         return *this;
     }
@@ -525,8 +527,10 @@ public:
      */
     Packet& operator <<(float32& data) noexcept
     {
-        float32 network_data = to_network(data);
-        append< float32 >(network_data);
+        // first we will convert it to an equivalent byte representation.
+        uint32 num_as_float = *(reinterpret_cast< uint32* >(&data));
+        uint32 network_data = to_network< uint32 >(num_as_float);
+        append< uint32 >(network_data);
         return *this;
     }
 
@@ -537,8 +541,10 @@ public:
      */
     Packet& operator <<(float64& data) noexcept
     {
-        float64 network_data = to_network(data);
-        append< float64 >(network_data);
+        // first we will convert it to an equivalent byte representation.
+        uint64 num_as_float = *(reinterpret_cast< uint64* >(&data));
+        uint64 network_data = to_network< uint64 >(num_as_float);
+        append< uint64 >(network_data);
         return *this;
     }
 
