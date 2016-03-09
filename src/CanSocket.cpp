@@ -1,9 +1,11 @@
 /**
- * @file      Can.cpp
- * @author    dtuchscherer <your.email@hs-heilbronn.de>
- * @brief     short description...
- * @details   long description...
- * @version   1.0
+ * @file      CanSocket.cpp
+ * @author    dtuchscherer <daniel.tuchscherer@hs-heilbronn.de>
+ * @brief     SocketCAN implementation in C++
+ * @details   These are the methods of class CanSocket to
+ *            initialize the CAN interface, send and receive data via Linux
+ *            SocketCAN.
+ * @version   2.0
  * @copyright Copyright (c) 2015, dtuchscherer.
  *            All rights reserved.
  *

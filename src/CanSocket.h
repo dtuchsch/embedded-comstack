@@ -1,6 +1,6 @@
 /**
- * @file      Can.h
- * @author    dtuchscherer <your.email@hs-heilbronn.de>
+ * @file      CanSocket.h
+ * @author    dtuchscherer <daniel.tuchscherer@hs-heilbronn.de>
  * @brief     CAN interface to send and receive CAN frames over SocketCAN.
  * @details   This is a CAN module to send and receive data over CAN bus.
  *            It is designed for Linux systems. The CAN communication
@@ -149,6 +149,7 @@ protected:
 
     /**
      * @brief Create a CAN socket
+     * @return true if the socket is opened or false if there was an error.
      */
     boolean create() noexcept;
 

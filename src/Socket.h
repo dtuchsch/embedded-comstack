@@ -2,7 +2,9 @@
  * @file      Socket.h
  * @author    dtuchscherer <daniel.tuchscherer@hs-heilbronn.de>
  * @brief     Bare Socket Interface
- * @details
+ * @details   This is an interface of an "abstract" socket,
+ *            derived classes of the base class Socket will then implement
+ *            their own way to create and open a socket.
  * @version   1.0
  * @copyright Copyright (c) 2015, dtuchscherer.
  *            All rights reserved.
@@ -75,7 +77,7 @@ enum class SocketType
 
 /**
  * @brief A Socket implementation
- * @tparam Derived
+ * @tparam Derived class for CRTP
  */
 template< typename Derived >
 class Socket
@@ -109,6 +111,16 @@ public:
     SocketHandleType get_socket_handle() const noexcept
     {
         return m_socket;
+    }
+
+    /**
+     * @brief Gets the last error of the socket communication for
+     * error handling purposes.
+     * @return The last stored error from errno.
+     */
+    SocketErrorType get_last_error() const noexcept
+    {
+        return m_last_error;
     }
 
 protected:
