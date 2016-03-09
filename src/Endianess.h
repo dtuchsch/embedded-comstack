@@ -45,7 +45,7 @@
 #ifdef __unix__
 #include <endian.h>
 #else
-#error "Please define BYTE_ORDER of your system architecture."
+#error "Please #define BYTE_ORDER of your system architecture."
 #endif
 
 /*******************************************************************************
