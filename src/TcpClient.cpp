@@ -1,5 +1,5 @@
 /**
- * @file      CanSocket_Test.cpp
+ * @file      TcpClient.cpp
  * @author    dtuchscherer <your.email@hs-heilbronn.de>
  * @brief     short description...
  * @details   long description...
@@ -39,8 +39,8 @@
 /*******************************************************************************
  * MODULES USED
  *******************************************************************************/
-#include "catch.hpp"
-#include "CanSocket.h"
+#include <cerrno>
+#include "TcpClient.h"
 
 /*******************************************************************************
  * DEFINITIONS AND MACROS
@@ -69,20 +69,56 @@
 /*******************************************************************************
  * FUNCTION DEFINITIONS
  *******************************************************************************/
-
-TEST_CASE( "Virtual CAN", "[vcan0]" )
+TcpClient::TcpClient() noexcept :
+TcpSocket()
 {
-    CanSocket can("vcan0");
-    constexpr CanDataType can_data_send = {0xACU, 0x1DU, 0x11U};
-    uint16 can_id_recv;
-    CanDataType can_data_recv;
-    REQUIRE( can.is_can_initialized() == TRUE );
-    REQUIRE( can.send(1U, can_data_send, 3U) == CAN_MTU );
+
 }
 
-TEST_CASE( "FI interface", "[interface-fault]" )
+TcpClient::~TcpClient() noexcept
 {
-    CanSocket can(nullptr);
-    REQUIRE( can.is_can_initialized() == FALSE );
+
 }
 
+boolean TcpClient::connect(IpAddress& ip_address, const uint16 port) noexcept
+{
+    // return value
+    boolean connected_r = FALSE;
+    boolean socket_created = is_socket_initialized();
+
+    // look if the socket is there
+    if ( socket_created == TRUE )
+    {
+        // first build the address
+        uint32 ip = ip_address.get_ip_address();
+        struct sockaddr_in server;
+        ip_address.create_address_struct(ip, port, server);
+
+        // then establish the connection to the server
+        const SocketHandleType& socket_handle = get_socket_handle();
+        const auto connected = ::connect(socket_handle,
+                                         (struct sockaddr*)&server,
+                                         sizeof(struct sockaddr));
+
+        if ( connected >= 0 )
+        {
+            connected_r = TRUE;
+        }
+        else
+        {
+            connected_r = FALSE;
+            m_last_error = errno;
+        }
+    }
+    else
+    {
+        connected_r = FALSE;
+    }
+
+    return connected_r;
+}
+
+boolean TcpClient::disconnect() noexcept
+{
+    return close_socket();
+}

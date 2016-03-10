@@ -44,23 +44,28 @@
 /*******************************************************************************
  * MODULES USED
  *******************************************************************************/
+# include <sys/socket.h>
+# include <unistd.h>
+# include <cerrno>
+# include "ComStack_Types.h"
 
 /*******************************************************************************
  * DEFINITIONS AND MACROS
  *******************************************************************************/
 
-#ifdef __unix__
+# ifdef __unix__
 using SocketHandleType = int;
 using SocketErrorType = int;
-#endif
+# endif
 
 /*******************************************************************************
  * TYPEDEFS, ENUMERATIONS, CLASSES
  *******************************************************************************/
 
-enum class SocketState : SocketHandleType
-{
-    INVALID
+enum class SocketState
+    : SocketHandleType
+    {
+        INVALID
 };
 
 constexpr SocketHandleType get_invalid_alias()
@@ -91,9 +96,15 @@ public:
     Socket(SocketType type) noexcept :
     m_type(type),
     m_socket(get_invalid_alias()),
-    m_last_error(0)
+    m_last_error(0),
+    m_socket_init(FALSE)
     {
+        const boolean sock_created = create();
 
+        if ( sock_created == TRUE )
+        {
+            m_socket_init = TRUE;
+        }
     }
 
     /**
@@ -101,16 +112,34 @@ public:
      */
     ~Socket() noexcept
     {
-
+        close_socket();
+        m_socket_init = FALSE;
     }
 
     /**
-     * @brief Returns the socket handle for send and receive.
-     * @return the socket handle
+     * @brief closes the socket
      */
-    SocketHandleType get_socket_handle() const noexcept
+    boolean close_socket()
     {
-        return m_socket;
+        boolean closed = FALSE;
+
+        if ( is_socket_initialized() == TRUE )
+        {
+            // close the socket if one is opened only
+            const sint16 cl = ::close(get_socket_handle());
+
+            if ( cl == 0 )
+            {
+                closed = TRUE;
+            }
+            else
+            {
+                closed = FALSE;
+                m_last_error = errno;
+            }
+
+            return closed;
+        }
     }
 
     /**
@@ -123,7 +152,91 @@ public:
         return m_last_error;
     }
 
+    /**
+     * @brief Returns the socket handle for send and receive.
+     * @return the socket handle
+     */
+    SocketHandleType get_socket_handle() const noexcept
+    {
+        return m_socket;
+    }
+
+    /**
+     * @brief If the interface is initialized.
+     * @return if the interface is initialized
+     */
+    boolean is_socket_initialized() noexcept
+    {
+        return m_socket_init;
+    }
+
+    /**
+     * @brief This method looks for an "event" on the socket by calling
+     * select. If the socket is blocking, we can now look for data to receive
+     * or if a TCP client wants to connect to the server, before entering
+     * a blocking read or write.
+     * @return true if there is some kind of response (data or connect)
+     * on the socket, false if not.
+     */
+    boolean poll_activity(const uint16 timeout_us) noexcept
+    {
+        SocketHandleType nfds;
+        boolean response_on_socket = FALSE;
+
+        /* OS specific declarations */
+#ifdef _WIN32
+        SOCKET sockOS = (SOCKET)sock;
+
+        /* The first argument of the "select()" system call must be the length
+         * of the bitfield. Under Windows the first argument of "select()" should be 0. */
+        nfds = static_cast< SocketHandleType >(0);
+
+#elif defined __unix__
+        SocketHandleType socket = get_socket_handle();
+        nfds = static_cast< SocketHandleType >(socket + 1);
+#else
+#endif
+
+        struct timeval time_to_wait;
+        time_to_wait.tv_sec = static_cast< decltype(time_to_wait.tv_sec) >(0);
+        time_to_wait.tv_usec = static_cast< decltype(time_to_wait.tv_sec) >(timeout_us);
+
+        fd_set fd_read;
+        FD_ZERO(&fd_read);
+        FD_SET(socket, &fd_read);
+
+        const auto select_return = select(nfds, &fd_read, NULL_PTR, NULL_PTR,
+                &time_to_wait);
+
+        if ( select_return > 0 )
+        {
+            /*
+             * If the return value of function call select() isn't -1,
+             * there is data on the socket to receive.
+             * The select returns 0 if the time expired (timeout).
+             */
+            response_on_socket = TRUE;
+        }
+        else
+        {
+            /* The return value of the function select is -1 (SOCKET_ERROR) or a timeout occurred. */
+            response_on_socket = FALSE;
+        }
+
+        return response_on_socket;
+    }
+
 protected:
+
+    /**
+     * @brief A socket will be opened.
+     * @return true if the socket creation was successful, false if not.
+     */
+    bool create() noexcept
+    {
+        // CRTP
+        return static_cast< Derived* >(this)->create();
+    }
 
     /**
      * @brief The socket handle for the derived classes as reference.
@@ -134,22 +247,15 @@ protected:
         return m_socket;
     }
 
-    /**
-     * @brief A socket will be created.
-     * @return true if the socket creation was successful, false if not.
-     */
-    bool create() noexcept
-    {
-        // CRTP
-        return static_cast< Derived* >(this)->create();
-    }
-
     //! this attribute shows if it's a socket for can, ethernet tcp/ip or udp
     SocketType m_type;
 
     //! stores the last error in this attribute
     SocketErrorType m_last_error;
 private:
+
+    //! true if everything is set up and the instance can receive and send data
+    boolean m_socket_init;
 
     //! this stores the socket handle.
     SocketHandleType m_socket;
@@ -163,7 +269,5 @@ private:
 /*******************************************************************************
  * EXPORTED FUNCTIONS
  *******************************************************************************/
-
-
 
 #endif /* SOCKET_H_ */

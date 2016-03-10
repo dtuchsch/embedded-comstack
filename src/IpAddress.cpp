@@ -1,5 +1,5 @@
 /**
- * @file      CanSocket_Test.cpp
+ * @file      IpAddress.cpp
  * @author    dtuchscherer <your.email@hs-heilbronn.de>
  * @brief     short description...
  * @details   long description...
@@ -39,8 +39,8 @@
 /*******************************************************************************
  * MODULES USED
  *******************************************************************************/
-#include "catch.hpp"
-#include "CanSocket.h"
+#include <cstring>
+#include "IpAddress.h"
 
 /*******************************************************************************
  * DEFINITIONS AND MACROS
@@ -69,20 +69,73 @@
 /*******************************************************************************
  * FUNCTION DEFINITIONS
  *******************************************************************************/
-
-TEST_CASE( "Virtual CAN", "[vcan0]" )
+IpAddress::IpAddress(const char* ip_address) noexcept :
+m_address_binary(0U),
+m_valid_ip(FALSE)
 {
-    CanSocket can("vcan0");
-    constexpr CanDataType can_data_send = {0xACU, 0x1DU, 0x11U};
-    uint16 can_id_recv;
-    CanDataType can_data_recv;
-    REQUIRE( can.is_can_initialized() == TRUE );
-    REQUIRE( can.send(1U, can_data_send, 3U) == CAN_MTU );
+    if ( ip_address != NULL_PTR )
+    {
+        m_valid_ip = is_valid(ip_address);
+    }
+    else
+    {
+        m_valid_ip = FALSE;
+    }
 }
 
-TEST_CASE( "FI interface", "[interface-fault]" )
+uint32 IpAddress::get_ip_address() const noexcept
 {
-    CanSocket can(nullptr);
-    REQUIRE( can.is_can_initialized() == FALSE );
+    uint32 ip_host_byte_order = 0U;
+    ip_host_byte_order = ntohl(m_address_binary);
+    return ip_host_byte_order;
 }
 
+boolean IpAddress::is_valid(const char* ip) noexcept
+{
+    boolean ip_valid = FALSE;
+
+    // we will check here, because inet_addr() call has limited checking.
+    if ( ip == "0.0.0.0" )
+    {
+        m_address_binary = INADDR_BROADCAST;
+        ip_valid = TRUE;
+    }
+    else if ( ip == "255.255.255.0" )
+    {
+        m_address_binary = INADDR_ANY;
+        ip_valid = TRUE;
+    }
+    else
+    {
+        // convert it into a network-byte-order representation
+        uint32 ip_conv = inet_addr(ip);
+
+        // check if the address is valid or not
+        if ( ip_conv != INADDR_NONE )
+        {
+            // assign
+            m_address_binary = ip_conv;
+            ip_valid = TRUE;
+        }
+        else
+        {
+            ip_valid = FALSE;
+        }
+    }
+
+    return ip_valid;
+}
+
+void IpAddress::create_address_struct(const uint32 ip_host_byte_order,
+                                         const uint16 port, sockaddr_in& addr) noexcept
+{
+    std::memset(&addr, 0, sizeof(addr));
+    addr.sin_addr.s_addr = htonl(ip_host_byte_order);
+    addr.sin_family      = AF_INET;
+    addr.sin_port        = htons(port);
+}
+
+IpAddress::~IpAddress() noexcept
+{
+
+}

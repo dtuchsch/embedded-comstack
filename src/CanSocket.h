@@ -54,9 +54,6 @@
 /* blocking / non-blocking */
 # include <sys/ioctl.h>
 
-/* */
-# include <sys/socket.h>
-
 /* sockaddr structure, protocols and can_filter */
 # include <linux/can.h>
 
@@ -64,7 +61,6 @@
 # include <linux/can/raw.h>
 
 #include <array>        // rx, tx
-#include <cerrno>      // logging error numbers and buffer it
 #include <cstring>
 
 #include "Socket.h"
@@ -80,6 +76,7 @@
  * TYPEDEFS, ENUMERATIONS, CLASSES
  *******************************************************************************/
 
+//! Forward type
 using CanDataType = std::array< uint8, 8U >;
 
 /**
@@ -100,12 +97,6 @@ public:
      * @brief Destructor closes the file descriptor of the socket.
      */
     ~CanSocket() noexcept;
-
-    /**
-     * @brief If the CAN is initialized.
-     * @return if the CAN interface is initialized
-     */
-    bool is_initialized() noexcept;
 
     /**
      * @brief Transmits a message on CAN bus.
@@ -142,16 +133,21 @@ public:
      * If there is a timeout it returns zero.
      * If there was an error, -1 is transmitted.
      */
-    sint8 receive(uint16& can_id, CanDataType& data_ref, const uint32 timeout)
-            noexcept;
-
-protected:
+    sint8 receive(uint16& can_id, CanDataType& data_ref,
+                  const uint16 timeout_us) noexcept;
 
     /**
      * @brief Create a CAN socket
      * @return true if the socket is opened or false if there was an error.
      */
     boolean create() noexcept;
+
+    /**
+     *
+     */
+    boolean is_can_initialized() const noexcept;
+
+protected:
 
 private:
 
@@ -177,9 +173,8 @@ private:
     //! the interface index to bind the socket to.
     struct sockaddr_can m_sockaddr;
 
-    //! true if everything is set up and the instance can receive
-    //! and send via CAN.
-    boolean m_init;
+    //! Whether the socket creation, binding and interface is ok or not.
+    boolean m_can_init;
 
     // determine the size of the struct on compile-time
     // this is always the same

@@ -1,5 +1,5 @@
 /**
- * @file      CanSocket_Test.cpp
+ * @file      TcpClient.h
  * @author    dtuchscherer <your.email@hs-heilbronn.de>
  * @brief     short description...
  * @details   long description...
@@ -36,11 +36,14 @@
  *            POSSIBILITY OF SUCH DAMAGE.
  */
 
+#ifndef TCPCLIENT_H_
+# define TCPCLIENT_H_
+
 /*******************************************************************************
  * MODULES USED
  *******************************************************************************/
-#include "catch.hpp"
-#include "CanSocket.h"
+#include "IpAddress.h"
+#include "TcpSocket.h"
 
 /*******************************************************************************
  * DEFINITIONS AND MACROS
@@ -49,40 +52,40 @@
 /*******************************************************************************
  * TYPEDEFS, ENUMERATIONS, CLASSES
  *******************************************************************************/
+class TcpClient : public TcpSocket
+{
+public:
+    /**
+     * Default constructor calls the base class Socket to create a socket.
+     */
+    TcpClient() noexcept;
 
-/*******************************************************************************
- * PROTOTYPES OF LOCAL FUNCTIONS
- *******************************************************************************/
+    ~TcpClient() noexcept;
 
+    /**
+     * @brief Connect to a TCP/IP server.
+     * @param[in] ip_address the IP4 address
+     * @param[in] port the port to talk to
+     * @return true if connection is established, false if it fails to connect
+     * to the server.
+     */
+    boolean connect(IpAddress& ip_address, uint16 port) noexcept;
+
+    /**
+     * @brief explicitly close the socket for disconnection.
+     */
+    boolean disconnect() noexcept;
+
+private:
+};
 /*******************************************************************************
  * EXPORTED VARIABLES
- *******************************************************************************/
-
-/*******************************************************************************
- * GLOBAL MODULE VARIABLES
  *******************************************************************************/
 
 /*******************************************************************************
  * EXPORTED FUNCTIONS
  *******************************************************************************/
 
-/*******************************************************************************
- * FUNCTION DEFINITIONS
- *******************************************************************************/
 
-TEST_CASE( "Virtual CAN", "[vcan0]" )
-{
-    CanSocket can("vcan0");
-    constexpr CanDataType can_data_send = {0xACU, 0x1DU, 0x11U};
-    uint16 can_id_recv;
-    CanDataType can_data_recv;
-    REQUIRE( can.is_can_initialized() == TRUE );
-    REQUIRE( can.send(1U, can_data_send, 3U) == CAN_MTU );
-}
 
-TEST_CASE( "FI interface", "[interface-fault]" )
-{
-    CanSocket can(nullptr);
-    REQUIRE( can.is_can_initialized() == FALSE );
-}
-
+#endif /* TCPCLIENT_H_ */

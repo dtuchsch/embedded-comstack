@@ -1,8 +1,8 @@
 /**
- * @file      CanSocket_Test.cpp
- * @author    dtuchscherer <your.email@hs-heilbronn.de>
- * @brief     short description...
- * @details   long description...
+ * @file      TcpSocket.cpp
+ * @author    dtuchscherer <daniel.tuchscherer@hs-heilbronn.de>
+ * @brief     Ethernet TCP/IP communication
+ * @details
  * @version   1.0
  * @copyright Copyright (c) 2015, dtuchscherer.
  *            All rights reserved.
@@ -39,8 +39,7 @@
 /*******************************************************************************
  * MODULES USED
  *******************************************************************************/
-#include "catch.hpp"
-#include "CanSocket.h"
+#include "TcpSocket.h"
 
 /*******************************************************************************
  * DEFINITIONS AND MACROS
@@ -70,19 +69,62 @@
  * FUNCTION DEFINITIONS
  *******************************************************************************/
 
-TEST_CASE( "Virtual CAN", "[vcan0]" )
+TcpSocket::TcpSocket() noexcept :
+Socket(SocketType::TCP)
 {
-    CanSocket can("vcan0");
-    constexpr CanDataType can_data_send = {0xACU, 0x1DU, 0x11U};
-    uint16 can_id_recv;
-    CanDataType can_data_recv;
-    REQUIRE( can.is_can_initialized() == TRUE );
-    REQUIRE( can.send(1U, can_data_send, 3U) == CAN_MTU );
+
 }
 
-TEST_CASE( "FI interface", "[interface-fault]" )
+TcpSocket::~TcpSocket() noexcept
 {
-    CanSocket can(nullptr);
-    REQUIRE( can.is_can_initialized() == FALSE );
+    // do not close the socket here, this is done by the base class Socket
 }
 
+boolean TcpSocket::create() noexcept
+{
+    boolean socket_created = FALSE;
+
+    SocketHandleType& handle = get_socket_handle();
+    handle = socket(AF_INET, SOCK_STREAM, 0);
+
+    // check here if the socket was opened.
+    if ( get_socket_handle() > 0 )
+    {
+        // ... successfull opened.
+        socket_created = true;
+    }
+    else
+    {
+        // ... error opening the socket.
+        socket_created = false;
+    }
+
+    return socket_created;
+}
+
+sint16 TcpSocket::send(void* message, uint16 len) noexcept
+{
+
+    const SocketHandleType& handle = get_socket_handle();
+    sint16 data_sent = ::send(handle, message, len, 0);
+
+    if ( data_sent < 0 )
+    {
+        m_last_error = errno;
+    }
+
+    return data_sent;
+}
+
+sint16 TcpSocket::receive(void* message, uint16 len) noexcept
+{
+    const SocketHandleType& handle = get_socket_handle();
+    sint16 data_received = ::recv(handle, message, len, 0);
+
+    if ( data_received < 0 )
+    {
+        m_last_error = errno;
+    }
+
+    return data_received;
+}

@@ -1,5 +1,5 @@
 /**
- * @file      CanSocket_Test.cpp
+ * @file      TcpClient_Test.cpp
  * @author    dtuchscherer <your.email@hs-heilbronn.de>
  * @brief     short description...
  * @details   long description...
@@ -40,7 +40,7 @@
  * MODULES USED
  *******************************************************************************/
 #include "catch.hpp"
-#include "CanSocket.h"
+#include "TcpClient.h"
 
 /*******************************************************************************
  * DEFINITIONS AND MACROS
@@ -69,20 +69,11 @@
 /*******************************************************************************
  * FUNCTION DEFINITIONS
  *******************************************************************************/
-
-TEST_CASE( "Virtual CAN", "[vcan0]" )
+TEST_CASE( "TCP Client connect and disconnect", "[connect-disconnect]" )
 {
-    CanSocket can("vcan0");
-    constexpr CanDataType can_data_send = {0xACU, 0x1DU, 0x11U};
-    uint16 can_id_recv;
-    CanDataType can_data_recv;
-    REQUIRE( can.is_can_initialized() == TRUE );
-    REQUIRE( can.send(1U, can_data_send, 3U) == CAN_MTU );
-}
-
-TEST_CASE( "FI interface", "[interface-fault]" )
-{
-    CanSocket can(nullptr);
-    REQUIRE( can.is_can_initialized() == FALSE );
+    IpAddress local("localhost");
+    TcpClient tcp;
+    REQUIRE( tcp.connect(local, 5555U) == TRUE );
+    REQUIRE( tcp.disconnect() == TRUE );
 }
 

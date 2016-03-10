@@ -1,6 +1,6 @@
 /**
- * @file      CanSocket_Test.cpp
- * @author    dtuchscherer <your.email@hs-heilbronn.de>
+ * @file      TcpSocket.h
+ * @author    dtuchscherer <daniel.tuchscherer@hs-heilbronn.de>
  * @brief     short description...
  * @details   long description...
  * @version   1.0
@@ -36,11 +36,25 @@
  *            POSSIBILITY OF SUCH DAMAGE.
  */
 
+#ifndef TCPSOCKET_H_
+# define TCPSOCKET_H_
+
 /*******************************************************************************
  * MODULES USED
  *******************************************************************************/
-#include "catch.hpp"
-#include "CanSocket.h"
+
+# ifdef _WIN32
+#  include <winsock2.h> /* Note: This needs to be the first include! Otherwise there may be some cruel compile errors. */
+# else
+#  include <string.h>     // memset
+#  include <sys/types.h>
+#  include <netinet/in.h>
+#  include <netdb.h>
+#  include <arpa/inet.h>
+# endif
+
+#include "Socket.h"
+#include "ComStack_Types.h"
 
 /*******************************************************************************
  * DEFINITIONS AND MACROS
@@ -50,39 +64,59 @@
  * TYPEDEFS, ENUMERATIONS, CLASSES
  *******************************************************************************/
 
-/*******************************************************************************
- * PROTOTYPES OF LOCAL FUNCTIONS
- *******************************************************************************/
+/**
+ * @brief Concrete class for a Ethernet TCP/IP communication.
+ */
+class TcpSocket: public Socket< TcpSocket >
+{
+public:
+
+    /**
+     * @brief Default constructor
+     */
+    TcpSocket() noexcept;
+
+    /**
+     * @brief Default destructor
+     */
+    ~TcpSocket() noexcept;
+
+    /**
+     * @brief Send via the TCP/IP socket
+     * @param[in] message is the data to send
+     * @param[in] len is the length to send
+     * @return the number of bytes that have been sent or -1 if there is an error
+     */
+    sint16 send(void* message, uint16 len)
+            noexcept;
+
+    /**
+     * @brief Receive via the TCP/IP socket
+     * @param[out] is the message container to store the received data
+     * @param[in] the length to receive
+     * @return how much data has been received. if there is an error the return
+     * is smaller than 0.
+     */
+    sint16 receive(void* message, uint16 len) noexcept;
+
+    /**
+     * @brief Create a TCP socket
+     * @return true if the socket is open or false if there was an error on
+     * creation.
+     */
+    boolean create() noexcept;
+
+protected:
+
+private:
+};
 
 /*******************************************************************************
  * EXPORTED VARIABLES
  *******************************************************************************/
 
 /*******************************************************************************
- * GLOBAL MODULE VARIABLES
- *******************************************************************************/
-
-/*******************************************************************************
  * EXPORTED FUNCTIONS
  *******************************************************************************/
 
-/*******************************************************************************
- * FUNCTION DEFINITIONS
- *******************************************************************************/
-
-TEST_CASE( "Virtual CAN", "[vcan0]" )
-{
-    CanSocket can("vcan0");
-    constexpr CanDataType can_data_send = {0xACU, 0x1DU, 0x11U};
-    uint16 can_id_recv;
-    CanDataType can_data_recv;
-    REQUIRE( can.is_can_initialized() == TRUE );
-    REQUIRE( can.send(1U, can_data_send, 3U) == CAN_MTU );
-}
-
-TEST_CASE( "FI interface", "[interface-fault]" )
-{
-    CanSocket can(nullptr);
-    REQUIRE( can.is_can_initialized() == FALSE );
-}
-
+#endif /* TCPSOCKET_H_ */

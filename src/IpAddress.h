@@ -1,5 +1,5 @@
 /**
- * @file      CanSocket_Test.cpp
+ * @file      IpAddress.h
  * @author    dtuchscherer <your.email@hs-heilbronn.de>
  * @brief     short description...
  * @details   long description...
@@ -36,11 +36,16 @@
  *            POSSIBILITY OF SUCH DAMAGE.
  */
 
+#ifndef IPADDRESS_H_
+# define IPADDRESS_H_
+
 /*******************************************************************************
  * MODULES USED
  *******************************************************************************/
-#include "catch.hpp"
-#include "CanSocket.h"
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include "Socket.h"
+#include "ComStack_Types.h"
 
 /*******************************************************************************
  * DEFINITIONS AND MACROS
@@ -50,39 +55,62 @@
  * TYPEDEFS, ENUMERATIONS, CLASSES
  *******************************************************************************/
 
-/*******************************************************************************
- * PROTOTYPES OF LOCAL FUNCTIONS
- *******************************************************************************/
+/**
+ * @brief IpAddress class interface for interpreting ip addresses as string.
+ */
+class IpAddress
+{
+public:
+    /**
+     * @brief Construct the address from a C-style string
+     * @param[in] ip_address the IP4 address as C-style string e.g. "192.168.3.11"
+     */
+    IpAddress(const char* ip_address) noexcept;
+
+    /**
+     * Default destructor
+     */
+    ~IpAddress() noexcept;
+
+    /**
+     * @brief get the ip address for socket communication.
+     * @return the ip address in host-byte-order
+     */
+    uint32 get_ip_address() const noexcept;
+
+    /**
+     * @brief
+     * @param[in] ip_host_byte_order the IP4 address in host-byte-order
+     * @param[in] port the port to connect to
+     * @param[out] addr the structure to store the ip info to.
+     */
+    void create_address_struct(const uint32 ip_host_byte_order,
+                                  const uint16 port, sockaddr_in& addr)
+                                          noexcept;
+
+private:
+
+    /**
+     * @brief Try to build a byte representation out of the address given as
+     * string.
+     * @param[in] ip the IP4 address as C-style string
+     * @return true if the ip address is valid, false if not.
+     */
+    boolean is_valid(const char* ip) noexcept;
+
+    //! the address in network-byte-order
+    uint32 m_address_binary;
+
+    //! if the configuration of the given ip was successful or not.
+    boolean m_valid_ip;
+};
 
 /*******************************************************************************
  * EXPORTED VARIABLES
  *******************************************************************************/
 
 /*******************************************************************************
- * GLOBAL MODULE VARIABLES
- *******************************************************************************/
-
-/*******************************************************************************
  * EXPORTED FUNCTIONS
  *******************************************************************************/
 
-/*******************************************************************************
- * FUNCTION DEFINITIONS
- *******************************************************************************/
-
-TEST_CASE( "Virtual CAN", "[vcan0]" )
-{
-    CanSocket can("vcan0");
-    constexpr CanDataType can_data_send = {0xACU, 0x1DU, 0x11U};
-    uint16 can_id_recv;
-    CanDataType can_data_recv;
-    REQUIRE( can.is_can_initialized() == TRUE );
-    REQUIRE( can.send(1U, can_data_send, 3U) == CAN_MTU );
-}
-
-TEST_CASE( "FI interface", "[interface-fault]" )
-{
-    CanSocket can(nullptr);
-    REQUIRE( can.is_can_initialized() == FALSE );
-}
-
+#endif /* IPADDRESS_H_ */

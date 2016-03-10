@@ -74,46 +74,42 @@
 
 CanSocket::CanSocket(const char* interface_str) noexcept :
 Socket(SocketType::CAN),
-m_init(FALSE)
+m_can_init(FALSE)
 {
-    if ( interface_str != NULL_PTR )
+    boolean sock_created = is_socket_initialized();
+
+    if ( interface_str != NULL_PTR && sock_created == TRUE )
     {
-        boolean sock_created = create();
         boolean interface_exists = check_interface(interface_str);
 
         // socket creation successful and interface exists
-        if ( interface_exists && sock_created )
+        if ( interface_exists == TRUE )
         {
             boolean bind_success = bind_if_socket();
 
-            if ( bind_success )
+            if ( bind_success == TRUE )
             {
-                m_init = TRUE;
+                m_can_init = TRUE;
             }
             else
             {
-                m_init = FALSE;
+                m_can_init = FALSE;
             }
         }
         else
         {
-            m_init = FALSE;
+            m_can_init = FALSE;
         }
     }
     else
     {
-        m_init = FALSE;
+        m_can_init = FALSE;
     }
 }
 
 CanSocket::~CanSocket() noexcept
 {
-    ::close(get_socket_handle());
-}
-
-boolean CanSocket::is_initialized() noexcept
-{
-    return m_init;
+    // do not close the socket here, this is done by the base class Socket
 }
 
 sint8 CanSocket::send(const uint16 can_id, const CanDataType& data_ref,
@@ -123,7 +119,7 @@ sint8 CanSocket::send(const uint16 can_id, const CanDataType& data_ref,
 
     // First check if the file descriptor for the socket was initialized
     // and the interface is up and running.
-    if ( (is_initialized() == TRUE) && (len > 0U) )
+    if ( (is_can_initialized() == TRUE) && (len > 0U) )
     {
         // Structure that is given to the POSIX write function.
         // We have to define CAN-ID, length (DLC) and the data to send.
@@ -186,7 +182,7 @@ sint8 CanSocket::receive(uint16& can_id, CanDataType& data_ref) noexcept
     // complete length of the CAN frame
     sint8 can_received = -1;
 
-    if ( is_initialized() == TRUE )
+    if ( is_can_initialized() == TRUE )
     {
         struct can_frame frame;
         ssize_t nbytes = read(get_socket_handle(), &frame, m_can_mtu);
@@ -221,33 +217,20 @@ sint8 CanSocket::receive(uint16& can_id, CanDataType& data_ref) noexcept
 }
 
 sint8 CanSocket::receive(uint16& can_id, CanDataType& data_ref,
-                         const uint32 timeout) noexcept
+                         const uint16 timeout_us) noexcept
 {
     // complete length of the CAN frame
     sint8 can_received = -1;
 
-    if ( is_initialized() == TRUE )
+    if ( is_can_initialized() == TRUE )
     {
-        // we need a file descriptor for polling the socket if there is data to
-        // read.
-        fd_set recfds;
-        struct timeval timeout_struct;
-
-        constexpr uint32 usec_per_sec = 1000000U; // 1s in microseconds
-
-        timeout_struct.tv_sec = timeout / usec_per_sec;
-        timeout_struct.tv_usec = timeout % usec_per_sec;
-
-        FD_ZERO(&recfds);
-        FD_SET(get_socket_handle(), &recfds);
-
-        // poll if there is something on the socket.
-        can_received = select(get_socket_handle() + 1, &recfds, NULL, NULL,
-                              &timeout_struct);
+        // before we go in a blocking read, we will check if there is
+        // activity on the socket.
+        boolean event = poll_activity(timeout_us);
 
         // check the return value of the select. if there is data to read the
         // return value of select will be greater than zero.
-        if ( can_received > 0 )
+        if ( event > 0 )
         {
             struct can_frame frame;
             const auto nbytes = read(get_socket_handle(), &frame, m_can_mtu);
@@ -290,12 +273,12 @@ sint8 CanSocket::receive(uint16& can_id, CanDataType& data_ref,
 
 boolean CanSocket::create() noexcept
 {
-    bool socket_created = false;
+    boolean socket_created = FALSE;
     SocketHandleType& handle = get_socket_handle();
     handle = socket(PF_CAN, SOCK_RAW, CAN_RAW);
 
     // check here if the socket was opened.
-    if ( get_socket_handle() < 0 )
+    if ( handle < 0 )
     {
         // ... error opening the socket.
         socket_created = false;
@@ -368,4 +351,9 @@ boolean CanSocket::bind_if_socket() noexcept
     }
 
     return bind_success;
+}
+
+boolean CanSocket::is_can_initialized() const noexcept
+{
+    return m_can_init;
 }
