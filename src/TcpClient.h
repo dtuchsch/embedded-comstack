@@ -1,8 +1,8 @@
 /**
  * @file      TcpClient.h
- * @author    dtuchscherer <your.email@hs-heilbronn.de>
- * @brief     short description...
- * @details   long description...
+ * @author    dtuchscherer <daniel.tuchscherer@hs-heilbronn.de>
+ * @brief     TCP client class interface
+ * @details   For connecting to and disconnecting from TCP servers.
  * @version   1.0
  * @copyright Copyright (c) 2015, dtuchscherer.
  *            All rights reserved.

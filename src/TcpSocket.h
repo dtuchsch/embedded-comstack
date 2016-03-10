@@ -1,8 +1,8 @@
 /**
  * @file      TcpSocket.h
  * @author    dtuchscherer <daniel.tuchscherer@hs-heilbronn.de>
- * @brief     short description...
- * @details   long description...
+ * @brief     TCP socket implementation for sending, receiving and polling.
+ * @details   TCP socket implementation for sending, receiving and polling.
  * @version   1.0
  * @copyright Copyright (c) 2015, dtuchscherer.
  *            All rights reserved.

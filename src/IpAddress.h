@@ -1,8 +1,8 @@
 /**
  * @file      IpAddress.h
- * @author    dtuchscherer <your.email@hs-heilbronn.de>
- * @brief     short description...
- * @details   long description...
+ * @author    dtuchscherer <daniel.tuchscherer@hs-heilbronn.de>
+ * @brief     IP Address interface
+ * @details   IP Address interface for abstracting pure strings.
  * @version   1.0
  * @copyright Copyright (c) 2015, dtuchscherer.
  *            All rights reserved.
