@@ -69,11 +69,13 @@
 /*******************************************************************************
  * FUNCTION DEFINITIONS
  *******************************************************************************/
-TEST_CASE( "TCP Client connect and disconnect", "[connect-disconnect]" )
+TEST_CASE( "TCP Client connect and disconnect", "[connect-send-disconnect]" )
 {
     IpAddress local("localhost");
     TcpClient tcp;
+    uint8 send_ascii_zero = 0x30U;
     REQUIRE( tcp.connect(local, 5555U) == TRUE );
+    REQUIRE( tcp.send(&send_ascii_zero, 1U) == 1 );
     REQUIRE( tcp.disconnect() == TRUE );
 }
 

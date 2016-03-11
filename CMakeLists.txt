@@ -4,13 +4,13 @@ project(embedded-comstack)
 
 set(CMAKE_CXX_FLAGS "-std=c++14 ${CMAKE_CXX_FLAGS} -g3 -O0")
 
-include_directories(src test)
+include_directories(src src/communication test)
 
 set(SOURCES
-    src/CanSocket.cpp
-    src/TcpSocket.cpp
-    src/TcpClient.cpp
-    src/IpAddress.cpp
+    src/communication/CanSocket.cpp
+    src/communication/TcpSocket.cpp
+    src/communication/TcpClient.cpp
+    src/communication/IpAddress.cpp
 )
 
 set(TEST_SOURCES

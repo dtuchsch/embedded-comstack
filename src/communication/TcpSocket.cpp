@@ -72,12 +72,13 @@
 TcpSocket::TcpSocket() noexcept :
 Socket(SocketType::TCP)
 {
-
+    // call the base class opening the socket.
 }
 
 TcpSocket::~TcpSocket() noexcept
 {
-    // do not close the socket here, this is done by the base class Socket
+    // do not close the socket here,
+    // this is done by the base class Socket
 }
 
 boolean TcpSocket::create() noexcept
@@ -104,13 +105,23 @@ boolean TcpSocket::create() noexcept
 
 sint16 TcpSocket::send(void* message, uint16 len) noexcept
 {
+    const boolean socket_open = is_socket_initialized();
+    sint16 data_sent = -1;
 
-    const SocketHandleType& handle = get_socket_handle();
-    sint16 data_sent = ::send(handle, message, len, 0);
-
-    if ( data_sent < 0 )
+    // sending only makes sense if at least the socket is open.
+    if ( socket_open == TRUE )
     {
-        m_last_error = errno;
+        const SocketHandleType& handle = get_socket_handle();
+        data_sent = ::send(handle, message, len, 0);
+
+        if ( data_sent < 0 )
+        {
+            m_last_error = errno;
+        }
+    }
+    else
+    {
+        data_sent = -1;
     }
 
     return data_sent;
@@ -118,12 +129,23 @@ sint16 TcpSocket::send(void* message, uint16 len) noexcept
 
 sint16 TcpSocket::receive(void* message, uint16 len) noexcept
 {
-    const SocketHandleType& handle = get_socket_handle();
-    sint16 data_received = ::recv(handle, message, len, 0);
+    const boolean socket_open = is_socket_initialized();
+    sint16 data_received = -1;
 
-    if ( data_received < 0 )
+    // sending only makes sense if at least the socket is open.
+    if ( socket_open == TRUE )
     {
-        m_last_error = errno;
+        const SocketHandleType& handle = get_socket_handle();
+        data_received = ::recv(handle, message, len, 0);
+
+        if ( data_received < 0 )
+        {
+            m_last_error = errno;
+        }
+    }
+    else
+    {
+        data_received = -1;
     }
 
     return data_received;
