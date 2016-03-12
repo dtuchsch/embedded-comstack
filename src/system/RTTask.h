@@ -1,8 +1,9 @@
 /**
- * @file      Task.h
- * @author    dtuchscherer <your.email@hs-heilbronn.de>
- * @brief     short description...
- * @details   long description...
+ * @file      RTTask.h
+ * @author    dtuchscherer <daniel.tuchscherer@hs-heilbronn.de>
+ * @brief     Real-Time Task abstraction
+ * @details   The template class RTTask covers the simple creation of real-time
+ *            tasks with pre and post-routines.
  * @version   1.0
  * @copyright Copyright (c) 2015, dtuchscherer.
  *            All rights reserved.
@@ -36,13 +37,14 @@
  *            POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef TASK_H_
-# define TASK_H_
+#ifndef RTTASK_H_
+# define RTTASK_H_
 
 /*******************************************************************************
  * MODULES USED
  *******************************************************************************/
 #include "OSControl.h"
+
 /*******************************************************************************
  * DEFINITIONS AND MACROS
  *******************************************************************************/
@@ -56,8 +58,9 @@
  * @tparam PeriodMicro the period in microseconds the task is called.
  */
 template< typename Derived, int Priority, int PeriodMicro >
-struct RTTask: OSControl
+class RTTask: OSControl
 {
+public:
     using TaskType = RTTask< Derived, Priority, PeriodMicro >;
 
     RTTask() noexcept :
@@ -124,11 +127,15 @@ struct RTTask: OSControl
     //! Statically known period in microseconds.
     static constexpr int m_period = PeriodMicro;
 
+protected:
+    //! if the loop of the thread will run or not.
+    boolean m_task_running;
+
     //! The handle of the task
     TaskHandle m_task_handle;
 
-    //! if the loop of the thread will run or not.
-    boolean m_task_running;
+private:
+
 };
 
 /*******************************************************************************

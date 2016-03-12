@@ -1,6 +1,6 @@
 /**
- * @file      TcpClient_Test.cpp
- * @author    dtuchscherer <your.email@hs-heilbronn.de>
+ * @file      Tcp_Test.cpp
+ * @author    dtuchscherer <daniel.tuchscherer@hs-heilbronn.de>
  * @brief     short description...
  * @details   long description...
  * @version   1.0
@@ -39,7 +39,10 @@
 /*******************************************************************************
  * MODULES USED
  *******************************************************************************/
+#include <iostream>
 #include "catch.hpp"
+#include "RTTask.h"
+#include "TcpServer.h"
 #include "TcpClient.h"
 
 /*******************************************************************************
@@ -49,6 +52,36 @@
 /*******************************************************************************
  * TYPEDEFS, ENUMERATIONS, CLASSES
  *******************************************************************************/
+
+class ServerTask : public RTTask< ServerTask, 80, 500000 >
+{
+public:
+    ServerTask() noexcept :
+    RTTask()
+    {
+
+    }
+
+    void pre() noexcept
+    {
+        m_server.listen(m_client, 4444U);
+    }
+
+    void update() noexcept
+    {
+        m_server.accept();
+    }
+
+    void post() noexcept
+    {
+
+    }
+
+private:
+
+    TcpServer m_server;
+    IpAddress m_client{"localhost"};
+};
 
 /*******************************************************************************
  * PROTOTYPES OF LOCAL FUNCTIONS
@@ -69,13 +102,21 @@
 /*******************************************************************************
  * FUNCTION DEFINITIONS
  *******************************************************************************/
-TEST_CASE( "TCP Client connect and disconnect", "[connect-send-disconnect]" )
+TEST_CASE( "TCP Client connect and disconnect", "[client-connect-send-disconnect]" )
 {
     IpAddress local("localhost");
-    TcpClient tcp;
     uint8 send_ascii_zero = 0x30U;
-    REQUIRE( tcp.connect(local, 5555U) == TRUE );
+    ServerTask t;
+
+    TcpClient tcp;
+    boolean connected = FALSE;
+
+    while ( connected == FALSE )
+    {
+        connected = tcp.connect(local, 4444U);
+    }
+
+    REQUIRE( connected == TRUE );
     REQUIRE( tcp.send(&send_ascii_zero, 1U) == 1 );
     REQUIRE( tcp.disconnect() == TRUE );
 }
-
