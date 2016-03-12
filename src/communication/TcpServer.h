@@ -1,8 +1,9 @@
 /**
- * @file      IpAddress.h
+ * @file      TcpServer.h
  * @author    dtuchscherer <daniel.tuchscherer@hs-heilbronn.de>
- * @brief     IP Address interface
- * @details   IP Address interface for abstracting pure strings.
+ * @brief     Ethernet TCP/IP Server interface
+ * @details   This is the TCP/IP Server interface for listening and accepting
+ *            connections.
  * @version   1.0
  * @copyright Copyright (c) 2015, dtuchscherer.
  *            All rights reserved.
@@ -36,16 +37,14 @@
  *            POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef IPADDRESS_H_
-# define IPADDRESS_H_
+#ifndef TCPSERVER_H_
+# define TCPSERVER_H_
 
 /*******************************************************************************
  * MODULES USED
  *******************************************************************************/
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include "Socket.h"
-#include "ComStack_Types.h"
+#include "IpAddress.h"
+#include "TcpSocket.h"
 
 /*******************************************************************************
  * DEFINITIONS AND MACROS
@@ -56,53 +55,41 @@
  *******************************************************************************/
 
 /**
- * @brief IpAddress class interface for interpreting ip addresses as string.
+ * @brief The TcpServer class allows listening for pending connection requests
+ * and then accepting incoming connections.
  */
-class IpAddress
+class TcpServer : public TcpSocket
 {
 public:
-    /**
-     * @brief Construct the address from a C-style string
-     * @param[in] ip_address the IP4 address as C-style string e.g. "192.168.3.11"
-     * "255.255.255.0" means any ip address.
-     */
-    IpAddress(const char* ip_address) noexcept;
 
     /**
-     * Default destructor
+     * @brief The default instructor will open a socket.
      */
-    ~IpAddress() noexcept;
+    TcpServer() noexcept;
 
     /**
-     * @brief get the ip address for socket communication.
-     * @return the ip address in host-byte-order
+     * @brief The default destructor closes the socket, thus closing any
+     * opening connection.
      */
-    uint32 get_ip_address() const noexcept;
+    ~TcpServer() noexcept;
 
     /**
-     * @brief creates a structure for connecting and listening.
-     * @param[in] ip_host_byte_order the IP4 address in host-byte-order
-     * @param[in] port the port to connect to
-     * @param[out] addr the structure to store the ip info to.
+     * @brief Listens for connections.
+     * @param[in] ip the IP4 address to listen on for incoming requests.
+     * @param[in] port the port to listen on for incoming requests.
+     * @return true if listening is possible, false if listening is not
+     * possible.
      */
-    void create_address_struct(const uint32 ip_host_byte_order,
-                               const uint16 port, sockaddr_in& addr) noexcept;
+    boolean listen(IpAddress& ip, const uint16 port) noexcept;
+
+    /**
+     * @brief Accepts a connection.
+     * @return true if a connection is accepted, false if not.
+     */
+    boolean accept() noexcept;
 
 private:
 
-    /**
-     * @brief Try to build a byte representation out of the address given as
-     * string.
-     * @param[in] ip the IP4 address as C-style string
-     * @return true if the ip address is valid, false if not.
-     */
-    boolean is_valid(const char* ip) noexcept;
-
-    //! the address in network-byte-order
-    uint32 m_address_binary;
-
-    //! if the configuration of the given ip was successful or not.
-    boolean m_valid_ip;
 };
 
 /*******************************************************************************
@@ -113,4 +100,4 @@ private:
  * EXPORTED FUNCTIONS
  *******************************************************************************/
 
-#endif /* IPADDRESS_H_ */
+#endif /* TCPSERVER_H_ */

@@ -52,20 +52,30 @@
 /*******************************************************************************
  * TYPEDEFS, ENUMERATIONS, CLASSES
  *******************************************************************************/
+
+/**
+ * @brief The TcpClient class allows connecting and disconnecting to a TCP/IP
+ * server.
+ */
 class TcpClient : public TcpSocket
 {
 public:
     /**
-     * Default constructor calls the base class Socket to create a socket.
+     * @brief Default constructor calls the base class Socket to
+     * create a socket.
      */
     TcpClient() noexcept;
 
+    /**
+     * @brief Default destructor closing the socket,
+     * thus closing any established connection.
+     */
     ~TcpClient() noexcept;
 
     /**
      * @brief Connect to a TCP/IP server.
      * @param[in] ip_address the IP4 address
-     * @param[in] port the port to talk to
+     * @param[in] port the port we want to talk to
      * @return true if connection is established, false if it fails to connect
      * to the server.
      */
@@ -73,11 +83,13 @@ public:
 
     /**
      * @brief explicitly close the socket for disconnection.
+     * @return true if disconnecting was possible, false if not.
      */
     boolean disconnect() noexcept;
 
 private:
 };
+
 /*******************************************************************************
  * EXPORTED VARIABLES
  *******************************************************************************/

@@ -103,7 +103,7 @@ boolean TcpSocket::create() noexcept
     return socket_created;
 }
 
-sint16 TcpSocket::send(void* message, uint16 len) noexcept
+sint16 TcpSocket::send(const void* message, const uint16 len) noexcept
 {
     const boolean socket_open = is_socket_initialized();
     sint16 data_sent = -1;

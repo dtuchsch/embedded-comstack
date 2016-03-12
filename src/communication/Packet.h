@@ -68,6 +68,8 @@ class Packet
 {
 public:
 
+    using DataContainer = std::array< uint8, Size >;
+
     /**
      * @brief Default constructor initializes the write and read position.
      */
@@ -84,6 +86,26 @@ public:
     ~Packet() noexcept
     {
 
+    }
+
+    /**
+     * @brief returns the static size of the packet's data to send or receive.
+     * @return the static size.
+     */
+    constexpr uint16 get_size() const noexcept
+    {
+        return static_cast< uint16 >(m_data.size());
+    }
+
+    const DataContainer& get_data() const noexcept
+    {
+        return m_data;
+    }
+
+    void clear() noexcept
+    {
+        m_write_pos = 0U;
+        m_read_pos = 0U;
     }
 
     /**
@@ -560,8 +582,9 @@ public:
     }
 
 private:
+
     //! This is the container that holds the data stored via << operator.
-    std::array< uint8, Size > m_data;
+    DataContainer m_data;
 
     //! Current position where data is appended in the packet.
     uint32 m_write_pos;

@@ -1,8 +1,8 @@
 /**
- * @file      IpAddress.h
- * @author    dtuchscherer <daniel.tuchscherer@hs-heilbronn.de>
- * @brief     IP Address interface
- * @details   IP Address interface for abstracting pure strings.
+ * @file      Task.h
+ * @author    dtuchscherer <your.email@hs-heilbronn.de>
+ * @brief     short description...
+ * @details   long description...
  * @version   1.0
  * @copyright Copyright (c) 2015, dtuchscherer.
  *            All rights reserved.
@@ -36,17 +36,13 @@
  *            POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef IPADDRESS_H_
-# define IPADDRESS_H_
+#ifndef TASK_H_
+# define TASK_H_
 
 /*******************************************************************************
  * MODULES USED
  *******************************************************************************/
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include "Socket.h"
-#include "ComStack_Types.h"
-
+#include "OSControl.h"
 /*******************************************************************************
  * DEFINITIONS AND MACROS
  *******************************************************************************/
@@ -56,53 +52,83 @@
  *******************************************************************************/
 
 /**
- * @brief IpAddress class interface for interpreting ip addresses as string.
+ * @tparam Priority of the real-time task
+ * @tparam PeriodMicro the period in microseconds the task is called.
  */
-class IpAddress
+template< typename Derived, int Priority, int PeriodMicro >
+struct RTTask: OSControl
 {
-public:
-    /**
-     * @brief Construct the address from a C-style string
-     * @param[in] ip_address the IP4 address as C-style string e.g. "192.168.3.11"
-     * "255.255.255.0" means any ip address.
-     */
-    IpAddress(const char* ip_address) noexcept;
+    using TaskType = RTTask< Derived, Priority, PeriodMicro >;
+
+    RTTask() noexcept :
+    m_task_running(FALSE)
+    {
+        const boolean created = create_rt_task< TaskType::task_helper >(this, m_task_handle);
+    }
+
+    ~RTTask() noexcept
+    {
+        m_task_running = FALSE;
+    }
 
     /**
-     * Default destructor
+     * @brief Helper function that calls the actual rt task,
+     * @remark pthread can not handle member functions so we need this little
+     * helper.
+     * @param[in] we need the object were the actual method to call is. In this
+     * case the context is "this" object.
      */
-    ~IpAddress() noexcept;
+    static void* task_helper(void* context)
+    {
+        return (static_cast< TaskType* >(context))->task();
+    }
 
     /**
-     * @brief get the ip address for socket communication.
-     * @return the ip address in host-byte-order
+     * @brief Called once before the real-time loop is entered.
      */
-    uint32 get_ip_address() const noexcept;
+    void pre() noexcept
+    {
+        static_cast< Derived* >(this)->pre();
+    }
 
     /**
-     * @brief creates a structure for connecting and listening.
-     * @param[in] ip_host_byte_order the IP4 address in host-byte-order
-     * @param[in] port the port to connect to
-     * @param[out] addr the structure to store the ip info to.
+     * @brief Periodically called.
      */
-    void create_address_struct(const uint32 ip_host_byte_order,
-                               const uint16 port, sockaddr_in& addr) noexcept;
-
-private:
+    void update() noexcept
+    {
+        static_cast< Derived* >(this)->update();
+    }
 
     /**
-     * @brief Try to build a byte representation out of the address given as
-     * string.
-     * @param[in] ip the IP4 address as C-style string
-     * @return true if the ip address is valid, false if not.
+     * @brief Called once after the execution of the real-time task.
      */
-    boolean is_valid(const char* ip) noexcept;
+    void post() noexcept
+    {
+        static_cast< Derived* >(this)->post();
+    }
 
-    //! the address in network-byte-order
-    uint32 m_address_binary;
+    /**
+     * @brief
+     */
+    void* task() noexcept
+    {
+        m_task_running = TRUE;
+        pre();
+        rt_task< Priority, PeriodMicro, TaskType >(m_task_running, *this);
+        post();
+    }
 
-    //! if the configuration of the given ip was successful or not.
-    boolean m_valid_ip;
+    //! Statically known priority of the real-time task
+    static constexpr int m_priority = Priority;
+
+    //! Statically known period in microseconds.
+    static constexpr int m_period = PeriodMicro;
+
+    //! The handle of the task
+    TaskHandle m_task_handle;
+
+    //! if the loop of the thread will run or not.
+    boolean m_task_running;
 };
 
 /*******************************************************************************
@@ -113,4 +139,4 @@ private:
  * EXPORTED FUNCTIONS
  *******************************************************************************/
 
-#endif /* IPADDRESS_H_ */
+#endif /* TASK_H_ */

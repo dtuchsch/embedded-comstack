@@ -1,6 +1,6 @@
 /**
  * @file      IpAddress.cpp
- * @author    dtuchscherer <your.email@hs-heilbronn.de>
+ * @author    dtuchscherer <daniel.tuchscherer@hs-heilbronn.de>
  * @brief     short description...
  * @details   long description...
  * @version   1.0

@@ -1,8 +1,9 @@
 /**
- * @file      IpAddress.h
+ * @file      TcpServer.cpp
  * @author    dtuchscherer <daniel.tuchscherer@hs-heilbronn.de>
- * @brief     IP Address interface
- * @details   IP Address interface for abstracting pure strings.
+ * @brief     Ethernet TCP/IP Server implementation
+ * @details   This is the module implementing the listening for and accepting of
+ *            connections from TCP Clients.
  * @version   1.0
  * @copyright Copyright (c) 2015, dtuchscherer.
  *            All rights reserved.
@@ -36,16 +37,10 @@
  *            POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef IPADDRESS_H_
-# define IPADDRESS_H_
-
 /*******************************************************************************
  * MODULES USED
  *******************************************************************************/
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include "Socket.h"
-#include "ComStack_Types.h"
+#include "TcpServer.h"
 
 /*******************************************************************************
  * DEFINITIONS AND MACROS
@@ -55,62 +50,100 @@
  * TYPEDEFS, ENUMERATIONS, CLASSES
  *******************************************************************************/
 
-/**
- * @brief IpAddress class interface for interpreting ip addresses as string.
- */
-class IpAddress
-{
-public:
-    /**
-     * @brief Construct the address from a C-style string
-     * @param[in] ip_address the IP4 address as C-style string e.g. "192.168.3.11"
-     * "255.255.255.0" means any ip address.
-     */
-    IpAddress(const char* ip_address) noexcept;
-
-    /**
-     * Default destructor
-     */
-    ~IpAddress() noexcept;
-
-    /**
-     * @brief get the ip address for socket communication.
-     * @return the ip address in host-byte-order
-     */
-    uint32 get_ip_address() const noexcept;
-
-    /**
-     * @brief creates a structure for connecting and listening.
-     * @param[in] ip_host_byte_order the IP4 address in host-byte-order
-     * @param[in] port the port to connect to
-     * @param[out] addr the structure to store the ip info to.
-     */
-    void create_address_struct(const uint32 ip_host_byte_order,
-                               const uint16 port, sockaddr_in& addr) noexcept;
-
-private:
-
-    /**
-     * @brief Try to build a byte representation out of the address given as
-     * string.
-     * @param[in] ip the IP4 address as C-style string
-     * @return true if the ip address is valid, false if not.
-     */
-    boolean is_valid(const char* ip) noexcept;
-
-    //! the address in network-byte-order
-    uint32 m_address_binary;
-
-    //! if the configuration of the given ip was successful or not.
-    boolean m_valid_ip;
-};
+/*******************************************************************************
+ * PROTOTYPES OF LOCAL FUNCTIONS
+ *******************************************************************************/
 
 /*******************************************************************************
  * EXPORTED VARIABLES
  *******************************************************************************/
 
 /*******************************************************************************
+ * GLOBAL MODULE VARIABLES
+ *******************************************************************************/
+
+/*******************************************************************************
  * EXPORTED FUNCTIONS
  *******************************************************************************/
 
-#endif /* IPADDRESS_H_ */
+/*******************************************************************************
+ * FUNCTION DEFINITIONS
+ *******************************************************************************/
+TcpServer::TcpServer() noexcept :
+TcpSocket()
+{
+
+}
+
+TcpServer::~TcpServer() noexcept
+{
+
+}
+
+boolean TcpServer::listen(IpAddress& ip_address, const uint16 port) noexcept
+{
+    boolean listen_success = FALSE;
+
+    // first build the address
+    uint32 ip = ip_address.get_ip_address();
+    struct sockaddr_in client;
+    ip_address.create_address_struct(ip, port, client);
+    const auto handle = get_socket_handle();
+
+    // bind the port to the socket
+    const int bound = ::bind(handle, reinterpret_cast< sockaddr * >(&client),
+                             sizeof(client));
+
+    if ( bound >= 0 )
+    {
+        // make that socket a listening socket that listens on the port bound.
+        const int li = ::listen(handle, 10);
+
+        if ( li >= 0 )
+        {
+            listen_success = TRUE;
+        }
+        else
+        {
+            m_last_error = errno;
+            listen_success = FALSE;
+        }
+    }
+    else
+    {
+        m_last_error = errno;
+        listen_success = FALSE;
+    }
+
+    return listen_success;
+}
+
+boolean TcpServer::accept() noexcept
+{
+    boolean accepted = FALSE;
+
+    struct sockaddr_in client;
+    socklen_t length = sizeof(client);
+    const SocketHandleType handle = get_socket_handle();
+
+    // accept the connection on the socket.
+    const SocketHandleType data_socket = ::accept(
+            handle, reinterpret_cast< sockaddr* >(&client), &length);
+
+    if ( data_socket >= 0 )
+    {
+        // close the server-side socket
+        close_socket();
+
+        // assign the new one we send and receive data.
+        assign(data_socket);
+        accepted = TRUE;
+    }
+    else
+    {
+        m_last_error = errno;
+        accepted = FALSE;
+    }
+
+    return accepted;
+}

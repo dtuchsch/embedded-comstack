@@ -53,8 +53,8 @@
 #  include <arpa/inet.h>
 # endif
 
+#include "Packet.h"
 #include "Socket.h"
-#include "ComStack_Types.h"
 
 /*******************************************************************************
  * DEFINITIONS AND MACROS
@@ -87,8 +87,7 @@ public:
      * @param[in] len is the length to send
      * @return the number of bytes that have been sent or -1 if there is an error
      */
-    sint16 send(void* message, uint16 len)
-            noexcept;
+    sint16 send(const void* message, uint16 len) noexcept;
 
     /**
      * @brief Receive via the TCP/IP socket

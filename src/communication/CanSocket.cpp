@@ -154,8 +154,10 @@ sint8 CanSocket::send(const uint16 can_id, const CanDataType& data_ref,
             frame.data[i] = data_ref[i];
         }
 
+        const auto handle = get_socket_handle();
+
         // We need to transmit the size of struct can_frame with a POSIX write.
-        const auto send_res = write(get_socket_handle(), &frame, m_can_mtu);
+        const auto send_res = write(handle, &frame, m_can_mtu);
         data_sent = static_cast< sint8 >(send_res);
 
         // Check if the desired length was transmitted over the socket.
@@ -185,7 +187,8 @@ sint8 CanSocket::receive(uint16& can_id, CanDataType& data_ref) noexcept
     if ( is_can_initialized() == TRUE )
     {
         struct can_frame frame;
-        ssize_t nbytes = read(get_socket_handle(), &frame, m_can_mtu);
+        const auto handle = get_socket_handle();
+        ssize_t nbytes = read(handle, &frame, m_can_mtu);
         can_received = static_cast< sint8 >(nbytes);
 
         // check if data is on the socket to receive
@@ -233,7 +236,8 @@ sint8 CanSocket::receive(uint16& can_id, CanDataType& data_ref,
         if ( event > 0 )
         {
             struct can_frame frame;
-            const auto nbytes = read(get_socket_handle(), &frame, m_can_mtu);
+            const auto handle = get_socket_handle();
+            const auto nbytes = read(handle, &frame, m_can_mtu);
             can_received = static_cast< sint8 >(nbytes);
 
             // check if the read from the socket was successful
@@ -330,9 +334,11 @@ boolean CanSocket::bind_if_socket() noexcept
     // Bind the interface number to the socket.
     m_sockaddr.can_ifindex = m_ifr.ifr_ifindex;
 
+    const auto handle = get_socket_handle();
+
     // Bind the socket onto the can interface.
-    int bind_res = bind(get_socket_handle(), (struct sockaddr *) &m_sockaddr,
-                        sizeof(m_sockaddr));
+    const int bind_res = bind(handle, (struct sockaddr *) &m_sockaddr,
+                              sizeof(m_sockaddr));
 
     // Check if binding the socket to the interface was successful.
     // It's negative if there was an error.

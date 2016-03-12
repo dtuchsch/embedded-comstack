@@ -108,7 +108,7 @@ public:
     }
 
     /**
-     * @brief Destructor of Socket.
+     * @brief Destructor closes the socket.
      */
     ~Socket() noexcept
     {
@@ -117,7 +117,8 @@ public:
     }
 
     /**
-     * @brief closes the socket
+     * @brief Closes the socket explicitly.
+     * @return true if a close was successful, false if not.
      */
     boolean close_socket()
     {
@@ -137,15 +138,15 @@ public:
                 closed = FALSE;
                 m_last_error = errno;
             }
-
-            return closed;
         }
+
+        return closed;
     }
 
     /**
      * @brief Gets the last error of the socket communication for
      * error handling purposes.
-     * @return The last stored error from errno.
+     * @return The last stored error in the socket communication from errno.
      */
     SocketErrorType get_last_error() const noexcept
     {
@@ -163,7 +164,7 @@ public:
 
     /**
      * @brief If the interface is initialized.
-     * @return if the interface is initialized
+     * @return true if the socket is open, false if not.
      */
     boolean is_socket_initialized() noexcept
     {
@@ -229,18 +230,53 @@ public:
 protected:
 
     /**
-     * @brief A socket will be opened.
+     * @brief A socket will be opened. Because the parameters for opening a
+     * socket strongly relies on the protocol this method calls a method
+     * of the class derived.
      * @return true if the socket creation was successful, false if not.
      */
-    bool create() noexcept
+    boolean create() noexcept
     {
-        // CRTP
-        return static_cast< Derived* >(this)->create();
+        boolean created = FALSE;
+
+        // only if the current socket is closed
+        if ( is_socket_initialized() == FALSE )
+        {
+            // CRTP
+            created = static_cast< Derived* >(this)->create();
+        }
+        else
+        {
+            created = FALSE;
+        }
+
+        return created;
     }
 
     /**
-     * @brief The socket handle for the derived classes as reference.
-     * @return the socket handle as reference to write and read
+     * @brief Assign a new socket.
+     */
+    boolean assign(const SocketHandleType& new_handle) noexcept
+    {
+        boolean created = FALSE;
+
+        // only if the current socket is closed
+        if ( is_socket_initialized() == FALSE )
+        {
+            m_socket = new_handle;
+            created = TRUE;
+        }
+        else
+        {
+            created = FALSE;
+        }
+
+        return created;
+    }
+
+    /**
+     * @brief The socket handle for the derived classes as a reference.
+     * @return the socket number as reference for write and read
      */
     SocketHandleType& get_socket_handle() noexcept
     {
@@ -252,6 +288,7 @@ protected:
 
     //! stores the last error in this attribute
     SocketErrorType m_last_error;
+
 private:
 
     //! true if everything is set up and the instance can receive and send data
