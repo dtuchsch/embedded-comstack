@@ -97,9 +97,17 @@ public:
         return static_cast< uint16 >(m_data.size());
     }
 
+    /**
+     * @brief direct link to the data.
+     */
     const DataContainer& get_data() const noexcept
     {
         return m_data;
+    }
+
+    const Packet& get_packet() const noexcept
+    {
+        return *this;
     }
 
     void clear() noexcept
@@ -578,6 +586,18 @@ public:
     Packet& operator <<(const char* data) noexcept
     {
         append(data);
+        return *this;
+    }
+
+protected:
+
+    DataContainer& get_data() noexcept
+    {
+        return m_data;
+    }
+
+    Packet& get_packet() noexcept
+    {
         return *this;
     }
 

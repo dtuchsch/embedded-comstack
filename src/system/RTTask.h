@@ -58,32 +58,27 @@
  * @tparam PeriodMicro the period in microseconds the task is called.
  */
 template< typename Derived, int Priority, int PeriodMicro >
-class RTTask: OSControl
+class RTTask: public OSControl
 {
 public:
+    // Get the type for giving it to the template method of OSControl.
     using TaskType = RTTask< Derived, Priority, PeriodMicro >;
 
+    /**
+     * @brief Default constructor creating the real-time task.
+     */
     RTTask() noexcept :
     m_task_running(FALSE)
     {
-        const boolean created = create_rt_task< TaskType::task_helper >(this, m_task_handle);
-    }
 
-    ~RTTask() noexcept
-    {
-        m_task_running = FALSE;
     }
 
     /**
-     * @brief Helper function that calls the actual rt task,
-     * @remark pthread can not handle member functions so we need this little
-     * helper.
-     * @param[in] we need the object were the actual method to call is. In this
-     * case the context is "this" object.
+     * @brief Cancels the real-time task.
      */
-    static void* task_helper(void* context)
+    ~RTTask() noexcept
     {
-        return (static_cast< TaskType* >(context))->task();
+        m_task_running = FALSE;
     }
 
     /**
@@ -111,14 +106,28 @@ public:
     }
 
     /**
-     * @brief
+     * @brief This is entering the loop after the thread is created.
+     * Setting the priority of this task and the scheduler type.
+     * In this loop the update() method is called periodically.
      */
-    void* task() noexcept
+    void* task_entry() noexcept
     {
         m_task_running = TRUE;
         pre();
         rt_task< Priority, PeriodMicro, TaskType >(m_task_running, *this);
         post();
+    }
+
+    /**
+     * @brief Helper function that calls the actual rt task,
+     * @remark pthread can not handle member functions so we need this little
+     * helper.
+     * @param[in] we need the object were the actual method to call is. In this
+     * case the context is "this" object.
+     */
+    static void* thread_helper(void* context)
+    {
+        return (static_cast< TaskType* >(context))->task_entry();
     }
 
     //! Statically known priority of the real-time task
@@ -128,6 +137,17 @@ public:
     static constexpr int m_period = PeriodMicro;
 
 protected:
+
+    boolean create_thread() noexcept
+    {
+        return create_rt_task< TaskType::thread_helper >(this, m_task_handle);
+    }
+
+    boolean close_thread() noexcept
+    {
+        return close_rt_task(m_task_handle);
+    }
+
     //! if the loop of the thread will run or not.
     boolean m_task_running;
 
@@ -138,6 +158,22 @@ private:
 
 };
 
+template< typename Derived, int Priority, int PeriodMicro >
+class RTThread : public RTTask< Derived, Priority, PeriodMicro >
+{
+public:
+
+    RTThread() noexcept
+    {
+        const boolean created = this->create_thread();
+    }
+
+    ~RTThread() noexcept
+    {
+        const boolean closed = this->close_thread();
+    }
+};
+
 /*******************************************************************************
  * EXPORTED VARIABLES
  *******************************************************************************/
@@ -146,4 +182,4 @@ private:
  * EXPORTED FUNCTIONS
  *******************************************************************************/
 
-#endif /* TASK_H_ */
+#endif /* RTTASK_H_ */

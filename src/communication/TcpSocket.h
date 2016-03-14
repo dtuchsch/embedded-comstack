@@ -96,7 +96,7 @@ public:
      * @return how much data has been received. if there is an error the return
      * is smaller than 0.
      */
-    sint16 receive(void* message, uint16 len) noexcept;
+    sint16 receive(void* message, const uint16 len) noexcept;
 
     /**
      * @brief Create a TCP socket

@@ -45,6 +45,7 @@
  * MODULES USED
  *******************************************************************************/
 # include <sys/socket.h>
+# include <fcntl.h>
 # include <unistd.h>
 # include <cerrno>
 # include "ComStack_Types.h"
@@ -97,7 +98,8 @@ public:
     m_type(type),
     m_socket(get_invalid_alias()),
     m_last_error(0),
-    m_socket_init(FALSE)
+    m_socket_init(FALSE),
+    m_is_blocking(TRUE)
     {
         const boolean sock_created = create();
 
@@ -131,6 +133,7 @@ public:
 
             if ( cl == 0 )
             {
+                m_socket_init = FALSE;
                 closed = TRUE;
             }
             else
@@ -227,6 +230,52 @@ public:
         return response_on_socket;
     }
 
+    /**
+     * @brief Set the socket into blocking or non-blocking mode.
+     * @return true if it was successful changed, false if not.
+     */
+    boolean set_blocking(const boolean blocking)
+    {
+        boolean success = FALSE;
+
+        if ( is_socket_initialized() == TRUE )
+        {
+            int status = fcntl(m_socket, F_GETFL);
+
+            if ( status >= 0 )
+            {
+                if ( blocking == TRUE )
+                {
+                    status = fcntl(m_socket, F_SETFL, status & ~O_NONBLOCK);
+                    success = TRUE;
+                }
+                else
+                {
+                    status = fcntl(m_socket, F_SETFL, status | O_NONBLOCK);
+                    success = TRUE;
+                }
+            }
+
+            if ( status >= 0 )
+            {
+                m_is_blocking = blocking;
+                success = TRUE;
+            }
+            else
+            {
+                m_last_error = errno;
+                success = FALSE;
+            }
+        }
+
+        return success;
+    }
+
+    boolean is_blocking() const noexcept
+    {
+        return m_is_blocking;
+    }
+
 protected:
 
     /**
@@ -264,6 +313,7 @@ protected:
         if ( is_socket_initialized() == FALSE )
         {
             m_socket = new_handle;
+            m_socket_init = TRUE;
             created = TRUE;
         }
         else
@@ -296,6 +346,9 @@ private:
 
     //! this stores the socket handle.
     SocketHandleType m_socket;
+
+    //! Either the socket is in blocking or non-blocking mode.
+    boolean m_is_blocking;
 
 };
 

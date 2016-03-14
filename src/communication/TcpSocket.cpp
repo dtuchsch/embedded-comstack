@@ -127,7 +127,7 @@ sint16 TcpSocket::send(const void* message, const uint16 len) noexcept
     return data_sent;
 }
 
-sint16 TcpSocket::receive(void* message, uint16 len) noexcept
+sint16 TcpSocket::receive(void* message, const uint16 len) noexcept
 {
     const boolean socket_open = is_socket_initialized();
     sint16 data_received = -1;

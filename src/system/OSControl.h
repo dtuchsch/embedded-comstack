@@ -113,6 +113,27 @@ public:
     }
 
     /**
+     * @brief Waits until the thread is terminated.
+     */
+    boolean close_rt_task(TaskHandle& handle) noexcept
+    {
+        boolean closed = FALSE;
+
+        const int joined = pthread_join(handle.m_handle, NULL_PTR);
+
+        if ( joined == 0 )
+        {
+            closed = TRUE;
+        }
+        else
+        {
+            closed = FALSE;
+        }
+
+        return closed;
+    }
+
+    /**
      * @brief The RT Task to call. This will enter a loop as long as the
      * running variable is set to true.
      * @param running
@@ -136,15 +157,13 @@ public:
                                                        &sched_param);
         if ( prio_policy_set == -1 )
         {
-            perror("sched_setscheduler failed");
-            exit(-1);
+
         }
 
         /* Lock memory */
         if ( mlockall(MCL_CURRENT | MCL_FUTURE) == -1 )
         {
-            perror("mlockall failed");
-            exit(-2);
+
         }
 
         /* Pre-fault our stack */

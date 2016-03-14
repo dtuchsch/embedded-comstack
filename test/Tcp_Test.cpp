@@ -53,11 +53,11 @@
  * TYPEDEFS, ENUMERATIONS, CLASSES
  *******************************************************************************/
 
-class ServerTask : public RTTask< ServerTask, 80, 500000 >
+class ServerTask : public RTThread< ServerTask, 80, 500000 >
 {
 public:
     ServerTask() noexcept :
-    RTTask()
+    RTThread()
     {
 
     }

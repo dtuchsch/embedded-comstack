@@ -133,7 +133,7 @@ boolean TcpServer::accept() noexcept
     if ( data_socket >= 0 )
     {
         // close the server-side socket
-        close_socket();
+        const boolean closed = close_socket();
 
         // assign the new one we send and receive data.
         assign(data_socket);
