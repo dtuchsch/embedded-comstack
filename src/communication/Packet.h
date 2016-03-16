@@ -105,15 +105,64 @@ public:
         return m_data;
     }
 
+    /**
+     * @brief the complete packet as a constant reference.
+     */
     const Packet& get_packet() const noexcept
     {
         return *this;
     }
 
+    Packet& get_packet() noexcept
+    {
+        return *this;
+    }
+
+    /**
+     * @brief Clearing the indices for a new storage.
+     */
     void clear() noexcept
     {
         m_write_pos = 0U;
         m_read_pos = 0U;
+    }
+
+    /**
+     * @brief This method is extremly helpful for returning a type T variable from
+     * the packet without modifying it from a given position.
+     * @tparam T the value type to return
+     * @tparam Position the position at what the value begins.
+     */
+    template< typename T, std::size_t Position >
+    T peek() const noexcept
+    {
+        static_assert(std::is_arithmetic< T >::value, "Type must be integral or floating point.");
+        static_assert(Position < Size, "The position to read is greater than the actual Packet size.");
+        using MyType = T;
+        MyType data{static_cast< MyType >(0)};
+        const MyType* data_ptr = reinterpret_cast< const MyType* >(&m_data[Position]);
+        data = from_network< MyType >(*data_ptr);
+        return data;
+    }
+
+    /**
+     * @brief This will store a value of template parameter T at the given position
+     * into the packet with network-byte-order.
+     */
+    template< typename T, std::size_t Position >
+    void store(const T& data) noexcept
+    {
+        static_assert(std::is_arithmetic< T >::value, "Type must be integral or floating point.");
+        static_assert(Position < Size, "The position to write is greater than the actual Packet size.");
+        using MyType = T;
+
+        static constexpr auto bytes = sizeof(T);
+
+        // swap to network-byte-order
+        T network_data = to_network< T >(data);
+        // we need it byte by byte.
+        const uint8* data_ptr = reinterpret_cast< const uint8* >(&network_data);
+        std::memcpy(&m_data[Position], data_ptr, bytes);
     }
 
     /**
@@ -177,6 +226,23 @@ public:
             std::memcpy(&m_data[m_write_pos], data, bytes_to_write);
             m_write_pos += bytes_to_write;
         }
+    }
+
+    /**
+     * @brief Skipping the following bytes incrementing the read position.
+     * @param[in] bytes to skip
+     */
+    boolean skip(const std::size_t bytes) noexcept
+    {
+        boolean skipped = FALSE;
+
+        if ( is_readable(bytes) == TRUE )
+        {
+            m_read_pos += bytes;
+            skipped = TRUE;
+        }
+
+        return skipped;
     }
 
     /**
@@ -274,7 +340,7 @@ public:
 
         if ( is_readable(bytes_to_read) )
         {
-            sint16* data_ptr = reinterpret_cast< sint16* >(&m_data[m_read_pos]);
+            const sint16* data_ptr = reinterpret_cast< const sint16* >(&m_data[m_read_pos]);
             data = from_network< sint16 >(*data_ptr);
             m_read_pos += bytes_to_read;
         }
@@ -295,7 +361,7 @@ public:
 
         if ( is_readable(bytes_to_read) )
         {
-            uint32* data_ptr = reinterpret_cast< uint32* >(&m_data[m_read_pos]);
+            const uint32* data_ptr = reinterpret_cast< const uint32* >(&m_data[m_read_pos]);
             data = from_network< uint32 >(*data_ptr);
             m_read_pos += bytes_to_read;
         }
@@ -315,7 +381,7 @@ public:
 
         if ( is_readable(bytes_to_read) )
         {
-            sint32* data_ptr = reinterpret_cast< sint32* >(&m_data[m_read_pos]);
+            const sint32* data_ptr = reinterpret_cast< const sint32* >(&m_data[m_read_pos]);
             data = from_network< sint32 >(*data_ptr);
             m_read_pos += bytes_to_read;
         }
@@ -335,7 +401,7 @@ public:
 
         if ( is_readable(bytes_to_read) )
         {
-            uint64* data_ptr = reinterpret_cast< uint64* >(&m_data[m_read_pos]);
+            const uint64* data_ptr = reinterpret_cast< const uint64* >(&m_data[m_read_pos]);
             data = from_network< uint64 >(*data_ptr);
             m_read_pos += bytes_to_read;
         }
@@ -355,7 +421,7 @@ public:
 
         if ( is_readable(bytes_to_read) )
         {
-            sint64* data_ptr = reinterpret_cast< sint64* >(&m_data[m_read_pos]);
+            const sint64* data_ptr = reinterpret_cast< const sint64* >(&m_data[m_read_pos]);
             data = from_network< sint64 >(*data_ptr);
             m_read_pos += bytes_to_read;
         }
@@ -594,11 +660,6 @@ protected:
     DataContainer& get_data() noexcept
     {
         return m_data;
-    }
-
-    Packet& get_packet() noexcept
-    {
-        return *this;
     }
 
 private:

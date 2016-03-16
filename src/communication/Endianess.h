@@ -74,11 +74,7 @@ enum class EndianType
 };
 
 template< typename T, size_t Sz >
-T swap_bytes(const T& val) noexcept
-{
-    printf("called %f\n", val);
-    return val;
-}
+T swap_bytes(const T& val) noexcept;
 
 /**
  * @brief template specialization to swap an unsigned byte.
@@ -186,6 +182,38 @@ inline sint64 swap_bytes< sint64, 8 >(const sint64& val) noexcept
     temp |= ((val >> 8U)  & 0x00000000FF000000ULL); // byte 4 to 3
     temp |= ((val << 8U)  & 0x000000FF00000000ULL); // byte 3 to 4
     return temp;
+}
+
+template< >
+inline float32 swap_bytes< float32, 4 >(const float32& fval) noexcept
+{
+    float32 float_swapped = 0.0F;
+    float32 temp = fval;
+    uint8* float_to_convert = reinterpret_cast< uint8* >(&temp);
+    uint8* to_convert = reinterpret_cast< uint8* >(&float_swapped);
+    to_convert[0] = float_to_convert[3];
+    to_convert[1] = float_to_convert[2];
+    to_convert[2] = float_to_convert[1];
+    to_convert[3] = float_to_convert[0];
+    return float_swapped;
+}
+
+template< >
+inline float64 swap_bytes< float64, 8 >(const float64& fval) noexcept
+{
+    float64 float_swapped = 0.0F;
+    float64 temp = fval;
+    uint8* float_to_convert = reinterpret_cast< uint8* >(&temp);
+    uint8* to_convert = reinterpret_cast< uint8* >(&float_swapped);
+    to_convert[0] = float_to_convert[7];
+    to_convert[1] = float_to_convert[6];
+    to_convert[2] = float_to_convert[5];
+    to_convert[3] = float_to_convert[4];
+    to_convert[4] = float_to_convert[3];
+    to_convert[5] = float_to_convert[2];
+    to_convert[6] = float_to_convert[1];
+    to_convert[7] = float_to_convert[0];
+    return float_swapped;
 }
 
 /**
