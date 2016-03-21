@@ -106,6 +106,14 @@ public:
     }
 
     /**
+     * @brief direct link to the data.
+     */
+    DataContainer& get_data() noexcept
+    {
+        return m_data;
+    }
+
+    /**
      * @brief the complete packet as a constant reference.
      */
     const Packet& get_packet() const noexcept
@@ -155,11 +163,10 @@ public:
         static_assert(std::is_arithmetic< T >::value, "Type must be integral or floating point.");
         static_assert(Position < Size, "The position to write is greater than the actual Packet size.");
         using MyType = T;
-
         static constexpr auto bytes = sizeof(T);
 
         // swap to network-byte-order
-        T network_data = to_network< T >(data);
+        MyType network_data = to_network< MyType >(data);
         // we need it byte by byte.
         const uint8* data_ptr = reinterpret_cast< const uint8* >(&network_data);
         std::memcpy(&m_data[Position], data_ptr, bytes);
@@ -657,10 +664,10 @@ public:
 
 protected:
 
-    DataContainer& get_data() noexcept
-    {
-        return m_data;
-    }
+//    DataContainer& get_data() noexcept
+//    {
+//        return m_data;
+//    }
 
 private:
 
