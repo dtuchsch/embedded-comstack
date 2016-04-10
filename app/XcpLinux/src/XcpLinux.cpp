@@ -1,10 +1,10 @@
 /**
- * @file      TcpSocket.h
- * @author    dtuchscherer <daniel.tuchscherer@hs-heilbronn.de>
- * @brief     TCP socket implementation for sending, receiving and polling.
- * @details   TCP socket implementation for sending, receiving and polling.
+ * @file 	  XcpLinux.cpp
+ * @author 	  dtuchsch <daniel.tuchscherer@hs-heilbronn.de>
+ * @brief	  Library for the use of XCP under Linux.
+ * @details   long description...
  * @version   1.0
- * @copyright Copyright (c) 2015, dtuchscherer.
+ * @copyright Copyright (c) 2015, dtuchsch.
  *            All rights reserved.
  *
  *            Redistributions and use in source and binary forms, with
@@ -36,24 +36,10 @@
  *            POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef TCPSOCKET_H_
-# define TCPSOCKET_H_
-
 /*******************************************************************************
  * MODULES USED
  *******************************************************************************/
-
-# ifdef _WIN32
-#  include <winsock2.h>
-# else
-#  include <cstring>
-#  include <sys/types.h>
-#  include <netinet/in.h>
-#  include <netdb.h>
-#  include <arpa/inet.h>
-# endif
-
-#include "Socket.h"
+#include "TcpServer.h"
 
 /*******************************************************************************
  * DEFINITIONS AND MACROS
@@ -63,58 +49,29 @@
  * TYPEDEFS, ENUMERATIONS, CLASSES
  *******************************************************************************/
 
-/**
- * @brief Concrete class for a Ethernet TCP/IP communication.
- */
-class TcpSocket: public Socket< TcpSocket >
-{
-public:
-
-    /**
-     * @brief Default constructor
-     */
-    TcpSocket() noexcept;
-
-    /**
-     * @brief Default destructor
-     */
-    ~TcpSocket() noexcept;
-
-    /**
-     * @brief Send via the TCP/IP socket
-     * @param[in] message is the data to send
-     * @param[in] len is the length to send
-     * @return the number of bytes that have been sent or -1 if there is an error
-     */
-    sint16 send(const void* message, uint16 len) noexcept;
-
-    /**
-     * @brief Receive via the TCP/IP socket
-     * @param[out] is the message container to store the received data
-     * @param[in] the length to receive
-     * @return how much data has been received. if there is an error the return
-     * is smaller than 0.
-     */
-    sint16 receive(void* message, const uint16 len) noexcept;
-
-    /**
-     * @brief Create a TCP socket
-     * @return true if the socket is open or false if there was an error on
-     * creation.
-     */
-    boolean create() noexcept;
-
-protected:
-
-private:
-};
+/*******************************************************************************
+ * PROTOTYPES OF LOCAL FUNCTIONS
+ *******************************************************************************/
 
 /*******************************************************************************
  * EXPORTED VARIABLES
  *******************************************************************************/
 
 /*******************************************************************************
+ * GLOBAL MODULE VARIABLES
+ *******************************************************************************/
+
+/*******************************************************************************
  * EXPORTED FUNCTIONS
  *******************************************************************************/
 
-#endif /* TCPSOCKET_H_ */
+/*******************************************************************************
+ * FUNCTION DEFINITIONS
+ *******************************************************************************/
+
+int main()
+{
+    TcpServer server;
+    server.set_blocking(FALSE);
+    return 0;
+}

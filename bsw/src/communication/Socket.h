@@ -280,7 +280,7 @@ public:
 # ifdef __unix__
                     status = fcntl(m_socket, F_SETFL, status & ~O_NONBLOCK);
 # elif defined (_WIN32)
-                    const auto nblock = 0;
+                    u_long nblock = 0;
                     status = ioctlsocket(m_socket, FIONBIO, &nblock);
 # else
 #  error "OS not defined!"
@@ -292,7 +292,7 @@ public:
 # ifdef __unix__
                     status = fcntl(m_socket, F_SETFL, status | O_NONBLOCK);
 # elif defined (_WIN32)
-                    const auto nblock = 1;
+                    u_long nblock = 1;
                     status = ioctlsocket(m_socket, FIONBIO, &nblock);
 # else
 #  error "OS not defined!"

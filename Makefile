@@ -28,6 +28,7 @@ VPATH+=$(BSW_BASE_SRC_DIR) $(BSW_BASE_SRC_DIR)/communication $(BSW_BASE_SRC_DIR)
 	
 # //////////////////////////////////////////////////////////////////////////////
 include app/SampleApp.mk
+include app/XcpLinux/XcpLinux.mk
 
 ## SPECIFY YOUR LIBRARIES YOU WANT TO LINK AGAINST IN THE LINKING PROCESS
 ifeq ($(BUILD),WINDOWS)
