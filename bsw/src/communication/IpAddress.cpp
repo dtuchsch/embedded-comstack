@@ -95,12 +95,12 @@ boolean IpAddress::is_valid(const char* ip) noexcept
     boolean ip_valid = FALSE;
 
     // we will check here, because inet_addr() call has limited checking.
-    if ( ip == "0.0.0.0" )
+    if ( std::strcmp(ip, "0.0.0.0") == 0 )
     {
         m_address_binary = INADDR_BROADCAST;
         ip_valid = TRUE;
     }
-    else if ( ip == "255.255.255.0" )
+    else if ( std::strcmp(ip, "255.255.255.0") == 0 )
     {
         m_address_binary = INADDR_ANY;
         ip_valid = TRUE;

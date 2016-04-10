@@ -42,11 +42,13 @@
 /*******************************************************************************
  * MODULES USED
  *******************************************************************************/
-#ifdef __unix__
-#include <endian.h>
-#else
-#error "Please #define BYTE_ORDER of your system architecture."
-#endif
+# ifdef __unix__
+#  include <endian.h>
+# elif defined (_WIN32)
+#  define BYTE_ORDER (LITTLE_ENDIAN)
+# else
+#  error "Please #define BYTE_ORDER of your system architecture."
+# endif
 
 /*******************************************************************************
  * DEFINITIONS AND MACROS

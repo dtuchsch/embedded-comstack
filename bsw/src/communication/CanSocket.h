@@ -40,33 +40,33 @@
 
 #ifndef CAN_H_
 # define CAN_H_
-
+# ifndef _WIN32
 /*******************************************************************************
  * MODULES USED
  *******************************************************************************/
 
 /* write and read */
-# include <unistd.h>
+#  include <unistd.h>
 
 /* interface name */
-# include <net/if.h>
+#  include <net/if.h>
 
 /* blocking / non-blocking */
-# include <sys/ioctl.h>
+#  include <sys/ioctl.h>
 
 /* sockaddr structure, protocols and can_filter */
-# include <linux/can.h>
+#  include <linux/can.h>
 
 /* filtering */
-# include <linux/can/raw.h>
+#  include <linux/can/raw.h>
 
-#include <array>        // rx, tx
-#include <cstring>
+#  include <array>        // rx, tx
+#  include <cstring>
 
-#include "Socket.h"
+#  include "Socket.h"
 
 /* @req CAN388 */
-# include "ComStack_Types.h"
+#  include "ComStack_Types.h"
 
 /*******************************************************************************
  * DEFINITIONS AND MACROS
@@ -188,5 +188,5 @@ private:
 /*******************************************************************************
  * EXPORTED FUNCTIONS
  *******************************************************************************/
-
+# endif /* WIN32 */
 #endif /* CAN_H_ */

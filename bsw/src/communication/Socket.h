@@ -44,10 +44,17 @@
 /*******************************************************************************
  * MODULES USED
  *******************************************************************************/
-# include <sys/socket.h>
-# include <fcntl.h>
-# include <unistd.h>
-# include <cerrno>
+# ifdef __unix__
+#  include <sys/socket.h>
+#  include <fcntl.h>
+#  include <unistd.h>
+#  include <cerrno>
+# elif defined(_WIN32)
+#  include <winsock2.h>
+#  include <io.h>
+# else
+#  error "OS not defined!"
+# endif
 # include "ComStack_Types.h"
 
 /*******************************************************************************
@@ -57,6 +64,11 @@
 # ifdef __unix__
 using SocketHandleType = int;
 using SocketErrorType = int;
+# elif defined (_WIN32)
+using SocketHandleType = SOCKET;
+using SocketErrorType = int;
+# else
+#  error "OS not defined!"
 # endif
 
 /*******************************************************************************
@@ -96,11 +108,16 @@ public:
      */
     Socket(SocketType type) noexcept :
     m_type(type),
-    m_socket(get_invalid_alias()),
     m_last_error(0),
     m_socket_init(FALSE),
+    m_socket(get_invalid_alias()),
     m_is_blocking(TRUE)
     {
+# ifdef _WIN32
+        WSADATA wsa_data;
+        WSAStartup(0x0202, &wsa_data);
+# endif
+        
         const boolean sock_created = create();
 
         if ( sock_created == TRUE )
@@ -128,8 +145,16 @@ public:
 
         if ( is_socket_initialized() == TRUE )
         {
+            const sint16 cl =
+# ifdef __unix__
             // close the socket if one is opened only
-            const sint16 cl = ::close(get_socket_handle());
+            ::close(get_socket_handle());
+# elif defined (_WIN32)
+            ::closesocket(get_socket_handle());
+            WSACleanup();
+# else
+#  error "OS not defined!"
+# endif
 
             if ( cl == 0 )
             {
@@ -188,18 +213,19 @@ public:
         boolean response_on_socket = FALSE;
 
         /* OS specific declarations */
-#ifdef _WIN32
-        SOCKET sockOS = (SOCKET)sock;
+# ifdef _WIN32
+        SocketHandleType socket = get_socket_handle();
 
         /* The first argument of the "select()" system call must be the length
          * of the bitfield. Under Windows the first argument of "select()" should be 0. */
         nfds = static_cast< SocketHandleType >(0);
 
-#elif defined __unix__
+# elif defined __unix__
         SocketHandleType socket = get_socket_handle();
         nfds = static_cast< SocketHandleType >(socket + 1);
-#else
-#endif
+# else
+#  error "OS not defined!"
+# endif
 
         struct timeval time_to_wait;
         time_to_wait.tv_sec = static_cast< decltype(time_to_wait.tv_sec) >(0);
@@ -240,18 +266,37 @@ public:
 
         if ( is_socket_initialized() == TRUE )
         {
+# ifdef __unix__
             int status = fcntl(m_socket, F_GETFL);
-
+# elif defined (_WIN32)
+            int status = 1;
+# else
+#  error "OS not defined!"
+# endif
             if ( status >= 0 )
             {
                 if ( blocking == TRUE )
                 {
+# ifdef __unix__
                     status = fcntl(m_socket, F_SETFL, status & ~O_NONBLOCK);
+# elif defined (_WIN32)
+                    const auto nblock = 0;
+                    status = ioctlsocket(m_socket, FIONBIO, &nblock);
+# else
+#  error "OS not defined!"
+# endif
                     success = TRUE;
                 }
                 else
                 {
+# ifdef __unix__
                     status = fcntl(m_socket, F_SETFL, status | O_NONBLOCK);
+# elif defined (_WIN32)
+                    const auto nblock = 1;
+                    status = ioctlsocket(m_socket, FIONBIO, &nblock);
+# else
+#  error "OS not defined!"
+# endif 
                     success = TRUE;
                 }
             }
@@ -349,7 +394,6 @@ private:
 
     //! Either the socket is in blocking or non-blocking mode.
     boolean m_is_blocking;
-
 };
 
 /*******************************************************************************

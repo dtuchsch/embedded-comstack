@@ -15,6 +15,8 @@ BSW_SOURCES=CanSocket.cpp \
 			TcpClient.cpp \
 			TcpServer.cpp \
 			TcpSocket.cpp
+            
+BSW_OBJECTS=$(BSW_SOURCES:.cpp=.o)
 			
 BSW_INCLUDES=$(BSW_BASE_SRC_DIR) \
 				$(BSW_BASE_SRC_DIR)/system \
@@ -23,19 +25,17 @@ BSW_INCLUDES=$(BSW_BASE_SRC_DIR) \
 MY_INCLUDES+=$(addprefix -I,$(BSW_INCLUDES))
 
 VPATH+=$(BSW_BASE_SRC_DIR) $(BSW_BASE_SRC_DIR)/communication $(BSW_BASE_SRC_DIR)/system
-
-# //////////////////////////////////////////////////////////////////////////////
-include application/URSensorhead/URSensorhead.mk
-
-# //////////////////////////////////////////////////////////////////////////////
-include application/URSensorheadSim/URSensorheadSim.mk
 	
 # //////////////////////////////////////////////////////////////////////////////
+include app/SampleApp.mk
 
 ## SPECIFY YOUR LIBRARIES YOU WANT TO LINK AGAINST IN THE LINKING PROCESS
+ifeq ($(BUILD),WINDOWS)
+MY_LIBS+=-lws2_32
+else
 MY_LIBS+=-lrt \
-		-lpthread \
-		-pg
+		-lpthread
+endif
 
 ## SPECIFY DEFINES FOR THE COMPILER
 MY_DEFINES+=-DDEBUG
@@ -96,11 +96,6 @@ install:
 .PHONY: clean
 clean:
 	rm -rf $(BIN_DIR) $(OBJ_DIR)
-
-.PHONY: copy
-copy:
-	sshpass -p "hhn" scp -r $(BIN_DIR)/rt_can root@192.168.3.11:/home/.
-	sshpass -p "hhn" scp -r $(BIN_DIR)/rt_tcp root@192.168.3.11:/home/.
 
 %.o: %.c
 	$(CC) $(CFLAGS) -o $(OBJ_DIR)/$@ -c $<

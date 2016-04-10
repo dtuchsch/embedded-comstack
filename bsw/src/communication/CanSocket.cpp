@@ -41,8 +41,9 @@
 /*******************************************************************************
  * MODULES USED
  *******************************************************************************/
-#include "Debug.h"
-#include "CanSocket.h"
+#ifndef _WIN32
+# include "Debug.h"
+# include "CanSocket.h"
 
 /*******************************************************************************
  * DEFINITIONS AND MACROS
@@ -363,3 +364,4 @@ boolean CanSocket::is_can_initialized() const noexcept
 {
     return m_can_init;
 }
+#endif /* WIN32 */

@@ -42,8 +42,11 @@
 /*******************************************************************************
  * MODULES USED
  *******************************************************************************/
-#include <netinet/in.h>
-#include <arpa/inet.h>
+#ifdef __unix__
+# include <netinet/in.h>
+# include <arpa/inet.h>
+#endif
+
 #include "Socket.h"
 #include "ComStack_Types.h"
 

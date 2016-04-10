@@ -123,7 +123,7 @@ boolean TcpServer::accept() noexcept
     boolean accepted = FALSE;
 
     struct sockaddr_in client;
-    socklen_t length = sizeof(client);
+    int length = sizeof(client);
     const SocketHandleType handle = get_socket_handle();
 
     // accept the connection on the socket.
@@ -134,10 +134,17 @@ boolean TcpServer::accept() noexcept
     {
         // close the server-side socket
         const boolean closed = close_socket();
-
-        // assign the new one we send and receive data.
-        assign(data_socket);
-        accepted = TRUE;
+        
+        if ( closed == TRUE )
+        {
+            // assign the new one we send and receive data.
+            assign(data_socket);
+            accepted = TRUE;
+        }
+        else
+        {
+            accepted = FALSE;
+        }
     }
     else
     {

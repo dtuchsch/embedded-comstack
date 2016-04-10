@@ -110,9 +110,12 @@ sint16 TcpSocket::send(const void* message, const uint16 len) noexcept
 
     // sending only makes sense if at least the socket is open.
     if ( socket_open == TRUE )
-    {
+    {        
+#ifdef _WIN32
+        const char* msg = static_cast< const char* >(message);
+#endif
         const SocketHandleType& handle = get_socket_handle();
-        data_sent = ::send(handle, message, len, 0);
+        data_sent = ::send(handle, msg, len, 0);
 
         if ( data_sent < 0 )
         {
@@ -135,8 +138,11 @@ sint16 TcpSocket::receive(void* message, const uint16 len) noexcept
     // sending only makes sense if at least the socket is open.
     if ( socket_open == TRUE )
     {
+#ifdef _WIN32
+        char* msg = static_cast< char* >(message);
+#endif        
         const SocketHandleType& handle = get_socket_handle();
-        data_received = ::recv(handle, message, len, 0);
+        data_received = ::recv(handle, msg, len, 0);
 
         if ( data_received < 0 )
         {
