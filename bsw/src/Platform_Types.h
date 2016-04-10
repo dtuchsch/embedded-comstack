@@ -97,8 +97,8 @@ typedef unsigned short uint16;           /**!< @req SWS_Platform_00014 This stan
 typedef signed short   sint16;           /**!< @req SWS_Platform_00017 This standard AUTOSAR type shall be of 16 bit signed. */
 typedef unsigned int   uint32;           /**!< @req SWS_Platform_00015 This standard AUTOSAR type shall be 32 bit unsigned. */
 typedef signed int     sint32;           /**!< @req SWS_Platform_00018 This standard AUTOSAR type shall be 32 bit signed. */
-typedef unsigned long long uint64;           /**!< @req SWS_Platform_00066 This standard AUTOSAR type shall be 64 bit unsigned. */
-typedef signed long long    sint64;           /**!< @req SWS_Platform_00067 This standard AUTOSAR type shall be 64 bit signed. */
+typedef unsigned long long uint64;       /**!< @req SWS_Platform_00066 This standard AUTOSAR type shall be 64 bit unsigned. */
+typedef signed long long    sint64;      /**!< @req SWS_Platform_00067 This standard AUTOSAR type shall be 64 bit signed. */
 
 typedef unsigned char  uint8_least;      /**!< @req SWS_Platform_00020 This optimized AUTOSAR type shall be at least 8 bit unsigned. */
 typedef unsigned short uint16_least;     /**!< This optimized type shall be at least 16 bit unsigned. */

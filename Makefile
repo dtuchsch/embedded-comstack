@@ -34,7 +34,7 @@ ifeq ($(BUILD),WINDOWS)
 MY_LIBS+=-lws2_32
 else
 MY_LIBS+=-lrt \
-		-lpthread
+	     -lpthread
 endif
 
 ## SPECIFY DEFINES FOR THE COMPILER

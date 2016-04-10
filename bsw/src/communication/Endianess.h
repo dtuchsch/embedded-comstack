@@ -1,8 +1,9 @@
 /**
  * @file      Endianess.h
  * @author    dtuchscherer <daniel.tuchscherer@hs-heilbronn.de>
- * @brief     short description...
- * @details   long description...
+ * @brief     Endianess interface for byte-swapping
+ * @details   This header interface allows byte-swapping between little-
+ * 			  and big-endian machines.
  * @version   1.0
  * @copyright Copyright (c) 2015, dtuchscherer.
  *            All rights reserved.
@@ -66,18 +67,11 @@
  * EXPORTED FUNCTIONS
  *******************************************************************************/
 
-enum class EndianType
-{
-    EndianType_little,
-    EndianType_big,
-    EndianType_network = EndianType_big,
-    EndianType_intel = EndianType_little,
-    EndianType_motorola = EndianType_big
-};
-
+////////////////////////////////////////////////////////////////////////////////
 template< typename T, size_t Sz >
 T swap_bytes(const T& val) noexcept;
 
+////////////////////////////////////////////////////////////////////////////////
 /**
  * @brief template specialization to swap an unsigned byte.
  * @return this will only return the byte again.
@@ -88,6 +82,7 @@ inline uint8 swap_bytes< uint8, 1 >(const uint8& val) noexcept
     return val;
 }
 
+////////////////////////////////////////////////////////////////////////////////
 /**
  * @brief template specialization to swap an unsgined word.
  * @return an unsigned word with swapped bytes.
@@ -101,6 +96,7 @@ inline uint16 swap_bytes< uint16, 2 >(const uint16& val) noexcept
     return temp;
 }
 
+////////////////////////////////////////////////////////////////////////////////
 /**
  * @brief template specialization to swap an unsgined word.
  * @return a signed word with swapped bytes.
@@ -114,6 +110,7 @@ inline sint16 swap_bytes< sint16, 2 >(const sint16& val) noexcept
     return temp;
 }
 
+////////////////////////////////////////////////////////////////////////////////
 /**
  * @brief Template specialization for swapping 4 bytes of an unsgined double word.
  * @param[in] val the value to byte-swap
@@ -130,6 +127,7 @@ inline uint32 swap_bytes< uint32, 4 >(const uint32& val) noexcept
     return temp;
 }
 
+////////////////////////////////////////////////////////////////////////////////
 /**
  * @brief Template specialization for swapping 4 bytes of a double word.
  * @param[in] val the value to byte-swap
@@ -146,6 +144,7 @@ inline sint32 swap_bytes< sint32, 4 >(const sint32& val) noexcept
     return temp;
 }
 
+////////////////////////////////////////////////////////////////////////////////
 /**
  * @brief Template specialization for swapping 8 bytes of unsigned quad word.
  * @param[in] val to swap the bytes
@@ -166,6 +165,7 @@ inline uint64 swap_bytes< uint64, 8 >(const uint64& val) noexcept
     return temp;
 }
 
+////////////////////////////////////////////////////////////////////////////////
 /**
  * @brief Template specialization for swapping 8 bytes of a signed quad word.
  * @param[in] val to swap the bytes
@@ -186,6 +186,7 @@ inline sint64 swap_bytes< sint64, 8 >(const sint64& val) noexcept
     return temp;
 }
 
+////////////////////////////////////////////////////////////////////////////////
 template< >
 inline float32 swap_bytes< float32, 4 >(const float32& fval) noexcept
 {
@@ -200,6 +201,7 @@ inline float32 swap_bytes< float32, 4 >(const float32& fval) noexcept
     return float_swapped;
 }
 
+////////////////////////////////////////////////////////////////////////////////
 template< >
 inline float64 swap_bytes< float64, 8 >(const float64& fval) noexcept
 {
@@ -218,6 +220,7 @@ inline float64 swap_bytes< float64, 8 >(const float64& fval) noexcept
     return float_swapped;
 }
 
+////////////////////////////////////////////////////////////////////////////////
 /**
  * @brief Convert a value of type T from host-byte-order into network-byte-order
  * which is big endian. A byte swap is only necessary if the host is little
@@ -238,6 +241,7 @@ inline T to_network(const T& value) noexcept
     return convert;
 }
 
+////////////////////////////////////////////////////////////////////////////////
 /**
  * @brief Convert a value of type T from network-byte-order to host-byte-order.
  * A byte swap is only necessary if the host is little endian.

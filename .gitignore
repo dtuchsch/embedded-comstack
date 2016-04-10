@@ -1,0 +1,4 @@
+.project
+*.cproject
+.settings/org.eclipse.core.resources.prefs
+*.o
