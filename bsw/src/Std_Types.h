@@ -48,6 +48,11 @@
 /* Std_Types.h shall include Compiler.h */
 # include "Compiler.h"
 
+#ifdef __cplusplus
+namespace AR
+{
+#endif
+
 /*******************************************************************************
  * DEFINITIONS AND MACROS
  *******************************************************************************/
@@ -65,16 +70,16 @@ typedef unsigned char StatusType;
 
 # define E_NOT_OK (0x01U)
 
-//! Physical state 5V or 3.3V
+/** Physical state 5V or 3.3V */
 # define STD_HIGH (0x01)
 
-//! Physical state 0V
+/** Physical state 0V */
 # define STD_LOW (0x00)
 
-//! Logical state active
+/** Logical state active */
 # define STD_ACTIVE (0x01)
 
-//! Logical state idle
+/** Logical state idle */
 # define STD_IDLE (0x00)
 
 /*
@@ -130,6 +135,10 @@ static_assert(MODULE ## _SW_PATCH_VERSION == SW_PATCH_VERSION,\
 
 # else
 
+# endif
+
+# ifdef __cplusplus
+}
 # endif
 
 #endif /* STD_TYPES_H */

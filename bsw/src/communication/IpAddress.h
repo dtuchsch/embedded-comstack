@@ -48,7 +48,6 @@
 #endif
 
 #include "Socket.h"
-#include "ComStack_Types.h"
 
 /*******************************************************************************
  * DEFINITIONS AND MACROS
@@ -80,7 +79,7 @@ public:
      * @brief get the ip address for socket communication.
      * @return the ip address in host-byte-order
      */
-    uint32 get_ip_address() const noexcept;
+    AR::uint32 get_ip_address() const noexcept;
 
     /**
      * @brief creates a structure for connecting and listening.
@@ -88,8 +87,8 @@ public:
      * @param[in] port the port to connect to
      * @param[out] addr the structure to store the ip info to.
      */
-    void create_address_struct(const uint32 ip_host_byte_order,
-                               const uint16 port, sockaddr_in& addr) noexcept;
+    void create_address_struct(const AR::uint32 ip_host_byte_order,
+                               const AR::uint16 port, sockaddr_in& addr) noexcept;
 
 private:
 
@@ -99,10 +98,10 @@ private:
      * @param[in] ip the IP4 address as C-style string
      * @return true if the ip address is valid, false if not.
      */
-    boolean is_valid(const char* ip) noexcept;
+    AR::boolean is_valid(const char* ip) noexcept;
 
     //! the address in network-byte-order
-    uint32 m_address_binary;
+    AR::uint32 m_address_binary;
 
     //! if the configuration of the given ip was successful or not.
     boolean m_valid_ip;

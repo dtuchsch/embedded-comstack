@@ -79,7 +79,7 @@ TcpClient::~TcpClient() noexcept
 
 }
 
-boolean TcpClient::connect(IpAddress& ip_address, const uint16 port) noexcept
+AR::boolean TcpClient::connect(IpAddress& ip_address, const AR::uint16 port) noexcept
 {
     // return value
     boolean connected_r = FALSE;
@@ -89,7 +89,7 @@ boolean TcpClient::connect(IpAddress& ip_address, const uint16 port) noexcept
     if ( socket_created == TRUE )
     {
         // first build the address
-        uint32 ip = ip_address.get_ip_address();
+        AR::uint32 ip = ip_address.get_ip_address();
         struct sockaddr_in server;
         ip_address.create_address_struct(ip, port, server);
 
@@ -117,7 +117,7 @@ boolean TcpClient::connect(IpAddress& ip_address, const uint16 port) noexcept
     return connected_r;
 }
 
-boolean TcpClient::disconnect() noexcept
+AR::boolean TcpClient::disconnect() noexcept
 {
     return close_socket();
 }

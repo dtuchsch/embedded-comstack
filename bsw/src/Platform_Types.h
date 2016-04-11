@@ -47,6 +47,10 @@
 #  include <stdint.h>
 # endif
 
+# ifdef __cplusplus
+namespace AR
+{
+# endif
 /*******************************************************************************
  * DEFINITIONS AND MACROS
  *******************************************************************************/
@@ -84,9 +88,7 @@
  * TYPEDEFS, ENUMERATIONS, CLASSES											   *
  *******************************************************************************/
 # ifdef __cplusplus
-#  ifdef __unix__
 typedef bool           boolean;
-#  endif
 # else
 typedef unsigned char  boolean;          /**!< @req SWS_Platform_00026 This standard AUTOSAR type shall only be used together with the definitions TRUE and FALSE */
 # endif
@@ -114,5 +116,9 @@ typedef double         float64;          /**!< @req SWS_Platform_00042 This stan
 /*******************************************************************************
  * EXPORTED FUNCTIONS
  *******************************************************************************/
+
+# ifdef __cplusplus
+} /* namespace AR */
+# endif
 
 #endif /* PLATFORM_TYPES_H_ */

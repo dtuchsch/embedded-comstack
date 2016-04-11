@@ -47,7 +47,7 @@ MY_WARNINGS+=-Wall \
 			-Wpedantic
 
 ## SPECIFY YOUR GCC COMPILER FLAGS
-MY_CFLAGS+=
+MY_CFLAGS+=-std=c99
 
 ## WORK-AROUND IF THE CROSS-COMPILER DOESN'T KNOW
 ## -std=c++11
@@ -56,7 +56,11 @@ ifneq ($(CROSS_COMPILE),)
 endif
 
 ## SPECIFY ADDITIONAL G++ COMPILER FLAGS
-MY_CXXFLAGS=-std=c++14 -fno-exceptions -fno-rtti -O0 -g -pg
+ifeq ($(BUILD),RELEASE)
+MY_CXXFLAGS=-std=c++14 -fno-exceptions -fno-rtti -O2
+else
+MY_CXXFLAGS=-std=c++14 -fno-exceptions -fno-rtti -O0 -g3
+endif
 
 # ------------------------------------------------------------------------------
 # GENERIC SETTINGS
@@ -75,8 +79,8 @@ CC=gcc
 CXX=g++
 LD=g++
 CFLAGS=$(INCLUDES) $(DEFINES) $(MY_CFLAGS) $(WARNINGS)
-CXXFLAGS=$(CFLAGS) $(MY_CXXFLAGS)
-LDFLAGS=$(LIBS)
+CXXFLAGS=$(INCLUDES) $(DEFINES) $(MY_CXXFLAGS) $(WARNINGS)
+LDFLAGS=$(LIBS) $(MY_LDFLAGS)
 
 # GENERIC CROSS-COMPILATION
 ifneq ($(CROSS_COMPILE),)

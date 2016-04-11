@@ -80,12 +80,12 @@ TcpServer::~TcpServer() noexcept
 
 }
 
-boolean TcpServer::listen(IpAddress& ip_address, const uint16 port) noexcept
+AR::boolean TcpServer::listen(IpAddress& ip_address, const AR::uint16 port) noexcept
 {
-    boolean listen_success = FALSE;
+    AR::boolean listen_success = FALSE;
 
     // first build the address
-    uint32 ip = ip_address.get_ip_address();
+    AR::uint32 ip = ip_address.get_ip_address();
     struct sockaddr_in client;
     ip_address.create_address_struct(ip, port, client);
     const auto handle = get_socket_handle();
@@ -118,28 +118,37 @@ boolean TcpServer::listen(IpAddress& ip_address, const uint16 port) noexcept
     return listen_success;
 }
 
-boolean TcpServer::accept() noexcept
+AR::boolean TcpServer::accept() noexcept
 {
-    boolean accepted = FALSE;
+    AR::boolean accepted{FALSE};
 
     struct sockaddr_in client;
     int length = sizeof(client);
-    const SocketHandleType handle = get_socket_handle();
+    const SocketHandleType& handle = get_socket_handle();
 
     // accept the connection on the socket.
-    const SocketHandleType data_socket = ::accept(
-            handle, reinterpret_cast< sockaddr* >(&client), &length);
+    const int data_socket = ::accept(handle,
+                                     reinterpret_cast< sockaddr* >(&client),
+                                     &length);
 
-    if ( data_socket >= 0 )
+    if ( data_socket > 0 )
     {
         // close the server-side socket
-        const boolean closed = close_socket();
+        const AR::boolean closed = close_socket();
         
         if ( closed == TRUE )
         {
             // assign the new one we send and receive data.
-            assign(data_socket);
-            accepted = TRUE;
+            const auto as = assign(data_socket);
+
+            if ( as == TRUE )
+            {
+                accepted = TRUE;
+            }
+            else
+            {
+                accepted = FALSE;
+            }
         }
         else
         {

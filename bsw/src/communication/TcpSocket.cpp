@@ -103,10 +103,10 @@ boolean TcpSocket::create() noexcept
     return socket_created;
 }
 
-sint16 TcpSocket::send(const void* message, const uint16 len) noexcept
+AR::sint16 TcpSocket::send(const void* message, const AR::uint16 len) noexcept
 {
-    const boolean socket_open = is_socket_initialized();
-    sint16 data_sent = -1;
+    const AR::boolean socket_open = is_socket_initialized();
+    AR::sint16 data_sent = -1;
 
     // sending only makes sense if at least the socket is open.
     if ( socket_open == TRUE )
@@ -130,10 +130,10 @@ sint16 TcpSocket::send(const void* message, const uint16 len) noexcept
     return data_sent;
 }
 
-sint16 TcpSocket::receive(void* message, const uint16 len) noexcept
+AR::sint16 TcpSocket::receive(void* message, const AR::uint16 len) noexcept
 {
     const boolean socket_open = is_socket_initialized();
-    sint16 data_received = -1;
+    AR::sint16 data_received = -1;
 
     // sending only makes sense if at least the socket is open.
     if ( socket_open == TRUE )

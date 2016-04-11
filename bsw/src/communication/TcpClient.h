@@ -79,13 +79,13 @@ public:
      * @return true if connection is established, false if it fails to connect
      * to the server.
      */
-    boolean connect(IpAddress& ip_address, uint16 port) noexcept;
+    AR::boolean connect(IpAddress& ip_address, AR::uint16 port) noexcept;
 
     /**
      * @brief explicitly close the socket for disconnection.
      * @return true if disconnecting was possible, false if not.
      */
-    boolean disconnect() noexcept;
+    AR::boolean disconnect() noexcept;
 
 private:
 };

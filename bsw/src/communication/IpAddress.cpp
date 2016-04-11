@@ -83,16 +83,16 @@ m_valid_ip(FALSE)
     }
 }
 
-uint32 IpAddress::get_ip_address() const noexcept
+AR::uint32 IpAddress::get_ip_address() const noexcept
 {
-    uint32 ip_host_byte_order = 0U;
+    AR::uint32 ip_host_byte_order = 0U;
     ip_host_byte_order = ntohl(m_address_binary);
     return ip_host_byte_order;
 }
 
-boolean IpAddress::is_valid(const char* ip) noexcept
+AR::boolean IpAddress::is_valid(const char* ip) noexcept
 {
-    boolean ip_valid = FALSE;
+    AR::boolean ip_valid = FALSE;
 
     // we will check here, because inet_addr() call has limited checking.
     if ( std::strcmp(ip, "0.0.0.0") == 0 )
@@ -108,7 +108,7 @@ boolean IpAddress::is_valid(const char* ip) noexcept
     else
     {
         // convert it into a network-byte-order representation
-        uint32 ip_conv = inet_addr(ip);
+        AR::uint32 ip_conv = inet_addr(ip);
 
         // check if the address is valid or not
         if ( ip_conv != INADDR_NONE )
@@ -126,8 +126,8 @@ boolean IpAddress::is_valid(const char* ip) noexcept
     return ip_valid;
 }
 
-void IpAddress::create_address_struct(const uint32 ip_host_byte_order,
-                                         const uint16 port, sockaddr_in& addr) noexcept
+void IpAddress::create_address_struct(const AR::uint32 ip_host_byte_order,
+                                         const AR::uint16 port, sockaddr_in& addr) noexcept
 {
     std::memset(&addr, 0, sizeof(addr));
     addr.sin_addr.s_addr = htonl(ip_host_byte_order);

@@ -44,14 +44,14 @@
 /*******************************************************************************
  * MODULES USED
  *******************************************************************************/
-# ifdef __unix__
+# ifdef _WIN32
+#  include <winsock2.h>
+#  include <io.h>
+# elif defined(__unix__)
 #  include <sys/socket.h>
 #  include <fcntl.h>
 #  include <unistd.h>
 #  include <cerrno>
-# elif defined(_WIN32)
-#  include <winsock2.h>
-#  include <io.h>
 # else
 #  error "OS not defined!"
 # endif
@@ -67,6 +67,8 @@ using SocketErrorType = int;
 # elif defined (_WIN32)
 using SocketHandleType = SOCKET;
 using SocketErrorType = int;
+#  undef errno
+#  define errno WSAGetLastError()
 # else
 #  error "OS not defined!"
 # endif
@@ -113,17 +115,7 @@ public:
     m_socket(get_invalid_alias()),
     m_is_blocking(TRUE)
     {
-# ifdef _WIN32
-        WSADATA wsa_data;
-        WSAStartup(0x0202, &wsa_data);
-# endif
-        
-        const boolean sock_created = create();
-
-        if ( sock_created == TRUE )
-        {
-            m_socket_init = TRUE;
-        }
+        initialize();
     }
 
     /**
@@ -132,6 +124,9 @@ public:
     ~Socket() noexcept
     {
         close_socket();
+#ifdef _WIN32
+        WSACleanup();
+#endif
         m_socket_init = FALSE;
     }
 
@@ -139,19 +134,17 @@ public:
      * @brief Closes the socket explicitly.
      * @return true if a close was successful, false if not.
      */
-    boolean close_socket()
+    AR::boolean close_socket()
     {
-        boolean closed = FALSE;
+        AR::boolean closed = FALSE;
 
         if ( is_socket_initialized() == TRUE )
         {
-            const sint16 cl =
 # ifdef __unix__
             // close the socket if one is opened only
-            ::close(get_socket_handle());
+            const AR::sint16 cl = ::close(get_socket_handle());
 # elif defined (_WIN32)
-            ::closesocket(get_socket_handle());
-            WSACleanup();
+            const AR::sint16 cl = ::closesocket(get_socket_handle());
 # else
 #  error "OS not defined!"
 # endif
@@ -194,7 +187,7 @@ public:
      * @brief If the interface is initialized.
      * @return true if the socket is open, false if not.
      */
-    boolean is_socket_initialized() noexcept
+    AR::boolean is_socket_initialized() noexcept
     {
         return m_socket_init;
     }
@@ -207,10 +200,10 @@ public:
      * @return true if there is some kind of response (data or connect)
      * on the socket, false if not.
      */
-    boolean poll_activity(const uint16 timeout_us) noexcept
+    AR::boolean poll_activity(const AR::uint16 timeout_us) noexcept
     {
         SocketHandleType nfds;
-        boolean response_on_socket = FALSE;
+        AR::boolean response_on_socket = FALSE;
 
         /* OS specific declarations */
 # ifdef _WIN32
@@ -260,9 +253,9 @@ public:
      * @brief Set the socket into blocking or non-blocking mode.
      * @return true if it was successful changed, false if not.
      */
-    boolean set_blocking(const boolean blocking)
+    AR::boolean set_blocking(const AR::boolean blocking)
     {
-        boolean success = FALSE;
+        AR::boolean success = FALSE;
 
         if ( is_socket_initialized() == TRUE )
         {
@@ -316,9 +309,40 @@ public:
         return success;
     }
 
-    boolean is_blocking() const noexcept
+    AR::boolean is_blocking() const noexcept
     {
         return m_is_blocking;
+    }
+
+    /**
+     * @brief initializes the socket.
+     */
+    void initialize() noexcept
+    {
+# ifdef _WIN32
+        const int wsa_start = WSAStartup(MAKEWORD(2, 2), &m_wsa_data);
+        AR::boolean sock_created{FALSE};
+
+        if ( wsa_start == 0 )
+        {
+            sock_created = create();
+        }
+        else
+        {
+            sock_created = FALSE;
+        }
+# else
+        const AR::boolean sock_created = create();
+# endif
+
+        if ( sock_created == TRUE )
+        {
+            m_socket_init = TRUE;
+        }
+        else
+        {
+            m_socket_init = FALSE;
+        }
     }
 
 protected:
@@ -329,9 +353,9 @@ protected:
      * of the class derived.
      * @return true if the socket creation was successful, false if not.
      */
-    boolean create() noexcept
+    AR::boolean create() noexcept
     {
-        boolean created = FALSE;
+        AR::boolean created = FALSE;
 
         // only if the current socket is closed
         if ( is_socket_initialized() == FALSE )
@@ -350,9 +374,9 @@ protected:
     /**
      * @brief Assign a new socket.
      */
-    boolean assign(const SocketHandleType& new_handle) noexcept
+    AR::boolean assign(const SocketHandleType& new_handle) noexcept
     {
-        boolean created = FALSE;
+        AR::boolean created = FALSE;
 
         // only if the current socket is closed
         if ( is_socket_initialized() == FALSE )
@@ -387,13 +411,18 @@ protected:
 private:
 
     //! true if everything is set up and the instance can receive and send data
-    boolean m_socket_init;
+    AR::boolean m_socket_init;
 
     //! this stores the socket handle.
     SocketHandleType m_socket;
 
     //! Either the socket is in blocking or non-blocking mode.
-    boolean m_is_blocking;
+    AR::boolean m_is_blocking;
+
+# ifdef _WIN32
+    //! for windows sockets the WSAdata is necessary
+    WSADATA m_wsa_data;
+# endif
 };
 
 /*******************************************************************************
