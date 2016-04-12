@@ -100,7 +100,7 @@ public:
      * @return true if the socket is open or false if there was an error on
      * creation.
      */
-    boolean create() noexcept;
+    AR::boolean create() noexcept;
 
 protected:
 

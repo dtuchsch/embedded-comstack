@@ -81,9 +81,9 @@ TcpSocket::~TcpSocket() noexcept
     // this is done by the base class Socket
 }
 
-boolean TcpSocket::create() noexcept
+AR::boolean TcpSocket::create() noexcept
 {
-    boolean socket_created = FALSE;
+    AR::boolean socket_created = FALSE;
 
     SocketHandleType& handle = get_socket_handle();
     handle = socket(AF_INET, SOCK_STREAM, 0);
@@ -113,9 +113,15 @@ AR::sint16 TcpSocket::send(const void* message, const AR::uint16 len) noexcept
     {        
 #ifdef _WIN32
         const char* msg = static_cast< const char* >(message);
+#elif defined(__unix__)
+        const void* msg = message;
 #endif
         const SocketHandleType& handle = get_socket_handle();
+#ifdef _WIN32
         data_sent = ::send(handle, msg, len, 0);
+#elif defined(__unix__)
+        data_sent = ::send(handle, msg, len, MSG_NOSIGNAL);
+#endif
 
         if ( data_sent < 0 )
         {
@@ -132,7 +138,7 @@ AR::sint16 TcpSocket::send(const void* message, const AR::uint16 len) noexcept
 
 AR::sint16 TcpSocket::receive(void* message, const AR::uint16 len) noexcept
 {
-    const boolean socket_open = is_socket_initialized();
+    const AR::boolean socket_open = is_socket_initialized();
     AR::sint16 data_received = -1;
 
     // sending only makes sense if at least the socket is open.
@@ -140,6 +146,8 @@ AR::sint16 TcpSocket::receive(void* message, const AR::uint16 len) noexcept
     {
 #ifdef _WIN32
         char* msg = static_cast< char* >(message);
+#elif defined(__unix__)
+        void* msg = message;
 #endif        
         const SocketHandleType& handle = get_socket_handle();
         data_received = ::recv(handle, msg, len, 0);

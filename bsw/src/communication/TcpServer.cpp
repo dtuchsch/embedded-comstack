@@ -123,7 +123,11 @@ AR::boolean TcpServer::accept() noexcept
     AR::boolean accepted{FALSE};
 
     struct sockaddr_in client;
+#ifdef _WIN32
     int length = sizeof(client);
+#elif defined (__unix__)
+    socklen_t length = sizeof(client);
+#endif
     const SocketHandleType& handle = get_socket_handle();
 
     // accept the connection on the socket.

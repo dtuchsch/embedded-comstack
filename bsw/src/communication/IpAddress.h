@@ -104,7 +104,7 @@ private:
     AR::uint32 m_address_binary;
 
     //! if the configuration of the given ip was successful or not.
-    boolean m_valid_ip;
+    AR::boolean m_valid_ip;
 };
 
 /*******************************************************************************

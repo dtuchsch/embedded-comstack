@@ -82,8 +82,8 @@ TcpClient::~TcpClient() noexcept
 AR::boolean TcpClient::connect(IpAddress& ip_address, const AR::uint16 port) noexcept
 {
     // return value
-    boolean connected_r = FALSE;
-    boolean socket_created = is_socket_initialized();
+    AR::boolean connected_r = FALSE;
+    AR::boolean socket_created = is_socket_initialized();
 
     // look if the socket is there
     if ( socket_created == TRUE )

@@ -77,7 +77,7 @@
  *******************************************************************************/
 
 //! Forward type
-using CanDataType = std::array< uint8, 8U >;
+using CanDataType = std::array< AR::uint8, 8U >;
 
 /**
  * @brief
@@ -110,8 +110,8 @@ public:
      * @remarks If you want to send more than 8 bytes as a message
      * you need a transport layer like CanTp / ISO-TP.
      */
-    sint8 send(const uint16 can_id, const CanDataType& data_ref,
-               const uint8 len) noexcept;
+    AR::sint8 send(const AR::uint16 can_id, const CanDataType& data_ref,
+               const AR::uint8 len) noexcept;
 
     /**
      * @brief Receives a CAN message from the socket and
@@ -121,7 +121,7 @@ public:
      * @return Greater than zero if data was received.
      * This returns -1 if there was an error or timeout.
      */
-    sint8 receive(uint16& can_id, CanDataType& data_ref) noexcept;
+    AR::sint8 receive(AR::uint16& can_id, CanDataType& data_ref) noexcept;
 
     /**
      * @brief Receives a CAN message from the socket and writes the data into
@@ -133,19 +133,19 @@ public:
      * If there is a timeout it returns zero.
      * If there was an error, -1 is transmitted.
      */
-    sint8 receive(uint16& can_id, CanDataType& data_ref,
-                  const uint16 timeout_us) noexcept;
+    AR::sint8 receive(AR::uint16& can_id, CanDataType& data_ref,
+                  const AR::uint16 timeout_us) noexcept;
 
     /**
      * @brief Create a CAN socket
      * @return true if the socket is opened or false if there was an error.
      */
-    boolean create() noexcept;
+    AR::boolean create() noexcept;
 
     /**
      *
      */
-    boolean is_can_initialized() const noexcept;
+    AR::boolean is_can_initialized() const noexcept;
 
 protected:
 
@@ -156,14 +156,14 @@ private:
      * @return true if the interface is existend in the system, if the system
      * does not know the given interface it will return false.
      */
-    boolean check_interface(const char* interface_str) noexcept;
+    AR::boolean check_interface(const char* interface_str) noexcept;
 
     /**
      * @brief if the interface exists we will bind the interace to the socket.
      * @return true if binding the interface to the socket was succesful -
      * otherwise false
      */
-    boolean bind_if_socket() noexcept;
+    AR::boolean bind_if_socket() noexcept;
 
     //! Holds the index of the interface in a struct if
     //! the interface exists.
@@ -174,7 +174,7 @@ private:
     struct sockaddr_can m_sockaddr;
 
     //! Whether the socket creation, binding and interface is ok or not.
-    boolean m_can_init;
+    AR::boolean m_can_init;
 
     // determine the size of the struct on compile-time
     // this is always the same

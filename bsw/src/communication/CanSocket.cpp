@@ -77,16 +77,16 @@ CanSocket::CanSocket(const char* interface_str) noexcept :
 Socket(SocketType::CAN),
 m_can_init(FALSE)
 {
-    boolean sock_created = is_socket_initialized();
+    AR::boolean sock_created = is_socket_initialized();
 
     if ( interface_str != NULL_PTR && sock_created == TRUE )
     {
-        boolean interface_exists = check_interface(interface_str);
+        AR::boolean interface_exists = check_interface(interface_str);
 
         // socket creation successful and interface exists
         if ( interface_exists == TRUE )
         {
-            boolean bind_success = bind_if_socket();
+            AR::boolean bind_success = bind_if_socket();
 
             if ( bind_success == TRUE )
             {
@@ -113,10 +113,10 @@ CanSocket::~CanSocket() noexcept
     // do not close the socket here, this is done by the base class Socket
 }
 
-sint8 CanSocket::send(const uint16 can_id, const CanDataType& data_ref,
-                      const uint8 len) noexcept
+AR::sint8 CanSocket::send(const AR::uint16 can_id, const CanDataType& data_ref,
+                      const AR::uint8 len) noexcept
 {
-    sint8 data_sent = 0;
+    AR::sint8 data_sent = 0;
 
     // First check if the file descriptor for the socket was initialized
     // and the interface is up and running.
@@ -148,7 +148,7 @@ sint8 CanSocket::send(const uint16 can_id, const CanDataType& data_ref,
         }
 
         // copy data into the data field of the frame struct.
-        for ( uint8 i = 0U; i < len; ++i )
+        for ( AR::uint8 i = 0U; i < len; ++i )
         {
             // copy byte by byte...
             // this could also be done by memcpy.
@@ -159,7 +159,7 @@ sint8 CanSocket::send(const uint16 can_id, const CanDataType& data_ref,
 
         // We need to transmit the size of struct can_frame with a POSIX write.
         const auto send_res = write(handle, &frame, m_can_mtu);
-        data_sent = static_cast< sint8 >(send_res);
+        data_sent = static_cast< AR::sint8 >(send_res);
 
         // Check if the desired length was transmitted over the socket.
         // A maximum of 8 bytes can be transmitted within a CAN message
@@ -180,17 +180,17 @@ sint8 CanSocket::send(const uint16 can_id, const CanDataType& data_ref,
     return data_sent;
 }
 
-sint8 CanSocket::receive(uint16& can_id, CanDataType& data_ref) noexcept
+AR::sint8 CanSocket::receive(AR::uint16& can_id, CanDataType& data_ref) noexcept
 {
     // complete length of the CAN frame
-    sint8 can_received = -1;
+    AR::sint8 can_received = -1;
 
     if ( is_can_initialized() == TRUE )
     {
         struct can_frame frame;
         const auto handle = get_socket_handle();
         ssize_t nbytes = read(handle, &frame, m_can_mtu);
-        can_received = static_cast< sint8 >(nbytes);
+        can_received = static_cast< AR::sint8 >(nbytes);
 
         // check if data is on the socket to receive
         if ( can_received > 0 )
@@ -199,10 +199,10 @@ sint8 CanSocket::receive(uint16& can_id, CanDataType& data_ref) noexcept
             can_id = frame.can_id;
 
             // Give the data length code to the return val.
-            can_received = static_cast< sint8 >(frame.can_dlc);
+            can_received = static_cast< AR::sint8 >(frame.can_dlc);
 
             // Transfer the byte stream into the data structure given by ref.
-            for ( uint8 i = 0U; i < frame.can_dlc; ++i )
+            for ( AR::uint8 i = 0U; i < frame.can_dlc; ++i )
             {
                 // Obviously copying data.
                 data_ref[i] = frame.data[i];
@@ -220,17 +220,17 @@ sint8 CanSocket::receive(uint16& can_id, CanDataType& data_ref) noexcept
     return can_received;
 }
 
-sint8 CanSocket::receive(uint16& can_id, CanDataType& data_ref,
-                         const uint16 timeout_us) noexcept
+AR::sint8 CanSocket::receive(AR::uint16& can_id, CanDataType& data_ref,
+                         const AR::uint16 timeout_us) noexcept
 {
     // complete length of the CAN frame
-    sint8 can_received = -1;
+    AR::sint8 can_received = -1;
 
     if ( is_can_initialized() == TRUE )
     {
         // before we go in a blocking read, we will check if there is
         // activity on the socket.
-        boolean event = poll_activity(timeout_us);
+        AR::boolean event = poll_activity(timeout_us);
 
         // check the return value of the select. if there is data to read the
         // return value of select will be greater than zero.
@@ -239,7 +239,7 @@ sint8 CanSocket::receive(uint16& can_id, CanDataType& data_ref,
             struct can_frame frame;
             const auto handle = get_socket_handle();
             const auto nbytes = read(handle, &frame, m_can_mtu);
-            can_received = static_cast< sint8 >(nbytes);
+            can_received = static_cast< AR::sint8 >(nbytes);
 
             // check if the read from the socket was successful
             if ( can_received > 0 )
@@ -248,10 +248,10 @@ sint8 CanSocket::receive(uint16& can_id, CanDataType& data_ref,
                 can_id = frame.can_id;
 
                 // Set the DLC of the CAN frame as return.
-                can_received = (sint8) frame.can_dlc;
+                can_received = (AR::sint8) frame.can_dlc;
 
                 // Transfer the byte stream into the data structure given by ref.
-                for ( uint8 i = 0U; i < frame.can_dlc; ++i )
+                for ( AR::uint8 i = 0U; i < frame.can_dlc; ++i )
                 {
                     // Obviously copying data.
                     data_ref[i] = frame.data[i];
@@ -276,9 +276,9 @@ sint8 CanSocket::receive(uint16& can_id, CanDataType& data_ref,
     return can_received;
 }
 
-boolean CanSocket::create() noexcept
+AR::boolean CanSocket::create() noexcept
 {
-    boolean socket_created = FALSE;
+    AR::boolean socket_created = FALSE;
     SocketHandleType& handle = get_socket_handle();
     handle = socket(PF_CAN, SOCK_RAW, CAN_RAW);
 
@@ -297,9 +297,9 @@ boolean CanSocket::create() noexcept
     return socket_created;
 }
 
-boolean CanSocket::check_interface(const char* interface_str) noexcept
+AR::boolean CanSocket::check_interface(const char* interface_str) noexcept
 {
-    boolean exists = FALSE;
+    AR::boolean exists = FALSE;
 
     // copying the interface string into the structure.
     std::strncpy(m_ifr.ifr_name, interface_str, IFNAMSIZ - 1);
@@ -325,9 +325,9 @@ boolean CanSocket::check_interface(const char* interface_str) noexcept
     return exists;
 }
 
-boolean CanSocket::bind_if_socket() noexcept
+AR::boolean CanSocket::bind_if_socket() noexcept
 {
-    boolean bind_success = FALSE;
+    AR::boolean bind_success = FALSE;
 
     // Define the address family.
     m_sockaddr.can_family = AF_CAN;
@@ -360,7 +360,7 @@ boolean CanSocket::bind_if_socket() noexcept
     return bind_success;
 }
 
-boolean CanSocket::is_can_initialized() const noexcept
+AR::boolean CanSocket::is_can_initialized() const noexcept
 {
     return m_can_init;
 }
