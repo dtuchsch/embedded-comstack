@@ -25,10 +25,6 @@ BSW_INCLUDES=$(BSW_BASE_SRC_DIR) \
 MY_INCLUDES+=$(addprefix -I,$(BSW_INCLUDES))
 
 VPATH+=$(BSW_BASE_SRC_DIR) $(BSW_BASE_SRC_DIR)/communication $(BSW_BASE_SRC_DIR)/system
-	
-# //////////////////////////////////////////////////////////////////////////////
-include app/SampleApp.mk
-include app/XcpLinux/XcpLinux.mk
 
 ## SPECIFY YOUR LIBRARIES YOU WANT TO LINK AGAINST IN THE LINKING PROCESS
 ifeq ($(BUILD),WINDOWS)
@@ -61,6 +57,9 @@ MY_CXXFLAGS=-std=c++14 -fno-exceptions -fno-rtti -O2
 else
 MY_CXXFLAGS=-std=c++14 -fno-exceptions -fno-rtti -O0 -g3
 endif
+
+# //////////////////////////////////////////////////////////////////////////////
+include app/Applications.mk
 
 # ------------------------------------------------------------------------------
 # GENERIC SETTINGS
