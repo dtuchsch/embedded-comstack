@@ -5,6 +5,7 @@
  * @details   The template class RTTask covers the simple creation of real-time
  *            tasks with pre and post-routines.
  * @version   1.0
+ * @edit      27.09.2016
  * @copyright Copyright (c) 2015, dtuchscherer.
  *            All rights reserved.
  *
@@ -54,6 +55,8 @@
  *******************************************************************************/
 
 /**
+ * @tparam Derived A class that holds at least three methods pre(), update() and
+ * post().
  * @tparam Priority of the real-time task
  * @tparam PeriodMicro the period in microseconds the task is called.
  */
@@ -61,6 +64,7 @@ template< typename Derived, int Priority, int PeriodMicro >
 class RTTask: public OSControl
 {
 public:
+
     // Get the type for giving it to the template method of OSControl.
     using TaskType = RTTask< Derived, Priority, PeriodMicro >;
 
@@ -78,6 +82,8 @@ public:
      */
     ~RTTask() noexcept
     {
+        // make sure a thread is not executed after the constructor of RTTask
+        // is called.
         m_task_running = FALSE;
     }
 
@@ -86,6 +92,7 @@ public:
      */
     void pre() noexcept
     {
+        // CRTP like call.
         static_cast< Derived* >(this)->pre();
     }
 
@@ -113,7 +120,9 @@ public:
     void* task_entry() noexcept
     {
         m_task_running = TRUE;
+        // before we enter the real-time task loop we will call the pre-condition.
         pre();
+        // calls the update method cyclically at a given rate.
         rt_task< Priority, PeriodMicro, TaskType >(m_task_running, *this);
         post();
     }
@@ -122,30 +131,35 @@ public:
      * @brief Helper function that calls the actual rt task,
      * @remark pthread can not handle member functions so we need this little
      * helper.
-     * @param[in] we need the object were the actual method to call is. In this
-     * case the context is "this" object.
+     * @param[in] we need the object were the actual method to call is.
      */
     static void* thread_helper(void* context)
     {
         return (static_cast< TaskType* >(context))->task_entry();
     }
 
-    //! Statically known priority of the real-time task
+    //! Static priority of the real-time task
     static constexpr int m_priority = Priority;
 
-    //! Statically known period in microseconds.
+    //! Static period in microseconds.
     static constexpr int m_period = PeriodMicro;
 
 protected:
 
+    /**
+     * @brief Creates an extra thread independent of the current task executed.
+     */
     boolean create_thread() noexcept
     {
-        return create_rt_task< TaskType::thread_helper >(this, m_task_handle);
+        return create_rt_thread< TaskType::thread_helper >(this, m_task_handle);
     }
 
+    /**
+     * @brief 
+     */
     boolean close_thread() noexcept
     {
-        return close_rt_task(m_task_handle);
+        return close_rt_thread(m_task_handle);
     }
 
     //! if the loop of the thread will run or not.

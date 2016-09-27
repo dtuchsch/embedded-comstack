@@ -92,7 +92,7 @@ public:
      * not successful.
      */
     template< void* F(void* context) >
-    boolean create_rt_task(void* context, TaskHandle& handle) noexcept
+    boolean create_rt_thread(void* context, TaskHandle& handle) noexcept
     {
         boolean created = FALSE;
 
@@ -115,7 +115,7 @@ public:
     /**
      * @brief Waits until the thread is terminated.
      */
-    boolean close_rt_task(TaskHandle& handle) noexcept
+    boolean close_rt_thread(TaskHandle& handle) noexcept
     {
         boolean closed = FALSE;
 
@@ -157,13 +157,15 @@ public:
                                                        &sched_param);
         if ( prio_policy_set == -1 )
         {
-
+            // if the high priority of the real-time task could not be assigned
+            // we will leave immediately.
+            return;
         }
 
         /* Lock memory */
         if ( mlockall(MCL_CURRENT | MCL_FUTURE) == -1 )
         {
-
+            return;
         }
 
         /* Pre-fault our stack */

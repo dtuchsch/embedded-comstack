@@ -83,7 +83,7 @@ TcpServer::~TcpServer() noexcept
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-AR::boolean TcpServer::listen(IpAddress& ip_address, const AR::uint16 port) noexcept
+AR::boolean TcpServer::listen(IpAddress&& ip_address, const AR::uint16&& port) noexcept
 {
     AR::boolean listen_success = FALSE;
     // first build the address
@@ -126,9 +126,9 @@ AR::boolean TcpServer::accept() noexcept
 #ifdef _WIN32
     int length = sizeof(client);
 #elif defined (__unix__)
+    socklen_t length = sizeof(client);
 #else
 #endif
-    socklen_t length = sizeof(client);
     const auto handle = m_connect.get_socket();
     // accept the connection on the socket.
     const int data_socket = ::accept(handle,

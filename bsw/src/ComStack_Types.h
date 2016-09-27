@@ -3,7 +3,7 @@
  * @author 	  dtuchscherer <daniel.tuchscherer@hs-heilbronn.de>
  * @brief	  Communication relevant types
  * @details   Communication interface types. This interface is included instead
- *            of Platform_Types. if the translation unit is related to
+ *            of Platform_Types. If the translation unit to be used is related to
  *            communication.
  * @copyright Copyright (c) 2015, Daniel Tuchscherer.
  *            All rights reserved.
@@ -60,7 +60,5 @@
 /*******************************************************************************
  * EXPORTED FUNCTIONS
  *******************************************************************************/
-
-
 
 #endif /* COMSTACK_TYPES_H_ */

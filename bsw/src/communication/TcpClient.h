@@ -79,7 +79,7 @@ public:
      * @return true if connection is established, false if it fails to connect
      * to the server.
      */
-    AR::boolean connect(IpAddress& ip_address, AR::uint16 port) noexcept;
+    AR::boolean connect(IpAddress&& ip_address, const AR::uint16&& port) noexcept;
 
     /**
      * @brief explicitly close the socket for disconnection.

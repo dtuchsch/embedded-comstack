@@ -68,18 +68,22 @@
 /*******************************************************************************
  * FUNCTION DEFINITIONS
  *******************************************************************************/
+ 
+////////////////////////////////////////////////////////////////////////////////
 TcpClient::TcpClient() noexcept :
 TcpSocket()
 {
 
 }
 
+////////////////////////////////////////////////////////////////////////////////
 TcpClient::~TcpClient() noexcept
 {
 
 }
 
-AR::boolean TcpClient::connect(IpAddress& ip_address, const AR::uint16 port) noexcept
+////////////////////////////////////////////////////////////////////////////////
+AR::boolean TcpClient::connect(IpAddress&& ip_address, const AR::uint16&& port) noexcept
 {
     // return value
     AR::boolean connected_r = FALSE;
@@ -117,6 +121,7 @@ AR::boolean TcpClient::connect(IpAddress& ip_address, const AR::uint16 port) noe
     return connected_r;
 }
 
+////////////////////////////////////////////////////////////////////////////////
 AR::boolean TcpClient::disconnect() noexcept
 {
     return close_socket();

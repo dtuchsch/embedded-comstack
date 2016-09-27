@@ -4,6 +4,7 @@
  * @brief     TCP socket implementation for sending, receiving and polling.
  * @details   TCP socket implementation for sending, receiving and polling.
  * @version   1.0
+ * @edit      27.09.2016
  * @copyright Copyright (c) 2015, dtuchscherer.
  *            All rights reserved.
  *
@@ -84,7 +85,7 @@ public:
      * @param[in] len is the length to send
      * @return the number of bytes that have been sent or -1 if there is an error
      */
-    AR::sint16 send(const void* message, AR::uint16 len) noexcept;
+    AR::sint16 send(const void* message, const AR::uint16&& len) noexcept;
 
     /**
      * @brief Receive via the TCP/IP socket
@@ -93,7 +94,7 @@ public:
      * @return how much data has been received. if there is an error the return
      * is smaller than 0.
      */
-    AR::sint16 receive(void* message, const AR::uint16 len) noexcept;
+    AR::sint16 receive(void* message, const AR::uint16&& len) noexcept;
 
     /**
      * @brief Create a TCP socket

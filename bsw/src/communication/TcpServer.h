@@ -80,7 +80,7 @@ public:
      * @return true if listening is possible, false if listening is not
      * possible.
      */
-    AR::boolean listen(IpAddress& ip, const AR::uint16 port) noexcept;
+    AR::boolean listen(IpAddress&& ip, const AR::uint16&& port) noexcept;
 
     /**
      * @brief Accepts a connection.

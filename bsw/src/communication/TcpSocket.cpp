@@ -4,6 +4,7 @@
  * @brief     Ethernet TCP/IP communication
  * @details
  * @version   1.0
+ * @edit      27.09.2016
  * @copyright Copyright (c) 2015, dtuchscherer.
  *            All rights reserved.
  *
@@ -107,7 +108,7 @@ AR::boolean TcpSocket::create() noexcept
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-AR::sint16 TcpSocket::send(const void* message, const AR::uint16 len) noexcept
+AR::sint16 TcpSocket::send(const void* message, const AR::uint16&& len) noexcept
 {
     const AR::boolean socket_open = is_socket_initialized();
     AR::sint16 data_sent = -1;
@@ -141,7 +142,7 @@ AR::sint16 TcpSocket::send(const void* message, const AR::uint16 len) noexcept
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-AR::sint16 TcpSocket::receive(void* message, const AR::uint16 len) noexcept
+AR::sint16 TcpSocket::receive(void* message, const AR::uint16&& len) noexcept
 {
     const AR::boolean socket_open = is_socket_initialized();
     AR::sint16 data_received = -1;
@@ -169,3 +170,4 @@ AR::sint16 TcpSocket::receive(void* message, const AR::uint16 len) noexcept
 
     return data_received;
 }
+

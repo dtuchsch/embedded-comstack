@@ -5,6 +5,7 @@
  * @details   This is inspired by SFML Packet, but is also capable for embedded.
  *            Instead of using std::vector as a container we use a fixed size
  *            container std::array.
+ * @edit      27.09.2016
  * @version   1.0
  * @copyright Copyright (c) 2015, dtuchscherer.
  *            All rights reserved.
@@ -663,11 +664,6 @@ public:
     }
 
 protected:
-
-//    DataContainer& get_data() noexcept
-//    {
-//        return m_data;
-//    }
 
 private:
 

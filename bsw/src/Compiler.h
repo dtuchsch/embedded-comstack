@@ -1,7 +1,7 @@
 /**
  * @file 	  Compiler.h
  * @author 	  dtuchscherer <daniel.tuchscherer@hs-heilbronn.de>
- * @brief	  short description...
+ * @brief	  Compiler dependent header
  * @details   long description...
  * @copyright Copyright (c) 2015, Daniel Tuchscherer.
  *            All rights reserved.
@@ -42,6 +42,11 @@
  * MODULES USED
  *******************************************************************************/
 
+# ifdef __cplusplus
+namespace AR
+{
+# endif
+
 /*******************************************************************************
  * DEFINITIONS AND MACROS
  *******************************************************************************/
@@ -62,6 +67,9 @@
  * EXPORTED FUNCTIONS
  *******************************************************************************/
 
-
+// close AR:: namespace
+# ifdef __cplusplus
+}
+# endif
 
 #endif /* COMPILER_H_ */

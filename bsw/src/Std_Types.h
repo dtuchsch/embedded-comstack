@@ -3,6 +3,7 @@
  * @author 	  dtuchscherer <daniel.tuchscherer@hs-heilbronn.de>
  * @brief	  Standard Types interface
  * @details   According to Specification of Standard Types AUTOSAR 4.0
+ * @edit      27.09.2016
  * @copyright Copyright (c) 2015, Daniel Tuchscherer.
  *            All rights reserved.
  *
@@ -64,22 +65,21 @@ namespace AR
 # ifndef STATUSTYPEDEFINED
 #  define STATUSTYPEDEFINED
 #  define E_OK (0x00U)
-
 typedef unsigned char StatusType;
 # endif
 
 # define E_NOT_OK (0x01U)
 
-/** Physical state 5V or 3.3V */
+//! Physical state 5V or 3.3V 
 # define STD_HIGH (0x01)
 
-/** Physical state 0V */
+//! Physical state 0V
 # define STD_LOW (0x00)
 
-/** Logical state active */
+//! Logical state active
 # define STD_ACTIVE (0x01)
 
-/** Logical state idle */
+//! Logical state idle
 # define STD_IDLE (0x00)
 
 /*
@@ -137,6 +137,7 @@ static_assert(MODULE ## _SW_PATCH_VERSION == SW_PATCH_VERSION,\
 
 # endif
 
+// close AR:: namespace
 # ifdef __cplusplus
 }
 # endif
