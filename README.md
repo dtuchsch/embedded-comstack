@@ -85,7 +85,7 @@ target_link_libraries(my_app
 )
 ```
 
-Linking against the library is mandatory. Otherwise the linker will throw errors because it does not find the method definitions necessary.
+Linking against the library is mandatory. Otherwise the linker will throw errors because it does not find the method definitions necessary to bake together the executable.
 
 ## Windows
 
