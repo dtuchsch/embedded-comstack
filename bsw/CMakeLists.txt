@@ -103,7 +103,7 @@ endif()
 ## DEPENDS: system dependencies of this project that dependent projects also need
 if(UNIX)
 catkin_package(
-INCLUDE_DIRS include src src/system src/communication
+INCLUDE_DIRS src src/system src/communication
 LIBRARIES bsw
 )
 endif()
