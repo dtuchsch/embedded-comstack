@@ -6,7 +6,7 @@
 The basic software library is supported under the following operating systems:
 
 * Linux 32-bit/64-bit and ROS (all features)
-* Windows 32-bit/64-bit (no SocketCAN support)
+* Windows 32-bit/64-bit (no SocketCAN and real-time threading support)
 
 Please note that some system specific features such as SocketCAN are available under Linux only. The library may be used under Microsoft Windows, but is targeted at Embedded Linux applications.
 
