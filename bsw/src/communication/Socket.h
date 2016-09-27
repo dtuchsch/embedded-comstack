@@ -44,6 +44,7 @@
 /*******************************************************************************
  * MODULES USED
  *******************************************************************************/
+
 # ifdef _WIN32
 #  include <winsock2.h>
 #  include <io.h>
@@ -55,6 +56,8 @@
 # else
 #  error "OS not defined!"
 # endif
+#include <iostream>
+
 # include "ComStack_Types.h"
 
 /*******************************************************************************
@@ -109,11 +112,11 @@ public:
      * @param[in] type defines how the socket will be initialized.
      */
     Socket(SocketType type) noexcept :
-    m_type(type),
-    m_last_error(0),
-    m_socket_init(FALSE),
-    m_socket(get_invalid_alias()),
-    m_is_blocking(TRUE)
+			m_type(type),
+			m_last_error(0),
+			m_socket_init(FALSE),
+			m_socket(get_invalid_alias()),
+			m_is_blocking(TRUE)
     {
         initialize();
     }
@@ -134,7 +137,7 @@ public:
      * @brief Closes the socket explicitly.
      * @return true if a close was successful, false if not.
      */
-    AR::boolean close_socket()
+    AR::boolean close_socket() noexcept
     {
         AR::boolean closed = FALSE;
 
@@ -142,6 +145,7 @@ public:
         {
 # ifdef __unix__
             // close the socket if one is opened only
+        	::shutdown(get_socket_handle(), -2);
             const AR::sint16 cl = ::close(get_socket_handle());
 # elif defined (_WIN32)
             const AR::sint16 cl = ::closesocket(get_socket_handle());
@@ -160,6 +164,12 @@ public:
                 m_last_error = errno;
             }
         }
+        else
+        {
+        	// is closed already.
+        	std::cout << "Socket is closed already.\n";
+        	closed = TRUE;
+        }
 
         return closed;
     }
@@ -175,10 +185,10 @@ public:
     }
 
     /**
-     * @brief Returns the socket handle for send and receive.
-     * @return the socket handle
+     * @brief The socket handle for the derived classes as a reference.
+     * @return the socket number as reference for write and read
      */
-    SocketHandleType get_socket_handle() const noexcept
+    const SocketHandleType& get_socket() const noexcept
     {
         return m_socket;
     }
@@ -317,7 +327,7 @@ public:
     /**
      * @brief initializes the socket.
      */
-    void initialize() noexcept
+    AR::boolean initialize() noexcept
     {
 # ifdef _WIN32
         const int wsa_start = WSAStartup(MAKEWORD(2, 2), &m_wsa_data);
@@ -343,9 +353,36 @@ public:
         {
             m_socket_init = FALSE;
         }
+
+        return sock_created;
     }
 
+
+    /**
+     * @brief Assign a new socket.
+     */
+    AR::boolean assign(const SocketHandleType& new_handle) volatile noexcept
+    {
+        AR::boolean created = FALSE;
+		m_socket = new_handle;
+		m_socket_init = TRUE;
+		created = TRUE;
+        return created;
+    }
+
+    //! stores the last error in this attribute
+    SocketErrorType m_last_error;
+
 protected:
+
+    /**
+     * @brief The socket handle for the derived classes as a reference.
+     * @return the socket number as reference for write and read
+     */
+    SocketHandleType& get_socket_handle() noexcept
+    {
+        return m_socket;
+    }
 
     /**
      * @brief A socket will be opened. Because the parameters for opening a
@@ -371,42 +408,8 @@ protected:
         return created;
     }
 
-    /**
-     * @brief Assign a new socket.
-     */
-    AR::boolean assign(const SocketHandleType& new_handle) noexcept
-    {
-        AR::boolean created = FALSE;
-
-        // only if the current socket is closed
-        if ( is_socket_initialized() == FALSE )
-        {
-            m_socket = new_handle;
-            m_socket_init = TRUE;
-            created = TRUE;
-        }
-        else
-        {
-            created = FALSE;
-        }
-
-        return created;
-    }
-
-    /**
-     * @brief The socket handle for the derived classes as a reference.
-     * @return the socket number as reference for write and read
-     */
-    SocketHandleType& get_socket_handle() noexcept
-    {
-        return m_socket;
-    }
-
     //! this attribute shows if it's a socket for can, ethernet tcp/ip or udp
     SocketType m_type;
-
-    //! stores the last error in this attribute
-    SocketErrorType m_last_error;
 
 private:
 

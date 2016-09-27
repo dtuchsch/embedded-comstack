@@ -70,98 +70,93 @@
  * FUNCTION DEFINITIONS
  *******************************************************************************/
 TcpServer::TcpServer() noexcept :
-TcpSocket()
+	m_connect(),
+	m_data()
 {
 
 }
 
+////////////////////////////////////////////////////////////////////////////////
 TcpServer::~TcpServer() noexcept
 {
 
 }
 
+////////////////////////////////////////////////////////////////////////////////
 AR::boolean TcpServer::listen(IpAddress& ip_address, const AR::uint16 port) noexcept
 {
     AR::boolean listen_success = FALSE;
-
     // first build the address
     AR::uint32 ip = ip_address.get_ip_address();
     struct sockaddr_in client;
     ip_address.create_address_struct(ip, port, client);
-    const auto handle = get_socket_handle();
-
+    const auto handle = m_connect.get_socket();
     // bind the port to the socket
-    const int bound = ::bind(handle, reinterpret_cast< sockaddr * >(&client),
-                             sizeof(client));
-
+    const int bound = ::bind(handle,
+    						(struct sockaddr*)&client,
+                            sizeof(client));
     if ( bound >= 0 )
     {
         // make that socket a listening socket that listens on the port bound.
         const int li = ::listen(handle, 10);
-
         if ( li >= 0 )
         {
             listen_success = TRUE;
         }
         else
         {
-            m_last_error = errno;
+        	m_connect.m_last_error = errno;
             listen_success = FALSE;
         }
     }
     else
     {
-        m_last_error = errno;
+    	m_connect.m_last_error = errno;
         listen_success = FALSE;
     }
 
     return listen_success;
 }
 
+////////////////////////////////////////////////////////////////////////////////
 AR::boolean TcpServer::accept() noexcept
 {
     AR::boolean accepted{FALSE};
-
     struct sockaddr_in client;
 #ifdef _WIN32
     int length = sizeof(client);
 #elif defined (__unix__)
-    socklen_t length = sizeof(client);
+#else
 #endif
-    const SocketHandleType& handle = get_socket_handle();
-
+    socklen_t length = sizeof(client);
+    const auto handle = m_connect.get_socket();
     // accept the connection on the socket.
     const int data_socket = ::accept(handle,
-                                     reinterpret_cast< sockaddr* >(&client),
+                                     (struct sockaddr*)&client,
                                      &length);
 
-    if ( data_socket > 0 )
+    if ( data_socket >= 0 )
     {
-        // close the server-side socket
-        const AR::boolean closed = close_socket();
-        
-        if ( closed == TRUE )
-        {
-            // assign the new one we send and receive data.
-            const auto as = assign(data_socket);
+    	// we will copy the socket here to avoid interference between
+    	// the old data socket and a new one.
+		std::cout << "Closing possible previous socket...\n";
+	    m_data.close_socket();
+		std::cout << "Assign data socket from the accept call...";
+		const auto as = m_data.assign(data_socket);
 
-            if ( as == TRUE )
-            {
-                accepted = TRUE;
-            }
-            else
-            {
-                accepted = FALSE;
-            }
-        }
-        else
-        {
-            accepted = FALSE;
-        }
+		if ( as == TRUE )
+		{
+	    	std::cout << "success.\n";
+			accepted = TRUE;
+		}
+		else
+		{
+			accepted = FALSE;
+		}
     }
     else
     {
-        m_last_error = errno;
+    	m_connect.m_last_error = errno;
         accepted = FALSE;
     }
 

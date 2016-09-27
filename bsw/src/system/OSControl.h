@@ -1,7 +1,7 @@
 /**
  * @file      OSControl.h
  * @author    dtuchscherer <daniel.tuchscherer@hs-heilbronn.de>
- * @brief     Abstraction interface
+ * @brief     Task abstraction layer.
  * @details   Abstracting the management of real-time tasks.
  * @version   1.0
  * @copyright Copyright (c) 2015, dtuchscherer.
@@ -140,7 +140,7 @@ public:
      * @param callee
      */
     template< int Priority, int Period, typename T >
-    void rt_task(const boolean& running, T& callee)
+    void rt_task(const boolean& running, T& callee) noexcept
     {
         struct timespec t;
         struct sched_param sched_param;
@@ -241,7 +241,7 @@ public:
     /**
      * @brief tries to allocate memory within a pthread.
      */
-    void stack_prefault()
+    void stack_prefault() noexcept
     {
         uint8 stack[8 * 1024];
         memset(stack, 0, 8 * 1024);

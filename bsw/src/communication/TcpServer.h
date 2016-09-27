@@ -43,8 +43,8 @@
 /*******************************************************************************
  * MODULES USED
  *******************************************************************************/
-#include "IpAddress.h"
-#include "TcpSocket.h"
+# include "IpAddress.h"
+# include "TcpSocket.h"
 
 /*******************************************************************************
  * DEFINITIONS AND MACROS
@@ -58,7 +58,7 @@
  * @brief The TcpServer class allows listening for pending connection requests
  * and then accepting incoming connections.
  */
-class TcpServer : public TcpSocket
+class TcpServer
 {
 public:
 
@@ -88,8 +88,14 @@ public:
      */
     AR::boolean accept() noexcept;
 
+    //! socket that accepts the connections from TCP clients.
+    TcpSocket m_connect;
+    
+    //! after accepting a connection via this socket data can be
+    //! exchanged between TCP client and TCP server.
+    TcpSocket m_data;
+    
 private:
-
 };
 
 /*******************************************************************************

@@ -42,7 +42,7 @@
  * MODULES USED
  *******************************************************************************/
 # ifdef __cplusplus
-#  include <cstdint>
+#  include <cinttypes>
 # else
 #  include <stdint.h>
 # endif
@@ -97,7 +97,7 @@ typedef unsigned char  uint8;            /**!< @req SWS_Platform_00013 This stan
 typedef signed char    sint8;            /**!< @req SWS_Platform_00016 This standard AUTOSAR type shall be of 8 bit signed. */
 typedef unsigned short uint16;           /**!< @req SWS_Platform_00014 This standard AUTOSAR type shall be of 16 bit unsigned. */
 typedef signed short   sint16;           /**!< @req SWS_Platform_00017 This standard AUTOSAR type shall be of 16 bit signed. */
-typedef unsigned int   uint32;           /**!< @req SWS_Platform_00015 This standard AUTOSAR type shall be 32 bit unsigned. */
+typedef unsigned long   uint32;           /**!< @req SWS_Platform_00015 This standard AUTOSAR type shall be 32 bit unsigned. */
 typedef signed int     sint32;           /**!< @req SWS_Platform_00018 This standard AUTOSAR type shall be 32 bit signed. */
 typedef unsigned long long uint64;       /**!< @req SWS_Platform_00066 This standard AUTOSAR type shall be 64 bit unsigned. */
 typedef signed long long    sint64;      /**!< @req SWS_Platform_00067 This standard AUTOSAR type shall be 64 bit signed. */

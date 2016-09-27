@@ -364,4 +364,6 @@ AR::boolean CanSocket::is_can_initialized() const noexcept
 {
     return m_can_init;
 }
+#else
+# error "SocketCAN for Linux OS only."
 #endif /* WIN32 */

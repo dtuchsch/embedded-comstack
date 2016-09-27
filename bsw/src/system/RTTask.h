@@ -68,7 +68,7 @@ public:
      * @brief Default constructor creating the real-time task.
      */
     RTTask() noexcept :
-    m_task_running(FALSE)
+            m_task_running(FALSE)
     {
 
     }

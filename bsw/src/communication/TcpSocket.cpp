@@ -69,18 +69,21 @@
  * FUNCTION DEFINITIONS
  *******************************************************************************/
 
+////////////////////////////////////////////////////////////////////////////////
 TcpSocket::TcpSocket() noexcept :
-Socket(SocketType::TCP)
+		Socket(SocketType::TCP)
 {
     // call the base class opening the socket.
 }
 
+////////////////////////////////////////////////////////////////////////////////
 TcpSocket::~TcpSocket() noexcept
 {
     // do not close the socket here,
     // this is done by the base class Socket
 }
 
+////////////////////////////////////////////////////////////////////////////////
 AR::boolean TcpSocket::create() noexcept
 {
     AR::boolean socket_created = FALSE;
@@ -103,6 +106,7 @@ AR::boolean TcpSocket::create() noexcept
     return socket_created;
 }
 
+////////////////////////////////////////////////////////////////////////////////
 AR::sint16 TcpSocket::send(const void* message, const AR::uint16 len) noexcept
 {
     const AR::boolean socket_open = is_socket_initialized();
@@ -136,6 +140,7 @@ AR::sint16 TcpSocket::send(const void* message, const AR::uint16 len) noexcept
     return data_sent;
 }
 
+////////////////////////////////////////////////////////////////////////////////
 AR::sint16 TcpSocket::receive(void* message, const AR::uint16 len) noexcept
 {
     const AR::boolean socket_open = is_socket_initialized();
