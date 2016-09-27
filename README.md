@@ -52,6 +52,41 @@ cd catkin_ws
 catkin_make
 ```
 
+This command builds the basic software library as a library which can be linked against your ROS package that holds the application.
+
+### Using bsw in your applications
+
+All you have to do is to create a new ROS catkin package and add the `bsw` package as a dependency:
+
+```shell
+cd catkin_ws
+catkin_create_pkg my_app std_msgs roscpp bsw
+```
+
+Add the following line to your `CMakeLists.txt` of your application to edit the compiler flags and add C++14 support:
+
+```
+set(CMAKE_CXX_FLAGS "-std=c++14 ${CMAKE_CXX_FLAGS}")
+```
+
+This compiler switch is mandatory, otherwise on compile-time it will throw hundreds of compiler errors, only because you forgot to turn on the C++14 standard.
+
+Program your application and add the cpp file as the executable to your `CMakeLists.txt`:
+
+```
+add_executable(my_app src/my_app.cpp)
+```
+
+You must link against the `bsw` library:
+
+```
+target_link_libraries(my_app
+   ${catkin_LIBRARIES}
+)
+```
+
+Linking against the library is mandatory. Otherwise the linker will throw errors because it does not find the method definitions necessary.
+
 ## Windows
 
 # Credits
