@@ -154,7 +154,9 @@ AR::sint16 TcpSocket::receive(void* message, const AR::uint16&& len) noexcept
         char* msg = static_cast< char* >(message);
 #elif defined(__unix__)
         void* msg = message;
-#endif        
+#else
+# error "Unable to implement TcpSocket::receive. OS not defined."
+#endif
         const SocketHandleType& handle = get_socket_handle();
         data_received = ::recv(handle, msg, len, 0);
 

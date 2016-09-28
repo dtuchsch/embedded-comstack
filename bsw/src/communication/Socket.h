@@ -150,7 +150,7 @@ public:
 # elif defined (_WIN32)
             const AR::sint16 cl = ::closesocket(get_socket_handle());
 # else
-#  error "OS not defined!"
+#  error "Implementation of Socket::close_socket() failed. OS not defined!"
 # endif
 
             if ( cl == 0 )
@@ -319,6 +319,10 @@ public:
         return success;
     }
 
+    /**
+     * @brief Check if this socket is blocking or non-blocking.
+     * @return true if the socket is blocking or false if non-blocking.
+     */
     AR::boolean is_blocking() const noexcept
     {
         return m_is_blocking;
@@ -326,6 +330,8 @@ public:
 
     /**
      * @brief initializes the socket.
+     * @return true if initialization was successful, false if there was an error
+     * initializing the socket.
      */
     AR::boolean initialize() noexcept
     {
@@ -361,7 +367,7 @@ public:
     /**
      * @brief Assign a new socket.
      */
-    AR::boolean assign(const SocketHandleType& new_handle) volatile noexcept
+    AR::boolean assign(const SocketHandleType& new_handle) noexcept
     {
         AR::boolean created = FALSE;
 		m_socket = new_handle;
