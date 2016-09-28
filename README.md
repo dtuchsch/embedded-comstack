@@ -89,7 +89,7 @@ Linking against the bsw library is mandatory. Otherwise the linker will throw er
 
 ### Examples
 
-There is a ROS package with some examples on how to use the basic software library. I will add more examples as time passes by. If you're working on Ubuntu Linux with ROS installed you can try out the examples by copying the ROS package `examples_bsw` into your catkin workspace. After copying, build your catkin workspace and source the setup.bash unless you have done it already.
+There is a ROS package that contains some example applications on how to use the basic software library. I will add more examples as time passes by. If you're working on Ubuntu Linux with ROS installed you can try out the examples by copying the ROS package `examples_bsw` into your catkin workspace. After copying, build your catkin workspace and source the setup.bash unless you have done it already.
 
 ```
 catkin_make
