@@ -85,7 +85,22 @@ target_link_libraries(my_app
 )
 ```
 
-Linking against the library is mandatory. Otherwise the linker will throw errors because it does not find the method definitions necessary to bake together the executable.
+Linking against the bsw library is mandatory. Otherwise the linker will throw errors because it does not find the method definitions necessary to bake together the executable for your appliation.
+
+### Examples
+
+There is a ROS package with some examples on how to use the basic software library. I will add more examples as time passes by. If you're working on Ubuntu Linux with ROS installed you can try out the examples by copying the ROS package `examples_bsw` into your catkin workspace. After copying, build your catkin workspace and source the setup.bash unless you have done it already.
+
+```
+catkin_make
+source devel/setup.bash
+```
+
+Running an example such as the TCP server/client application is done by `rosrun` and calling the desired ROS node of the ROS package `examples_bsw`:
+
+```shell
+rosrun examples_bsw tcp_ping_pong
+```
 
 ## Windows
 
