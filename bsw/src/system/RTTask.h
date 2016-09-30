@@ -54,20 +54,47 @@
  * TYPEDEFS, ENUMERATIONS, CLASSES
  *******************************************************************************/
 
+template< long int duration >
+struct RTPeriod
+{
+    
+};
+
+template< int Prio >
+struct Priority
+{
+    static_assert(Prio < 99, "");
+    static_assert(Prio >= 0, "");
+    constexpr static int get_prio() noexcept { return Prio; }
+};
+
+struct Test
+{
+    template< typename Duration, typename Priority >
+    constexpr Test(const Duration duration, const Priority priority) noexcept :
+        m_duration(duration)
+    {
+    }
+    
+    void update() noexcept { std::cout << m_duration.count(); }
+    const std::chrono::nanoseconds m_duration;
+};
+
 /**
  * @tparam Derived A class that holds at least three methods pre(), update() and
  * post().
+ * @tparam Derived 
  * @tparam Priority of the real-time task
  * @tparam PeriodMicro the period in microseconds the task is called.
  */
 template< typename Derived, int Priority, int PeriodMicro >
-class RTTask: public OSControl
+class RTTask : public OSControl
 {
 public:
 
     // Get the type for giving it to the template method of OSControl.
     using TaskType = RTTask< Derived, Priority, PeriodMicro >;
-
+    
     /**
      * @brief Default constructor creating the real-time task.
      */
@@ -119,11 +146,12 @@ public:
      */
     void* task_entry() noexcept
     {
-        m_task_running = TRUE;
         // before we enter the real-time task loop we will call the pre-condition.
         pre();
+        m_task_running = TRUE;
         // calls the update method cyclically at a given rate.
         rt_task< Priority, PeriodMicro, TaskType >(m_task_running, *this);
+        // post-conditions after 
         post();
     }
 
@@ -149,7 +177,7 @@ protected:
     /**
      * @brief Creates an extra thread independent of the current task executed.
      */
-    boolean create_thread() noexcept
+    AR::boolean create_thread() noexcept
     {
         return create_rt_thread< TaskType::thread_helper >(this, m_task_handle);
     }
@@ -157,13 +185,13 @@ protected:
     /**
      * @brief 
      */
-    boolean close_thread() noexcept
+    AR::boolean close_thread() noexcept
     {
         return close_rt_thread(m_task_handle);
     }
 
     //! if the loop of the thread will run or not.
-    boolean m_task_running;
+    AR::boolean m_task_running;
 
     //! The handle of the task
     TaskHandle m_task_handle;
@@ -179,12 +207,12 @@ public:
 
     RTThread() noexcept
     {
-        const boolean created = this->create_thread();
+        const auto created = this->create_thread();
     }
 
     ~RTThread() noexcept
     {
-        const boolean closed = this->close_thread();
+        const auto closed = this->close_thread();
     }
 };
 

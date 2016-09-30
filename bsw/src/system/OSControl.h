@@ -43,12 +43,15 @@
  * MODULES USED
  *******************************************************************************/
 
+#include <iostream>
+
+// check numeric limits of data types at compile-time.
 #include <limits>
 
-#include <string.h>
+// POSIX threads for send and receive thread.
+#include <pthread.h>
 
-// Timestamps and nanosleep
-#include <time.h>
+#include <string.h>
 
 // Accessing the scheduler for the real-time tasks to set priority.
 #include <sched.h>
@@ -56,9 +59,10 @@
 // Memory management for the real-time tasks.
 #include <sys/mman.h>
 
-// POSIX threads for send and receive thread.
-#include <pthread.h>
+// Timestamps and nanosleep
+#include <time.h>
 
+// includes Platform_Types.h for uniform types often used.
 #include "Std_Types.h"
 
 /*******************************************************************************
@@ -79,6 +83,11 @@ struct TaskHandle
     pthread_t m_handle;
 };
 
+/**
+ * @brief OSControl is a system abstraction interface to manage (real-time) tasks.
+ * This class tries to hide the whole configuration stuff needed to create a real-time
+ * task from the developer. One is able to easily create tasks.
+ */
 class OSControl
 {
 public:
@@ -92,11 +101,9 @@ public:
      * not successful.
      */
     template< void* F(void* context) >
-    boolean create_rt_thread(void* context, TaskHandle& handle) noexcept
+    AR::boolean create_rt_thread(void* context, TaskHandle& handle) noexcept
     {
-        boolean created = FALSE;
-
-        // This creates the receive thread that waits in a loop for transmitted CAN frames.
+        AR::boolean created = FALSE;
         const auto thread_running = pthread_create(&handle.m_handle, NULL_PTR,
                                                    F, context);
 
@@ -115,10 +122,9 @@ public:
     /**
      * @brief Waits until the thread is terminated.
      */
-    boolean close_rt_thread(TaskHandle& handle) noexcept
+    AR::boolean close_rt_thread(TaskHandle& handle) noexcept
     {
-        boolean closed = FALSE;
-
+        AR::boolean closed = FALSE;
         const int joined = pthread_join(handle.m_handle, NULL_PTR);
 
         if ( joined == 0 )
@@ -139,41 +145,50 @@ public:
      * @param running
      * @param callee
      */
-    template< int Priority, int Period, typename T >
-    void rt_task(const boolean& running, T& callee) noexcept
+    template< int Priority, long int Period, typename T >
+    void rt_task(const AR::boolean& running, T& callee) noexcept
     {
         struct timespec t;
         struct sched_param sched_param;
         constexpr int INTERVAL = 1000 * Period; // 1000ns = 1us
-
-        static_assert(INTERVAL <= std::numeric_limits< int >::max(),
-                "Interval is too big.");
-
+        // check at compile-time if the given interval exceeds the limit of an
+        // integer value.
+        static_assert(Priority < 99,
+                "Not able to set a priority greater than 98.");
+        static_assert(Priority >= 0,
+                "Not able to set a negative priority.");
+        static_assert(INTERVAL <= std::numeric_limits< long >::max(),
+                "Time interval is too big to fit into a long.");
+        // set the scheduler's priority
         sched_param.sched_priority = Priority;
-
         // Set up the scheduler to round-robin algorithm.
         // Additionally to SCHED_FIFO SCHED_RR time slices
-        const int prio_policy_set = sched_setscheduler(0, SCHED_RR,
-                                                       &sched_param);
+        const int prio_policy_set = sched_setscheduler(0, SCHED_RR, &sched_param);
+                                                       
+        // check if the priority was set.
         if ( prio_policy_set == -1 )
         {
             // if the high priority of the real-time task could not be assigned
-            // we will leave immediately.
+            // we will leave immediately. If we're not able to set high
+            // priority this may lead to unexpected behavior because the thread
+            // is not executed on time!
+            std::cout << "Error on setting a high priority.\n";
             return;
         }
 
         /* Lock memory */
         if ( mlockall(MCL_CURRENT | MCL_FUTURE) == -1 )
         {
+            // destroy this thread if locking memory failed.
             return;
         }
 
         /* Pre-fault our stack */
         stack_prefault();
-
+        
         // Write the time struct once.
         clock_gettime(CLOCK_MONOTONIC, &t);
-
+        
         // start after one second
         ++t.tv_sec;
 
@@ -197,11 +212,11 @@ public:
 
     /**
      * @brief Initialize a mutex.
+     * @return 
      */
-    boolean mutex_init(TaskMutex& mutex) noexcept
+    AR::boolean mutex_init(TaskMutex& mutex) noexcept
     {
-        boolean init_success = FALSE;
-
+        AR::boolean init_success = FALSE;
         const auto init = pthread_mutex_init(&mutex.m_mutex, NULL);
 
         if ( init == 0 )
@@ -245,7 +260,7 @@ public:
      */
     void stack_prefault() noexcept
     {
-        uint8 stack[8 * 1024];
+        AR::uint8 stack[8 * 1024];
         memset(stack, 0, 8 * 1024);
     }
 
@@ -256,12 +271,12 @@ private:
      * nanosleep. If the field nanoseconds of structure timespec exceeds
      * 1000000000 ns = 1 s we must add this to the field that holds seconds
      * and reset the nanoseconds field.
-     * @param[in] t the time structure we want to adjust.
+     * @param[in/out] t the time structure we want to adjust.
      */
     void normalize(struct timespec& t) noexcept
     {
         constexpr int NSEC_PER_SEC = 1000000000LL;
-
+        
         // Normalize the time structure to calculate the next shot.
         while ( t.tv_nsec >= NSEC_PER_SEC )
         {

@@ -132,6 +132,7 @@ include_directories(
 
 ## Declare a C++ executable
 add_executable(tcp_ping_pong src/tcp_ping_pong.cpp)
+add_executable(rt_task src/rt_task.cpp)
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
@@ -139,6 +140,10 @@ add_executable(tcp_ping_pong src/tcp_ping_pong.cpp)
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(tcp_ping_pong
+   ${catkin_LIBRARIES}
+)
+
+target_link_libraries(rt_task
    ${catkin_LIBRARIES}
 )
 
