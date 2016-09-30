@@ -39,13 +39,13 @@ The source code of the basic software library is located in the folder `bsw` as 
 
 ### Install
 
-First, get a local work copy of the Git repository:
+First, get a local work copy of this Git repository by cloning it into the `src` folder of your catkin workspace:
 
 ```shell
 git clone https://github.com/dtuchsch/embedded-comstack.git
 ```
 
-Copy the source directory `bsw` into the `src` folder of your catkin workspace. Then, build the catkin workspace from the root directory.
+Then, build the catkin workspace from the root directory.
 
 ```
 cd catkin_ws
