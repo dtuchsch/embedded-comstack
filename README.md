@@ -1,5 +1,5 @@
 # What is embedded-comstack?
-`embedded-comstack` is a tiny cross-platform communication and operating system abstraction library. It is programmed in Modern C++. To use it a current C++14 compiler is necessary.
+`embedded-comstack` is a tiny cross-platform / multi-platform communication and operating system library. It is programmed in Modern C++ and compresses some concepts used often when it comes to programming embedded software. A current C++14 compiler is necessary.
 
 ## Operating systems supported
 
