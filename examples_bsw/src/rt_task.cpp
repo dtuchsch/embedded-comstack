@@ -6,13 +6,12 @@
 
 // configuration stuff. this normally should be placed into a configuration header
 // and source file.
-
 // the real-time task shall run with highest priority possible.
 constexpr int RT_TASK_PRIO = 98;
 
 // the sample time of the real-time thread shall be 1000 microseconds which 
 // equals 1 millisecond.
-constexpr int RT_PERIOD_US = 1000;
+constexpr int RT_PERIOD_US = 1000000;
 
 // create a class that declares and defines the methods pre(), update() and
 // post(). 
@@ -20,7 +19,6 @@ constexpr int RT_PERIOD_US = 1000;
 // loop is started. 
 // 2. Then, the task will execute the real-time task periodically at a given 
 // rate specified.
-// 3. 
 class MyRTTask : public RTTask< MyRTTask, RT_TASK_PRIO, RT_PERIOD_US >
 {
 public:
@@ -28,12 +26,12 @@ public:
     /**
      * @brief pre conditions to execute.
      */
-    void pre() noexcept;
+    AR::boolean pre() noexcept;
     
     /**
      * @brief periodic update
      */
-    void update() noexcept;
+    AR::boolean update() noexcept;
     
     /**
      * @brief post-conditions after task execution.
@@ -41,18 +39,20 @@ public:
     void post() noexcept;
     
 private:
+
 };
 
 ////////////////////////////////////////////////////////////////////////////////
-void MyRTTask::pre() noexcept
+AR::boolean MyRTTask::pre() noexcept
 {
-
+    return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-void MyRTTask::update() noexcept
+AR::boolean MyRTTask::update() noexcept
 {
-
+    std::cout << "RT TASK CALLED\n";
+    return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -65,9 +65,9 @@ void MyRTTask::post() noexcept
 int main() noexcept
 {
     // create an instance of your concrete real-time task application.
-    //MyRTTask rt_task;
-    //rt_task.task_entry();
-    using namespace std::chrono_literals;
-    Test(1ms, 98).update();
+    MyRTTask rt_task;
+    // this will execute the pre-condition. if the pre-condition is fulfilled
+    // the task is executed periodically.
+    rt_task.task_entry();
 }
 

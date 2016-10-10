@@ -43,6 +43,7 @@
  * MODULES USED
  *******************************************************************************/
 
+// 
 #include <iostream>
 
 // check numeric limits of data types at compile-time.
@@ -73,11 +74,17 @@
  * TYPEDEFS, ENUMERATIONS, CLASSES
  *******************************************************************************/
 
+/**
+ *
+ */
 struct TaskMutex
 {
     pthread_mutex_t m_mutex;
 };
 
+/**
+ * 
+ */
 struct TaskHandle
 {
     pthread_t m_handle;
@@ -121,6 +128,7 @@ public:
 
     /**
      * @brief Waits until the thread is terminated.
+     * @param[in] handle the task handle of the task to 
      */
     AR::boolean close_rt_thread(TaskHandle& handle) noexcept
     {
@@ -146,21 +154,29 @@ public:
      * @param callee
      */
     template< int Priority, long int Period, typename T >
-    void rt_task(const AR::boolean& running, T& callee) noexcept
+    void rt_task(AR::boolean& running, T& callee) noexcept
     {
         struct timespec t;
         struct sched_param sched_param;
-        constexpr int INTERVAL = 1000 * Period; // 1000ns = 1us
+        
+        // linux timespec calculates in nanoseconds. We convert the constant
+        // value from microseconds into nanoseconds. 
+        constexpr auto INTERVAL = 1000 * Period; // 1000ns = 1us
+        
         // check at compile-time if the given interval exceeds the limit of an
         // integer value.
         static_assert(Priority < 99,
-                "Not able to set a priority greater than 98.");
+                "Not able to set a priority greater than 98. Please specify the real-time priority between 1 and 98.");
+                
         static_assert(Priority >= 0,
-                "Not able to set a negative priority.");
-        static_assert(INTERVAL <= std::numeric_limits< long >::max(),
+                "Not able to set a negative or zero priority. Please specify the real-time priority between 1 and 98.");
+                
+        static_assert(INTERVAL <= std::numeric_limits< long int >::max(),
                 "Time interval is too big to fit into a long.");
+                
         // set the scheduler's priority
         sched_param.sched_priority = Priority;
+        
         // Set up the scheduler to round-robin algorithm.
         // Additionally to SCHED_FIFO SCHED_RR time slices
         const int prio_policy_set = sched_setscheduler(0, SCHED_RR, &sched_param);
@@ -200,7 +216,14 @@ public:
             clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &t, NULL);
 
             // The method must always be named like this!
-            callee.update();
+            const auto call_ok = callee.update();
+            
+            // check if something bad has happened.
+            if ( call_ok == FALSE )
+            {
+                // this will break the loop.
+                running = FALSE;
+            } 
 
             // add for the next shot, otherwise clock_nanosleep has no effect
             t.tv_nsec += INTERVAL;
@@ -212,7 +235,7 @@ public:
 
     /**
      * @brief Initialize a mutex.
-     * @return 
+     * @return true if initializing the mutex is okay, otherwise false.
      */
     AR::boolean mutex_init(TaskMutex& mutex) noexcept
     {

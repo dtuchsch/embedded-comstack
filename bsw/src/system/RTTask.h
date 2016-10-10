@@ -44,6 +44,8 @@
 /*******************************************************************************
  * MODULES USED
  *******************************************************************************/
+
+// OSControl to create threads.
 #include "OSControl.h"
 
 /*******************************************************************************
@@ -54,40 +56,14 @@
  * TYPEDEFS, ENUMERATIONS, CLASSES
  *******************************************************************************/
 
-template< long int duration >
-struct RTPeriod
-{
-    
-};
-
-template< int Prio >
-struct Priority
-{
-    static_assert(Prio < 99, "");
-    static_assert(Prio >= 0, "");
-    constexpr static int get_prio() noexcept { return Prio; }
-};
-
-struct Test
-{
-    template< typename Duration, typename Priority >
-    constexpr Test(const Duration duration, const Priority priority) noexcept :
-        m_duration(duration)
-    {
-    }
-    
-    void update() noexcept { std::cout << m_duration.count(); }
-    const std::chrono::nanoseconds m_duration;
-};
-
 /**
  * @tparam Derived A class that holds at least three methods pre(), update() and
  * post().
  * @tparam Derived 
- * @tparam Priority of the real-time task
- * @tparam PeriodMicro the period in microseconds the task is called.
+ * @tparam Priority of this real-time task
+ * @tparam PeriodMicro task period in microseconds
  */
-template< typename Derived, int Priority, int PeriodMicro >
+template< typename Derived, int Priority, long int PeriodMicro >
 class RTTask : public OSControl
 {
 public:
@@ -99,36 +75,41 @@ public:
      * @brief Default constructor creating the real-time task.
      */
     RTTask() noexcept :
+            // initially we set this to false until the pre-condition has been
+            // executed.
             m_task_running(FALSE)
     {
-
     }
 
     /**
-     * @brief Cancels the real-time task.
+     * @brief After cancelation clean-up.
      */
     ~RTTask() noexcept
     {
         // make sure a thread is not executed after the constructor of RTTask
-        // is called.
+        // was called.
         m_task_running = FALSE;
     }
 
     /**
      * @brief Called once before the real-time loop is entered.
+     * The update method is only called if the pre-condition is fulfilled.
      */
-    void pre() noexcept
+    AR::boolean pre() noexcept
     {
-        // CRTP like call.
-        static_cast< Derived* >(this)->pre();
+        // CRTP like call to the concrete method which implements the behavior
+        return static_cast< Derived* >(this)->pre();
     }
 
     /**
      * @brief Periodically called.
      */
-    void update() noexcept
+    AR::boolean update() noexcept
     {
-        static_cast< Derived* >(this)->update();
+        // call the update method of the concrete derived class which implements
+        // the application-specific behavior.
+        const auto update_ok = static_cast< Derived* >(this)->update();
+        return update_ok;
     }
 
     /**
@@ -136,6 +117,7 @@ public:
      */
     void post() noexcept
     {
+        // call the application-specific method of the concrete task.
         static_cast< Derived* >(this)->post();
     }
 
@@ -147,12 +129,17 @@ public:
     void* task_entry() noexcept
     {
         // before we enter the real-time task loop we will call the pre-condition.
-        pre();
-        m_task_running = TRUE;
-        // calls the update method cyclically at a given rate.
-        rt_task< Priority, PeriodMicro, TaskType >(m_task_running, *this);
-        // post-conditions after 
-        post();
+        const auto precond_ok = pre();
+        
+        if ( precond_ok )
+        {
+            // after the pre it will enter the periodic update.
+            m_task_running = TRUE;
+            // calls the update method cyclically at a given rate.
+            rt_task< Priority, PeriodMicro, TaskType >(m_task_running, *this);
+            // post-conditions after 
+            post();
+        }
     }
 
     /**
@@ -175,7 +162,7 @@ public:
 protected:
 
     /**
-     * @brief Creates an extra thread independent of the current task executed.
+     * @brief Creates an independent thread from another thread.
      */
     AR::boolean create_thread() noexcept
     {
@@ -183,7 +170,7 @@ protected:
     }
 
     /**
-     * @brief 
+     * @brief Closes the thread.
      */
     AR::boolean close_thread() noexcept
     {
@@ -193,23 +180,34 @@ protected:
     //! if the loop of the thread will run or not.
     AR::boolean m_task_running;
 
-    //! The handle of the task
+    //! The handle to manage this task.
     TaskHandle m_task_handle;
 
 private:
 
 };
 
+/**
+ * @brief We differentiate between a task and a thread for Linux systems.
+ * Each thread can has only one task, but may spawn other threads which also have
+ * their real-time tasks.
+ */
 template< typename Derived, int Priority, int PeriodMicro >
 class RTThread : public RTTask< Derived, Priority, PeriodMicro >
 {
 public:
-
+    
+    /**
+     * @brief Constructor creating a real-time thread.
+     */
     RTThread() noexcept
     {
         const auto created = this->create_thread();
     }
 
+    /**
+     * @brief Destructor will close the thread.
+     */
     ~RTThread() noexcept
     {
         const auto closed = this->close_thread();
