@@ -33,8 +33,10 @@ Currently, the following transport layer interfaces are available:
 
 The source code of the basic software library is located in the folder `bsw` as a ROS package. So, if your operating system is Linux you will need Robot Operating System (ROS) to use the library. However, the package is also usable under Microsoft Windows, because ROS packages and the catkin build system are based on CMake. All the catkin and ROS related features are commented out for Windows builds.
 
+The use of `embedded-comstack` in Linux und ROS is recommended. You need at least need the following if you're using Linux:
+
 * Current C++ (cross-)compiler with C++11/C++14 support
-* ROS (http://wiki.ros.org/ROS/Installation)
+* ROS framework (http://wiki.ros.org/ROS/Installation)
 * An initialized ROS catkin workspace (http://wiki.ros.org/catkin/Tutorials/create_a_workspace)
 
 ### Install
