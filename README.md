@@ -134,4 +134,4 @@ rosrun examples_bsw tcp_ping_pong
 ## Windows
 
 # Credits
-This abstraction of network communication is adapted by the extremely powerful [SFML Packet](http://www.sfml-dev.org/tutorials/2.3/network-packet.php#problems-that-need-to-be-solved) implementation, but focusing on embedded applications where we do not want dynamic memory allocation.
+The abstraction of network communication is adapted by the extremely powerful [SFML Packet](http://www.sfml-dev.org/tutorials/2.3/network-packet.php#problems-that-need-to-be-solved) implementation for Windows and Linux. The implementation is more focused on a lightweight footprint, which is also easily applicable for embedded devices.
