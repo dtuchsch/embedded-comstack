@@ -1,6 +1,33 @@
 # What is embedded-comstack?
 `embedded-comstack` is a tiny cross-platform / multi-platform communication and operating system library. It is programmed in Modern C++ and compresses some concepts used often when it comes to programming embedded software. A current C++14 compiler is necessary.
 
+## Objective
+
+Socket programming in C to commmunicate over Ethernet TCP/IP, UDP or even CAN under Linux is possible, but in my personal opinion limited in reusability, maintainability and as a consequence not very elegant. I often found myself in doing repetitive tasks doing some communication relevant programming in C. The same applies to programming C and working with threads (pthreads) and real-time schedulers of Linux. We can do better. For me it's important to have a library to wrap this not-so-elegant solutions, so I can reuse a well-defined interface for the majority of my applications. So the goal of `embedded-comstack` is to have a general library that is easily applied. This library shall be reusable and easier-to-use.
+
+As an example imagine you want to use a socket to exchange some data between a TCP server and a TCP client. You want to send data from the TCP client. A C implementation would consist of a lot of initialization steps you have to program. Imagine you have a second TCP client sending some data to another TCP server. In the best case you will create some functions to create sockets and send data. But the solution could be better.
+
+```
+struct sockaddr_in server;
+unsigned long addr;
+memset( &server, 0, sizeof (server));
+// ...
+memcpy((char *)&server.sin_addr, &addr, sizeof(addr));
+server.sin_family = AF_INET;
+server.sin_port = htons(5555);
+// and so on...
+```
+
+In reality, we only want to open a socket and send some data to the TCP server. At this point `embedded-comstack` comes in handy:
+
+```c++
+TcpClient client;
+const auto connected = client.connect("127.0.0.1", 5555U);
+const auto sent = client.send(&data, data.size());
+```
+
+We are now able to create multiple clients or servers easily. In addition, all of the protocols using sockets do have the most implementation part in common. The type `TcpClient` is derived from type `Socket`, which implements sockets in the most general possible way.
+
 ## Operating systems supported
 
 The basic software library is supported under the following operating systems:
