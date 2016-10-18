@@ -3,9 +3,11 @@
 
 ## Objective
 
-Socket programming in C to commmunicate over Ethernet TCP/IP, UDP or even CAN under Linux is possible, but in my personal opinion limited in reusability, maintainability and as a consequence not very elegant. I often found myself in doing repetitive tasks doing some communication relevant programming in C. The same applies to programming C and working with threads (pthreads) and real-time schedulers of Linux. We can do better. For me it's important to have a library to wrap this not-so-elegant solutions, so I can reuse a well-defined interface for the majority of my applications. So the goal of `embedded-comstack` is to have a general library that is easily applied. This library shall be reusable and easier-to-use.
+Socket programming in C to commmunicate over Ethernet TCP/IP, UDP or even CAN under Linux is possible, but in my personal opinion limited in reusability, maintainability and as a consequence not very elegant. I often found myself in doing repetitive tasks for programming embedded communication software in C. The same applies to working with threads (pthreads) and real-time schedulers of Linux. We can do better... 
 
-As an example imagine you want to use a socket to exchange some data between a TCP server and a TCP client. You want to send data from the TCP client. A C implementation would consist of a lot of initialization steps you have to program. Imagine you have a second TCP client sending some data to another TCP server. In the best case you will create some functions to create sockets and send data. But the solution could be better.
+For me it's important to have a library to wrap this not-so-elegant solutions, so I can reuse a well-defined interface for the majority of my applications without rewriting code I've implemented multiple times. So the goal of `embedded-comstack` is to have a general library that is easily applied. This library shall be reusable, maintainable, and easier-to-use.
+
+As an example imagine you want to use a socket to exchange some data between a TCP server and a TCP client. You want to send data from the TCP client. A C-implementation would consist of a lot of initialization steps you have to program. Imagine you want to add a second TCP client sending some data to another TCP server. In the best case, you will create some functions to create sockets and send data. The following code snippet shows only a part of a C-implementation to establish a connection to a TCP server:
 
 ```
 struct sockaddr_in server;
@@ -17,6 +19,8 @@ server.sin_family = AF_INET;
 server.sin_port = htons(5555);
 // and so on...
 ```
+
+The solution could be much better...
 
 In reality, we only want to open a socket and send some data to the TCP server. At this point `embedded-comstack` comes in handy:
 
