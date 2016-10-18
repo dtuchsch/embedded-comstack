@@ -115,6 +115,13 @@ endif()
 ## C++14 support, all warnings, no rtti and no exceptions
 set(CMAKE_CXX_FLAGS "-std=c++14 -Wall -Wextra -Wpedantic -fno-rtti -fno-exceptions ${CMAKE_CXX_FLAGS}")
 
+## Build the basic software with the clang compiler
+option(CLANG "Option clang compiler" ON)
+if(CLANG)
+set(CMAKE_CXX_COMPILER "clang++-3.8")
+set(CMAKE_C_COMPILER "clang-3.8")
+endif()
+
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 # include_directories(include)
@@ -128,7 +135,7 @@ endif()
 )
 
 ## Declare a C++ library
-add_library(bsw 
+add_library(bsw
     src/communication/CanSocket.cpp 
     src/communication/IpAddress.cpp 
     src/communication/TcpClient.cpp 
@@ -139,7 +146,7 @@ add_library(bsw
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
 ## either from message generation or dynamic reconfigure
-# add_dependencies(bsw ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(bsw ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Declare a C++ executable
 # add_executable(bsw_node src/bsw_node.cpp)
@@ -201,15 +208,13 @@ file(GLOB_RECURSE
 find_program(CLANG_TIDY "clang-tidy")
 
 if(CLANG_TIDY)
-  add_custom_target(
+add_custom_target(
     clang-tidy
     COMMAND clang-tidy-3.8
-    ${ALL_CXX_SOURCE_FILES}
-    -config=''
+    -checks=*
     --
     -std=c++14
-    ${INCLUDE_DIRECTORIES}
-    )
+)
 endif()
 
 ## Add gtest based cpp test target and link libraries
