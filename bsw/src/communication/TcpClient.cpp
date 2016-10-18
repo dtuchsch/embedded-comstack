@@ -83,7 +83,8 @@ TcpClient::~TcpClient() noexcept
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-AR::boolean TcpClient::connect(IpAddress&& ip_address, const AR::uint16&& port) noexcept
+AR::boolean TcpClient::connect(IpAddress&& ip_address, 
+                                const AR::uint16&& port) noexcept
 {
     // return value
     AR::boolean connected_r = FALSE;
