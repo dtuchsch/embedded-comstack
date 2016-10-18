@@ -108,7 +108,7 @@ AR::boolean TcpSocket::create() noexcept
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-AR::sint16 TcpSocket::send(const void* message, const AR::uint16&& len) noexcept
+AR::sint16 TcpSocket::send(const void* message, const AR::uint16 len) noexcept
 {
     const AR::boolean socket_open = is_socket_initialized();
     AR::sint16 data_sent = -1;
@@ -142,7 +142,7 @@ AR::sint16 TcpSocket::send(const void* message, const AR::uint16&& len) noexcept
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-AR::sint16 TcpSocket::receive(void* message, const AR::uint16&& len) noexcept
+AR::sint16 TcpSocket::receive(void* message, const AR::uint16 len) noexcept
 {
     const AR::boolean socket_open = is_socket_initialized();
     AR::sint16 data_received = -1;

@@ -175,13 +175,13 @@ typedef double              float64;
 //! is not checked it may lead to undefined behavior and some cruel errors.
 #ifdef __cplusplus
 static_assert(sizeof(uint8) == 1U, "SWS_Platform_00013 This standard AUTOSAR type shall be of 8 bit unsigned.");
-static_assert(sizeof(sint8) == 1U, "SWS_Platform_00013 This standard AUTOSAR type shall be of 8 bit unsigned.");
-static_assert(sizeof(uint16) == 2U, "SWS_Platform_00013 This standard AUTOSAR type shall be of 8 bit unsigned.");
-static_assert(sizeof(sint16) == 2U, "SWS_Platform_00013 This standard AUTOSAR type shall be of 8 bit unsigned.");
-static_assert(sizeof(uint32) == 4U, "SWS_Platform_00013 This standard AUTOSAR type shall be of 8 bit unsigned.");
-static_assert(sizeof(sint32) == 4U, "SWS_Platform_00013 This standard AUTOSAR type shall be of 8 bit unsigned.");
-static_assert(sizeof(uint64) == 8U, "SWS_Platform_00013 This standard AUTOSAR type shall be of 8 bit unsigned.");
-static_assert(sizeof(sint64) == 8U, "SWS_Platform_00013 This standard AUTOSAR type shall be of 8 bit unsigned.");
+static_assert(sizeof(sint8) == 1U, "SWS_Platform_00013 This standard AUTOSAR type shall be of 8 bit signed.");
+static_assert(sizeof(uint16) == 2U, "SWS_Platform_00013 This standard AUTOSAR type shall be of 16 bit unsigned.");
+static_assert(sizeof(sint16) == 2U, "SWS_Platform_00013 This standard AUTOSAR type shall be of 16 bit signed.");
+static_assert(sizeof(uint32) == 4U, "SWS_Platform_00013 This standard AUTOSAR type shall be of 32 bit unsigned.");
+static_assert(sizeof(sint32) == 4U, "SWS_Platform_00013 This standard AUTOSAR type shall be of 32 bit signed.");
+static_assert(sizeof(uint64) == 8U, "SWS_Platform_00013 This standard AUTOSAR type shall be of 64 bit unsigned.");
+static_assert(sizeof(sint64) == 8U, "SWS_Platform_00013 This standard AUTOSAR type shall be of 64 bit signed.");
 static_assert(sizeof(float32) == 4U, "SWS_Platform_00041 This standard AUTOSAR type shall be at least 32 bit float.");
 static_assert(sizeof(float64) == 8U, "SWS_Platform_00042 This standard AUTOSAR type shall be at least 64 bit float.");
 static_assert(std::is_unsigned< uint8 >::value == true, "uint8 is not unsigned as it should be!");
@@ -206,6 +206,13 @@ static_assert(std::is_floating_point< float64 >::value == true, "float64 is not 
 
 # ifdef __cplusplus
 } /* namespace AR */
+# endif
+
+// if not explicitly said we do not hide all the platform types behind a
+// namespace. on some systems uint8,... is typedefed already so we can define 
+// PLATFORM_TYPES_HIDE_NS for no conflicts and compilation errors.
+# ifndef PLATFORM_TYPES_HIDE_NS
+using namespace AR;
 # endif
 
 #endif /* PLATFORM_TYPES_H_ */
