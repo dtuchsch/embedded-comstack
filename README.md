@@ -9,7 +9,7 @@ For me it's important to have a library to wrap this not-so-elegant solutions, s
 
 As an example imagine you want to use a socket to exchange some data between a TCP server and a TCP client. You want to send data from the TCP client. A C-implementation would consist of a lot of initialization steps you have to program. Imagine you want to add a second TCP client sending some data to another TCP server. In the best case, you will create some functions to create sockets and send data. The following code snippet shows only a part of a C-implementation to establish a connection to a TCP server:
 
-```
+```c
 struct sockaddr_in server;
 unsigned long addr;
 memset( &server, 0, sizeof (server));
@@ -24,7 +24,7 @@ The solution could be much better...
 
 In reality, we only want to open a socket and send some data to the TCP server. At this point `embedded-comstack` comes in handy:
 
-```c++
+```cpp
 TcpClient client;
 const auto connected = client.connect("127.0.0.1", 5555U);
 const auto sent = client.send(&data, data.size());
@@ -45,7 +45,7 @@ The following list shows the systems and architectures under which the library h
 
 OS | Device | CPU | Architecture | Compiler
 ---|--------|-----------|--------------|----------
-Ubuntu Linux 14.04 64-Bit | Dell Latitude E7440 | Intel(R) i7-4600U | | g++ 4.9.3
+Ubuntu Linux 14.04 64-Bit | Dell Latitude E7440 | Intel(R) i7-4600U | | g++ 4.9.3 / clang 3.8
 Windows 7 64-Bit | Dell Latitude E7440 | Intel(R) i7-4600U | | g++ 4.9.3
 Embedded Linux with PREEMPT_RT | Raspberry PI 2 Model B | Broadcom BCM2836 QUAD | ARM Cortex-A8 | arm-g++ 4.9.3
 Embedded Linux with PREEMPT_RT | phyFLEX-i.MX6 | Freescale i.MX6 QUAD | ARM Cortex-A9 | arm-g++ 4.9.3
@@ -66,7 +66,7 @@ The source code of the basic software library is located in the folder `bsw` as 
 
 The use of `embedded-comstack` in Linux und ROS is recommended. You need at least need the following if you're using Linux:
 
-* Current C++ (cross-)compiler with C++11/C++14 support
+* Recent C++ (cross-)compiler with C++11/C++14 support (gcc or clang)
 * ROS framework (http://wiki.ros.org/ROS/Installation)
 * An initialized ROS catkin workspace (http://wiki.ros.org/catkin/Tutorials/create_a_workspace)
 
