@@ -1,7 +1,7 @@
 # What is embedded-comstack?
-`embedded-comstack` is a tiny cross-platform / multi-platform communication and operating system library. It is programmed in Modern C++ and compresses some concepts used often when it comes to programming embedded software. A current C++14 compiler is necessary.
+`embedded-comstack` is a lightweight cross-platform communication and operating system library. Its purpose is to provide a reusable middleware. It is programmed in Modern C++ (C++11 / C++14) and provides some easy-to-use features for developing embedded software. To use `embedded-comstack` a recent C++14 compiler such as gcc/g++ or clang is necessary.
 
-## Objective
+## Motivation
 
 Socket programming in C to commmunicate over Ethernet TCP/IP, UDP or even CAN under Linux is possible, but in my personal opinion limited in reusability, maintainability and as a consequence not very elegant. I often found myself in doing repetitive tasks for programming embedded communication software in C. The same applies to working with threads (pthreads) and real-time schedulers of Linux. We can do better... 
 
