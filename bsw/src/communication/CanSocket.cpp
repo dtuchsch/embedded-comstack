@@ -73,9 +73,10 @@
  * FUNCTION DEFINITIONS
  *******************************************************************************/
 
+////////////////////////////////////////////////////////////////////////////////
 CanSocket::CanSocket(const char* interface_str) noexcept :
-Socket(SocketType::CAN),
-m_can_init(FALSE)
+        Socket(SocketType::CAN),
+        m_can_init(FALSE)
 {
     AR::boolean sock_created = is_socket_initialized();
 
@@ -108,11 +109,13 @@ m_can_init(FALSE)
     }
 }
 
+////////////////////////////////////////////////////////////////////////////////
 CanSocket::~CanSocket() noexcept
 {
     // do not close the socket here, this is done by the base class Socket
 }
 
+////////////////////////////////////////////////////////////////////////////////
 AR::sint8 CanSocket::send(const AR::uint16 can_id, const CanDataType& data_ref,
                       const AR::uint8 len) noexcept
 {
@@ -180,6 +183,7 @@ AR::sint8 CanSocket::send(const AR::uint16 can_id, const CanDataType& data_ref,
     return data_sent;
 }
 
+////////////////////////////////////////////////////////////////////////////////
 AR::sint8 CanSocket::receive(AR::uint16& can_id, CanDataType& data_ref) noexcept
 {
     // complete length of the CAN frame
@@ -220,6 +224,7 @@ AR::sint8 CanSocket::receive(AR::uint16& can_id, CanDataType& data_ref) noexcept
     return can_received;
 }
 
+////////////////////////////////////////////////////////////////////////////////
 AR::sint8 CanSocket::receive(AR::uint16& can_id, CanDataType& data_ref,
                          const AR::uint16 timeout_us) noexcept
 {
@@ -276,6 +281,7 @@ AR::sint8 CanSocket::receive(AR::uint16& can_id, CanDataType& data_ref,
     return can_received;
 }
 
+////////////////////////////////////////////////////////////////////////////////
 AR::boolean CanSocket::create() noexcept
 {
     AR::boolean socket_created = FALSE;
@@ -297,6 +303,7 @@ AR::boolean CanSocket::create() noexcept
     return socket_created;
 }
 
+////////////////////////////////////////////////////////////////////////////////
 AR::boolean CanSocket::check_interface(const char* interface_str) noexcept
 {
     AR::boolean exists = FALSE;
@@ -325,6 +332,7 @@ AR::boolean CanSocket::check_interface(const char* interface_str) noexcept
     return exists;
 }
 
+////////////////////////////////////////////////////////////////////////////////
 AR::boolean CanSocket::bind_if_socket() noexcept
 {
     AR::boolean bind_success = FALSE;
@@ -360,10 +368,12 @@ AR::boolean CanSocket::bind_if_socket() noexcept
     return bind_success;
 }
 
+////////////////////////////////////////////////////////////////////////////////
 AR::boolean CanSocket::is_can_initialized() const noexcept
 {
     return m_can_init;
 }
+
 #else
 # error "SocketCAN for Linux OS only."
 #endif /* WIN32 */

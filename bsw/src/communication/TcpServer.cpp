@@ -69,6 +69,8 @@
 /*******************************************************************************
  * FUNCTION DEFINITIONS
  *******************************************************************************/
+ 
+////////////////////////////////////////////////////////////////////////////////
 TcpServer::TcpServer() noexcept :
 	m_connect(),
 	m_data()
@@ -83,7 +85,8 @@ TcpServer::~TcpServer() noexcept
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-AR::boolean TcpServer::listen(IpAddress&& ip_address, const AR::uint16&& port) noexcept
+AR::boolean TcpServer::listen(IpAddress&& ip_address, 
+                                const AR::uint16&& port) noexcept
 {
     AR::boolean listen_success = FALSE;
     // first build the address
@@ -131,8 +134,7 @@ AR::boolean TcpServer::accept() noexcept
 #endif
     const auto handle = m_connect.get_socket();
     // accept the connection on the socket.
-    const int data_socket = ::accept(handle,
-                                     (struct sockaddr*)&client,
+    const int data_socket = ::accept(handle, (struct sockaddr*)&client,
                                      &length);
 
     if ( data_socket >= 0 )
@@ -162,3 +164,4 @@ AR::boolean TcpServer::accept() noexcept
 
     return accepted;
 }
+

@@ -54,7 +54,7 @@
 #  include <unistd.h>
 #  include <cerrno>
 # else
-#  error "OS not defined!"
+#  error "OS not defined! Please define an operating system."
 # endif
 #include <iostream>
 
@@ -82,15 +82,21 @@ using SocketErrorType = int;
 
 enum class SocketState
     : SocketHandleType
-    {
+{
         INVALID
 };
 
+/**
+ * @brief At init time the socket is not created, thus invalid.
+ */
 constexpr SocketHandleType get_invalid_alias()
 {
     return static_cast< SocketHandleType >(SocketState::INVALID);
 }
 
+/**
+ * @brief Available concrete socket types.
+ */
 enum class SocketType
 {
     CAN,
@@ -99,8 +105,9 @@ enum class SocketType
 };
 
 /**
- * @brief A Socket implementation
- * @tparam Derived class for CRTP
+ * @brief A generic socket implementation
+ * @tparam Derived socket class for using CRTP. E.g. it could be a TCP, UDP or CAN
+ * socket.
  */
 template< typename Derived >
 class Socket
@@ -112,22 +119,25 @@ public:
      * @param[in] type defines how the socket will be initialized.
      */
     Socket(SocketType type) noexcept :
+			m_last_error{0},
 			m_type(type),
-			m_last_error(0),
-			m_socket_init(FALSE),
-			m_socket(get_invalid_alias()),
+			m_socket_init{FALSE},
+			m_socket{get_invalid_alias()},
 			m_is_blocking(TRUE)
     {
+        // create one socket.
         initialize();
     }
 
     /**
      * @brief Destructor closes the socket.
+     * Clean up / close the socket in this particular case.
      */
     ~Socket() noexcept
     {
         close_socket();
 #ifdef _WIN32
+        // the WSA clean up is valid under windows only.
         WSACleanup();
 #endif
         m_socket_init = FALSE;
@@ -376,7 +386,7 @@ public:
         return created;
     }
 
-    //! stores the last error in this attribute
+    //! stores the last error occurred.
     SocketErrorType m_last_error;
 
 protected:

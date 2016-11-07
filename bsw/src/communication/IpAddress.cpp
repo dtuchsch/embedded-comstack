@@ -39,7 +39,11 @@
 /*******************************************************************************
  * MODULES USED
  *******************************************************************************/
+
+// used for string comparison of an IP address
 #include <cstring>
+
+// module interface
 #include "IpAddress.h"
 
 /*******************************************************************************
@@ -69,9 +73,11 @@
 /*******************************************************************************
  * FUNCTION DEFINITIONS
  *******************************************************************************/
+ 
+////////////////////////////////////////////////////////////////////////////////
 IpAddress::IpAddress(const char* ip_address) noexcept :
-m_address_binary(0U),
-m_valid_ip(FALSE)
+        m_address_binary(0U),
+        m_valid_ip(FALSE)
 {
     if ( ip_address != NULL_PTR )
     {
@@ -83,6 +89,7 @@ m_valid_ip(FALSE)
     }
 }
 
+////////////////////////////////////////////////////////////////////////////////
 AR::uint32 IpAddress::get_ip_address() const noexcept
 {
     AR::uint32 ip_host_byte_order = 0U;
@@ -90,6 +97,7 @@ AR::uint32 IpAddress::get_ip_address() const noexcept
     return ip_host_byte_order;
 }
 
+////////////////////////////////////////////////////////////////////////////////
 AR::boolean IpAddress::is_valid(const char* ip) noexcept
 {
     AR::boolean ip_valid = FALSE;
@@ -126,8 +134,10 @@ AR::boolean IpAddress::is_valid(const char* ip) noexcept
     return ip_valid;
 }
 
+////////////////////////////////////////////////////////////////////////////////
 void IpAddress::create_address_struct(const AR::uint32 ip_host_byte_order,
-                                         const AR::uint16 port, sockaddr_in& addr) noexcept
+                                      const AR::uint16 port, 
+                                      sockaddr_in& addr) noexcept
 {
     std::memset(&addr, 0, sizeof(addr));
     addr.sin_addr.s_addr = htonl(ip_host_byte_order);
@@ -135,7 +145,9 @@ void IpAddress::create_address_struct(const AR::uint32 ip_host_byte_order,
     addr.sin_port        = htons(port);
 }
 
+////////////////////////////////////////////////////////////////////////////////
 IpAddress::~IpAddress() noexcept
 {
 
 }
+

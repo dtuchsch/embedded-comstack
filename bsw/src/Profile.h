@@ -1,8 +1,8 @@
 /**
- * @file      TcpClient.h
+ * @file      Profile.h
  * @author    dtuchscherer <daniel.tuchscherer@hs-heilbronn.de>
- * @brief     TCP client class interface
- * @details   For connecting to and disconnecting from TCP servers.
+ * @brief     Profiling function calls
+ * @details   Measures the time between begin and end of a function.
  * @version   1.0
  * @copyright Copyright (c) 2015, dtuchscherer.
  *            All rights reserved.
@@ -36,14 +36,15 @@
  *            POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef TCPCLIENT_H_
-# define TCPCLIENT_H_
+#ifndef PROFILE_H_
+# define PROFILE_H_
 
 /*******************************************************************************
  * MODULES USED
  *******************************************************************************/
-#include "IpAddress.h"
-#include "TcpSocket.h"
+ 
+// uses C++11 STL std::chrono to profile execution times.
+#include <chrono>
 
 /*******************************************************************************
  * DEFINITIONS AND MACROS
@@ -54,42 +55,43 @@
  *******************************************************************************/
 
 /**
- * @brief The TcpClient class allows connecting and disconnecting to a TCP/IP
- * server.
+ * @brief Profile for determination of time difference between two timepoints.
  */
-class TcpClient : public TcpSocket
+class Profile
 {
 public:
-    /**
-     * @brief Default constructor calls the base class Socket to
-     * create a socket.
-     */
-    TcpClient() noexcept;
+
+    Profile() noexcept = default;
 
     /**
-     * @brief Default destructor closing the socket,
-     * thus closing any established connection.
+     * @brief Start / begin the time measurement.
      */
-    ~TcpClient() noexcept;
+    void start() noexcept
+    {
+    	m_t1 = std::chrono::high_resolution_clock::now();
+    }
 
     /**
-     * @brief Connect to a TCP/IP server.
-     * @param[in] ip_address the IP4 address
-     * @param[in] port the port we want to talk to
-     * @return true if connection is established, false if it fails to connect
-     * to the server.
+     * @brief Takes the second timepoint and calculates the difference in 
+     * seconds between two timepoints.
+     * @return the difference in seconds as floating point
      */
-    AR::boolean connect(IpAddress ip_address, const AR::uint16 port) noexcept;
-
-    /**
-     * @brief explicitly close the socket for disconnection.
-     * @return true if disconnecting was possible, false if not.
-     */
-    AR::boolean disconnect() noexcept;
+    std::chrono::duration< double > end() noexcept
+    {
+    	m_t2 = std::chrono::high_resolution_clock::now();
+    	// difference in time 
+    	std::chrono::duration< double > delta = m_t2 - m_t1;
+    	// delta t is returned
+    	return delta;
+    }
 
 private:
+    //! timepoint one / start
+    std::chrono::high_resolution_clock::time_point m_t1;
+    
+    //! timepoint two / end
+    std::chrono::high_resolution_clock::time_point m_t2;
 };
-
 /*******************************************************************************
  * EXPORTED VARIABLES
  *******************************************************************************/
@@ -98,6 +100,4 @@ private:
  * EXPORTED FUNCTIONS
  *******************************************************************************/
 
-
-
-#endif /* TCPCLIENT_H_ */
+#endif /* PROFILE_H_ */
