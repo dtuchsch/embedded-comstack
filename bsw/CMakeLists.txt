@@ -15,7 +15,6 @@ endif()
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
 
-
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
 ## See http://ros.org/doc/api/catkin/html/user_guide/setup_dot_py.html
@@ -127,7 +126,7 @@ endif()
 # include_directories(include)
 include_directories(
     src
-    src/system 
+    src/system
     src/communication
 if(UNIX)
     ${catkin_INCLUDE_DIRS}
@@ -136,10 +135,10 @@ endif()
 
 ## Declare a C++ library
 add_library(bsw
-    src/communication/CanSocket.cpp 
-    src/communication/IpAddress.cpp 
-    src/communication/TcpClient.cpp 
-    src/communication/TcpServer.cpp 
+    src/communication/CanSocket.cpp
+    src/communication/IpAddress.cpp
+    src/communication/TcpClient.cpp
+    src/communication/TcpServer.cpp
     src/communication/TcpSocket.cpp
 )
 

@@ -111,7 +111,7 @@ catkin_package(
 ###########
 
 ## C++14 support
-set(CMAKE_CXX_FLAGS "-std=c++14 ${CMAKE_CXX_FLAGS}")
+set(CMAKE_CXX_FLAGS "-std=c++14 -Wall -Wextra -Wpedantic -fno-rtti -fno-exceptions ${CMAKE_CXX_FLAGS}")
 
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
@@ -133,6 +133,7 @@ include_directories(
 ## Declare a C++ executable
 add_executable(tcp_ping_pong src/tcp_ping_pong.cpp)
 add_executable(rt_task src/rt_task.cpp)
+add_executable(vcan src/vcan.cpp)
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
@@ -144,6 +145,10 @@ target_link_libraries(tcp_ping_pong
 )
 
 target_link_libraries(rt_task
+   ${catkin_LIBRARIES}
+)
+
+target_link_libraries(vcan
    ${catkin_LIBRARIES}
 )
 
