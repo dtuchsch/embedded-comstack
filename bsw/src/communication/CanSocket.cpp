@@ -44,7 +44,7 @@
 #ifndef _WIN32
 #include "CanSocket.h"
 #include "Debug.h"
-#include <type_traits>
+#include <type_traits> // checks at compile-time
 
 /*******************************************************************************
  * DEFINITIONS AND MACROS
