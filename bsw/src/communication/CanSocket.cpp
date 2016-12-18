@@ -5,7 +5,7 @@
  * @details   These are the methods of class CanSocket to
  *            initialize the CAN interface, send and receive data via Linux
  *            SocketCAN.
- * @version   2.0
+ * @version   2.1
  * @copyright Copyright (c) 2015, dtuchscherer.
  *            All rights reserved.
  *

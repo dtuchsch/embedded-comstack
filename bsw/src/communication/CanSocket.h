@@ -132,7 +132,8 @@ class CanSocket : public Socket< CanSocket >
             {
                 // the interface specified is not available.
                 std::cout << "CAN interface " << interface_str
-                          << " specified is not available.\n";
+                          << " specified is not known to the system!\nAre you "
+                             "sure you've added the device?\n";
                 m_can_init = FALSE;
             }
         }
