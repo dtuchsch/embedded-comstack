@@ -67,13 +67,13 @@
 struct CAN_STD
 {
     // the standard CAN frame contains a total maximum of 8 bytes of user data.
-    static constexpr auto DATA_LEN{8U};
+    static constexpr std::size_t DATA_LEN{8U};
 };
 
 struct CAN_FD
 {
     // the CAN FD frame contains a total maximum of 64 bytes of user data.
-    static constexpr auto DATA_LEN{64U};
+    static constexpr std::size_t DATA_LEN{64U};
 };
 
 //! Forward type. You may use these types to declare data packets to send.
