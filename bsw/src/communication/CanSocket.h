@@ -47,14 +47,13 @@
 
 #include "ComStack_Types.h" // @req AUTOSAR CAN388
 #include "Socket.h"         // uses sockets under Linux
-
-#include <array>           // rx, tx
-#include <cstring>         // strcopy for interface name
-#include <linux/can.h>     // sockaddr structure, protocols and can_filter
-#include <linux/can/raw.h> // filtering
-#include <net/if.h>        // interface name
-#include <sys/ioctl.h>     // blocking / non-blocking
-#include <unistd.h>        // write and read for CAN interface
+#include <array>            // rx, tx
+#include <cstring>          // strcopy for interface name
+#include <linux/can.h>      // sockaddr structure, protocols and can_filter
+#include <linux/can/raw.h>  // filtering
+#include <net/if.h>         // interface name
+#include <sys/ioctl.h>      // blocking / non-blocking
+#include <unistd.h>         // write and read for CAN interface
 
 /*******************************************************************************
  * DEFINITIONS AND MACROS
@@ -64,12 +63,14 @@
  * TYPEDEFS, ENUMERATIONS, CLASSES
  ******************************************************************************/
 
+////////////////////////////////////////////////////////////////////////////////
 struct CAN_STD
 {
     // the standard CAN frame contains a total maximum of 8 bytes of user data.
     static constexpr std::size_t DATA_LEN{8U};
 };
 
+////////////////////////////////////////////////////////////////////////////////
 struct CAN_FD
 {
     // the CAN FD frame contains a total maximum of 64 bytes of user data.
@@ -82,6 +83,7 @@ using CanStdData = CanDataType;
 using CanFDData = std::array< AR::uint8, CAN_FD::DATA_LEN >;
 using CanIDType = canid_t;
 
+////////////////////////////////////////////////////////////////////////////////
 /**
  * @brief CanSocket is used for sending and receiving standard CAN frames and
  * CAN FD frames.
@@ -105,7 +107,8 @@ class CanSocket : public Socket< CanSocket >
         if (sock_created == TRUE)
         {
             // check if the interface is registered
-            AR::boolean interface_exists = check_interface(interface_str);
+            AR::boolean interface_exists =
+                check_interface(interface_str, m_ifr);
 
             // socket creation successful and interface exists
             if (interface_exists == TRUE)
@@ -132,7 +135,7 @@ class CanSocket : public Socket< CanSocket >
             {
                 // the interface specified is not available.
                 std::cout << "CAN interface " << interface_str
-                          << " specified is not known to the system!\nAre you "
+                          << " you've specified is not found!\nAre you "
                              "sure you've added the device?\n";
                 m_can_init = FALSE;
             }
@@ -155,16 +158,15 @@ class CanSocket : public Socket< CanSocket >
      * @return the length transmitted. If send was successfull this must be
      * the number of bytes equally to CAN_MTU = 16 for standard frames and
      * CANFD_MTU = 72 for CAN FD frames.
-     * @remarks If you want to send more than 8 bytes / 64 bytes as a complete
-     * message, you need a transport layer such as CanTp / ISO-TP.
+     * @remarks If you want to send more than 8 byte as a complete
+     * message, you need a transport layer such as CANTp / ISO-TP.
      */
     template < typename CANFrame >
     AR::sint8 send(const CanIDType can_id, const CANFrame& data,
                    const AR::uint8 len) noexcept
     {
         // initialize with zero value. uninitialized stack variables are a
-        // common
-        // error source.
+        // common error source.
         AR::sint8 data_sent{0};
         // must be the correct array size. minimizes static analysis efforts by
         // checking this at compile-time
@@ -190,16 +192,13 @@ class CanSocket : public Socket< CanSocket >
             // set the CAN ID of this message to send
             frame.can_id = can_id;
             // check if length is possible for one CAN frame...
-            // one CAN frame may only contain 8 data bytes.
-            // limit the length to max DLC of CAN
+            // limit the length to max DLC of standard CAN or CAN FD
             frame.len = std::min(static_cast< decltype(data.size()) >(len),
                                  data.size());
 
             // copy data into the data field of the frame struct.
             for (AR::uint8 i = 0U; i < len; ++i)
             {
-                // copy byte by byte...
-                // this could also be done by memcpy.
                 frame.data[i] = data[i];
             }
 
@@ -214,7 +213,8 @@ class CanSocket : public Socket< CanSocket >
             // without using IsoTp.
             if (data_sent <= 0)
             {
-                std::cout << "Send failed with error number: " << errno << "\n";
+                std::cout << "Sending CAN frame failed with error number: "
+                          << errno << "\n";
                 // store the transport layer error number, other layers may
                 // access to do an advanced and application specific error
                 // handling.
@@ -272,7 +272,6 @@ class CanSocket : public Socket< CanSocket >
      */
     AR::boolean enable_canfd() noexcept;
 
-  protected:
   private:
     /**
      * @brief Check if the interface exists and is known to the OS.
@@ -281,21 +280,19 @@ class CanSocket : public Socket< CanSocket >
      * does not know the given interface it will return false.
      */
     template < std::size_t N >
-    AR::boolean check_interface(const char (&interface_str)[N]) noexcept
+    static AR::boolean check_interface(const char (&interface_str)[N],
+                                       struct ifreq& can_if) noexcept
     {
         AR::boolean exists{FALSE};
-
         // copying the interface string into the structure.
-        std::strncpy(m_ifr.ifr_name, interface_str, IFNAMSIZ - 1U);
-
-        // make sure that the string is terminated.
-        m_ifr.ifr_name[IFNAMSIZ - 1U] = '\0';
-
+        std::strncpy(can_if.ifr_name, interface_str, IFNAMSIZ - 1U);
+        // make sure the string is terminated properly.
+        can_if.ifr_name[IFNAMSIZ - 1U] = '\0';
         // map the interface string to a given interface of the system.
-        m_ifr.ifr_ifindex = if_nametoindex(m_ifr.ifr_name);
+        can_if.ifr_ifindex = if_nametoindex(can_if.ifr_name);
 
         // check if the CAN interface is known to the system
-        if (m_ifr.ifr_ifindex != 0)
+        if (can_if.ifr_ifindex != 0)
         {
             // the CAN interface is known to the system
             exists = TRUE;
@@ -303,8 +300,7 @@ class CanSocket : public Socket< CanSocket >
         else
         {
             // ... error finding the given interface. The interface is not known
-            // to
-            // the system.
+            // to the system.
             exists = FALSE;
         }
 

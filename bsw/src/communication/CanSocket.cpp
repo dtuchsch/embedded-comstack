@@ -44,7 +44,7 @@
 #ifndef _WIN32
 #include "CanSocket.h"
 #include "Debug.h"
-#include <type_traits> // checks at compile-time
+#include <type_traits> // checks, decisions at compile-time
 
 /*******************************************************************************
  * DEFINITIONS AND MACROS
@@ -84,7 +84,7 @@ AR::sint8 CanSocket::receive(CanIDType& can_id, CanFDData& data_ref) noexcept
     {
         struct canfd_frame frame;
         const auto socket = get_socket_handle();
-        ssize_t nbytes = read(socket, &frame, m_can_mtu);
+        const ssize_t nbytes = read(socket, &frame, m_can_mtu);
         can_received = static_cast< AR::sint8 >(nbytes);
 
         // check if data is on the socket to receive
@@ -94,10 +94,12 @@ AR::sint8 CanSocket::receive(CanIDType& can_id, CanFDData& data_ref) noexcept
             can_id = frame.can_id;
             // Give the data length code to the return val.
             can_received = static_cast< AR::sint8 >(frame.len);
+            // limit the maximum length
+            const auto data_len = std::min(
+                static_cast< std::size_t >(frame.len), data_ref.size());
             // Transfer the byte stream into the data structure given by ref.
-            for (AR::uint8 i = 0U; i < frame.len; ++i)
+            for (AR::uint8 i = 0U; i < data_len; ++i)
             {
-                // Obviously copying data.
                 data_ref[i] = frame.data[i];
             }
         }
@@ -140,7 +142,6 @@ AR::sint8 CanSocket::receive(CanIDType& can_id, CanDataType& data_ref,
             {
                 // The id is stored in the var given by ref.
                 can_id = frame.can_id;
-
                 // Set the DLC of the CAN frame as return.
                 can_received = (AR::sint8)frame.can_dlc;
 
@@ -213,13 +214,14 @@ AR::boolean CanSocket::enable_canfd() noexcept
                 setsockopt(socket, SOL_CAN_RAW, CAN_RAW_FD_FRAMES, &CANFD_FLAG,
                            sizeof(CANFD_FLAG));
 
-            if (option_set)
+            if (option_set >= 0)
             {
-                enabled = false;
+                enabled = true;
             }
             else
             {
-                enabled = true;
+                m_last_error = errno;
+                enabled = false;
             }
         }
     }
@@ -237,7 +239,7 @@ AR::boolean CanSocket::bind_if_socket() noexcept
     // Bind the interface number to the socket.
     m_sockaddr.can_ifindex = m_ifr.ifr_ifindex;
     const auto handle = get_socket_handle();
-    // Bind the socket onto the can interface.
+    // Bind the socket to the CAN interface.
     const int bind_res =
         bind(handle, (struct sockaddr*)&m_sockaddr, sizeof(m_sockaddr));
 
@@ -245,7 +247,8 @@ AR::boolean CanSocket::bind_if_socket() noexcept
     // It's negative if there was an error.
     if (bind_res < 0)
     {
-        // Error binding the socket onto the can interface.
+        // Error binding the socket to the CAN interface.
+        // store this as the last error other application layers may access.
         bind_success = FALSE;
         m_last_error = errno;
         DEBUG_ERROR("Bind of socket and interface failed.");
