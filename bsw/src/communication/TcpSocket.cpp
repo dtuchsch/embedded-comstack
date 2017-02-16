@@ -39,40 +39,40 @@
 
 /*******************************************************************************
  * MODULES USED
- *******************************************************************************/
+ ******************************************************************************/
 #include "TcpSocket.h"
+#include <netinet/tcp.h>
 
 /*******************************************************************************
  * DEFINITIONS AND MACROS
- *******************************************************************************/
+ ******************************************************************************/
 
 /*******************************************************************************
  * TYPEDEFS, ENUMERATIONS, CLASSES
- *******************************************************************************/
+ ******************************************************************************/
 
 /*******************************************************************************
  * PROTOTYPES OF LOCAL FUNCTIONS
- *******************************************************************************/
+ ******************************************************************************/
 
 /*******************************************************************************
  * EXPORTED VARIABLES
- *******************************************************************************/
+ ******************************************************************************/
 
 /*******************************************************************************
  * GLOBAL MODULE VARIABLES
- *******************************************************************************/
+ ******************************************************************************/
 
 /*******************************************************************************
  * EXPORTED FUNCTIONS
- *******************************************************************************/
+ ******************************************************************************/
 
 /*******************************************************************************
  * FUNCTION DEFINITIONS
- *******************************************************************************/
+ ******************************************************************************/
 
 ////////////////////////////////////////////////////////////////////////////////
-TcpSocket::TcpSocket() noexcept :
-		Socket(SocketType::TCP)
+TcpSocket::TcpSocket() noexcept : Socket(SocketType::TCP)
 {
     // call the base class opening the socket.
 }
@@ -93,7 +93,7 @@ AR::boolean TcpSocket::create() noexcept
     handle = socket(AF_INET, SOCK_STREAM, 0);
 
     // check here if the socket was opened.
-    if ( get_socket_handle() > 0 )
+    if (get_socket_handle() > 0)
     {
         // ... successfull opened.
         socket_created = true;
@@ -114,8 +114,8 @@ AR::sint16 TcpSocket::send(const void* message, const AR::uint16 len) noexcept
     AR::sint16 data_sent = -1;
 
     // sending only makes sense if at least the socket is open.
-    if ( socket_open == TRUE )
-    {        
+    if (socket_open == TRUE)
+    {
 #ifdef _WIN32
         const char* msg = static_cast< const char* >(message);
 #elif defined(__unix__)
@@ -128,7 +128,7 @@ AR::sint16 TcpSocket::send(const void* message, const AR::uint16 len) noexcept
         data_sent = ::send(handle, msg, len, MSG_NOSIGNAL);
 #endif
 
-        if ( data_sent < 0 )
+        if (data_sent < 0)
         {
             m_last_error = errno;
         }
@@ -148,19 +148,19 @@ AR::sint16 TcpSocket::receive(void* message, const AR::uint16 len) noexcept
     AR::sint16 data_received = -1;
 
     // sending only makes sense if at least the socket is open.
-    if ( socket_open == TRUE )
+    if (socket_open == TRUE)
     {
 #ifdef _WIN32
         char* msg = static_cast< char* >(message);
 #elif defined(__unix__)
         void* msg = message;
 #else
-# error "Unable to implement TcpSocket::receive. OS not defined."
+#error "Unable to implement TcpSocket::receive. OS not defined."
 #endif
         const SocketHandleType& handle = get_socket_handle();
         data_received = ::recv(handle, msg, len, 0);
 
-        if ( data_received < 0 )
+        if (data_received < 0)
         {
             m_last_error = errno;
         }
@@ -173,3 +173,24 @@ AR::sint16 TcpSocket::receive(void* message, const AR::uint16 len) noexcept
     return data_received;
 }
 
+////////////////////////////////////////////////////////////////////////////////
+AR::boolean TcpSocket::set_nodelay(const AR::boolean option) noexcept
+{
+    AR::boolean success{false};
+    int flag = static_cast< int >(option);
+    const SocketHandleType handle = get_socket_handle();
+    const int result =
+        setsockopt(handle, IPPROTO_TCP, TCP_NODELAY, &flag, sizeof(int));
+
+    if (result >= 0)
+    {
+        success = true;
+    }
+    else
+    {
+        m_last_error = errno;
+        success = false;
+    }
+
+    return success;
+}

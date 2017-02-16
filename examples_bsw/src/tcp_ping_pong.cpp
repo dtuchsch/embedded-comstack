@@ -1,9 +1,9 @@
 // The example sends data between a TCP/IP client and a TCP/IP server.
-// The TCP client will send some sample data the TCP server will receive and 
+// The TCP client will send some sample data the TCP server will receive and
 // then prints out the received message.
 // This example examines the use of the classes TCPClient and TCPServer.
-// Please note that the given example is for demonstration purposes only. 
-// It may contain bugs and unresolved connection errors, but it shows how one 
+// Please note that the given example is for demonstration purposes only.
+// It may contain bugs and unresolved connection errors, but it shows how one
 // can use the TCP client and server.
 
 #include <array>
@@ -50,12 +50,12 @@ void server_thread() noexcept
     server_running = TRUE;
     // unlock again otherwise a dead-lock may occur.
     mutex.unlock();
-    
+
     if ( listening )
     {
         // blocking wait for a connection from the client.
         const auto accepted = server.accept();
-        
+
         if ( accepted )
         {
             // print the message layout how the received data is interpreted.
@@ -63,20 +63,20 @@ void server_thread() noexcept
             // set the data socket to non-blocking mode. if there is no data it will
             // not wait.
             server.m_data.set_blocking(FALSE);
-                
+
             for ( ; ; )
             {
                 mutex.lock();
-                
+
                 // check if the main thread changed the server_running variable.
                 if ( server_running == FALSE )
                 {
                     // leave this loop immediately
                     break;
                 }
-                
+
                 mutex.unlock();
-                
+
                 std::array< AR::uint8, 4U > data;
                 // receive the messages from the client by using the data socket.
                 const AR::sint16 received = server.m_data.receive(&data, data.size());
@@ -92,7 +92,7 @@ void server_thread() noexcept
                 }
                 else
                 {
-                
+
                 }
             } // receive loop
         } // connection from client accepted
@@ -109,12 +109,12 @@ int main(int argc, char **argv) noexcept
     std::thread st(server_thread);
     // wait until the server thread has started.
     AR::boolean temp_running = FALSE;
-    
+
     // wait until the server thread has been started. we don't want to connect
     // when the server is not listening for connections yet.
     while ( temp_running == FALSE )
     {
-        // because this variable is used in two threads we need a mutex to 
+        // because this variable is used in two threads we need a mutex to
         // avoid read/write access from both threads at the same time.
         mutex.lock();
         temp_running = server_running;
@@ -129,11 +129,11 @@ int main(int argc, char **argv) noexcept
     const auto connected = client.connect("127.0.0.1", 5555U);
     // a counter for the messages that have been sent and to detect packet loss.
     AR::uint8 ctr{0U};
-    
+
     if ( connected )
     {
         std::cout << "Connection established...\n";
-        
+
         for ( auto i = 0U ; i < 10U ; ++i )
         {
             // we will send some test data to the server
@@ -144,19 +144,19 @@ int main(int argc, char **argv) noexcept
             data[1] = 'S';
             data[2] = 'O';
             data[3] = 'S';
-            
+
             // send out some sample data that is going to be displayed.
             const auto sent = client.send(&data, data.size());
-            
+
             if ( sent < 0 )
             {
                 break;
             }
-            
+
             // every time a message is sent out the counter is incremented.
             // we can detect message loss at the receiver side.
             ++ctr;
-            
+
             // send messages at a given rate.
             using namespace std::chrono_literals;
             std::this_thread::sleep_for(1s);
@@ -167,7 +167,7 @@ int main(int argc, char **argv) noexcept
         std::cout << "Connection has not been established!\n";
         std::cout << "Error: " << client.get_last_error() << "\n";
     }
-    
+
     // set the variable to false, otherwise the thread will not stop.
     mutex.lock();
     // this will break the loop of the server thread and the thread is now joinable.
@@ -178,4 +178,3 @@ int main(int argc, char **argv) noexcept
     st.join();
     return EXIT_SUCCESS;
 }
-

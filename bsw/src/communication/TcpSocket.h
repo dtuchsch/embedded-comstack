@@ -38,37 +38,36 @@
  */
 
 #ifndef TCPSOCKET_H_
-# define TCPSOCKET_H_
+#define TCPSOCKET_H_
 
 /*******************************************************************************
  * MODULES USED
- *******************************************************************************/
+ ******************************************************************************/
 
-# ifdef __unix__
-#  include <cstring>
-#  include <sys/types.h>
-#  include <netinet/in.h>
-#  include <netdb.h>
-#  include <arpa/inet.h>
-# endif
+#ifdef __unix__
+#include <arpa/inet.h>
+#include <cstring>
+#include <netdb.h>
+#include <netinet/in.h>
+#include <sys/types.h>
+#endif
 
 #include "Socket.h"
 
 /*******************************************************************************
  * DEFINITIONS AND MACROS
- *******************************************************************************/
+ ******************************************************************************/
 
 /*******************************************************************************
  * TYPEDEFS, ENUMERATIONS, CLASSES
- *******************************************************************************/
+ ******************************************************************************/
 
 /**
  * @brief Concrete class for a Ethernet TCP/IP communication.
  */
-class TcpSocket: public Socket< TcpSocket >
+class TcpSocket : public Socket< TcpSocket >
 {
-public:
-
+  public:
     /**
      * @brief Default constructor
      */
@@ -83,7 +82,8 @@ public:
      * @brief Send via the TCP/IP socket
      * @param[in] message is the data to send
      * @param[in] len is the length to send
-     * @return the number of bytes that have been sent or -1 if there is an error
+     * @return the number of bytes that have been sent or -1 if there is an
+     * error
      */
     AR::sint16 send(const void* message, const AR::uint16 len) noexcept;
 
@@ -103,17 +103,22 @@ public:
      */
     AR::boolean create() noexcept;
 
-protected:
+    /**
+     * @brief Disable the nagle algorithm and forces to send out data remaining
+     * in the buffer immediately.
+     */
+    AR::boolean set_nodelay(const AR::boolean option) noexcept;
 
-private:
+  protected:
+  private:
 };
 
 /*******************************************************************************
  * EXPORTED VARIABLES
- *******************************************************************************/
+ ******************************************************************************/
 
 /*******************************************************************************
  * EXPORTED FUNCTIONS
- *******************************************************************************/
+ ******************************************************************************/
 
 #endif /* TCPSOCKET_H_ */
