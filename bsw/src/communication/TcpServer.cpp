@@ -44,49 +44,41 @@
 
 /*******************************************************************************
  * DEFINITIONS AND MACROS
- *******************************************************************************/
+ ******************************************************************************/
 
 /*******************************************************************************
  * TYPEDEFS, ENUMERATIONS, CLASSES
- *******************************************************************************/
+ ******************************************************************************/
 
 /*******************************************************************************
  * PROTOTYPES OF LOCAL FUNCTIONS
- *******************************************************************************/
+ ******************************************************************************/
 
 /*******************************************************************************
  * EXPORTED VARIABLES
- *******************************************************************************/
+ ******************************************************************************/
 
 /*******************************************************************************
  * GLOBAL MODULE VARIABLES
- *******************************************************************************/
+ ******************************************************************************/
 
 /*******************************************************************************
  * EXPORTED FUNCTIONS
- *******************************************************************************/
+ ******************************************************************************/
 
 /*******************************************************************************
  * FUNCTION DEFINITIONS
- *******************************************************************************/
- 
-////////////////////////////////////////////////////////////////////////////////
-TcpServer::TcpServer() noexcept :
-	m_connect(),
-	m_data()
-{
-
-}
+ ******************************************************************************/
 
 ////////////////////////////////////////////////////////////////////////////////
-TcpServer::~TcpServer() noexcept
-{
-
-}
+TcpServer::TcpServer() noexcept : m_connect(), m_data() {}
 
 ////////////////////////////////////////////////////////////////////////////////
-AR::boolean TcpServer::listen(IpAddress&& ip_address, 
-                                const AR::uint16&& port) noexcept
+TcpServer::~TcpServer() noexcept {}
+
+////////////////////////////////////////////////////////////////////////////////
+AR::boolean TcpServer::listen(IpAddress ip_address,
+                              const AR::uint16 port) noexcept
 {
     AR::boolean listen_success = FALSE;
     // first build the address
@@ -95,26 +87,24 @@ AR::boolean TcpServer::listen(IpAddress&& ip_address,
     ip_address.create_address_struct(ip, port, client);
     const auto handle = m_connect.get_socket();
     // bind the port to the socket
-    const int bound = ::bind(handle,
-    						(struct sockaddr*)&client,
-                            sizeof(client));
-    if ( bound >= 0 )
+    const int bound = ::bind(handle, (struct sockaddr*)&client, sizeof(client));
+    if (bound >= 0)
     {
         // make that socket a listening socket that listens on the port bound.
         const int li = ::listen(handle, 10);
-        if ( li >= 0 )
+        if (li >= 0)
         {
             listen_success = TRUE;
         }
         else
         {
-        	m_connect.m_last_error = errno;
+            m_connect.m_last_error = errno;
             listen_success = FALSE;
         }
     }
     else
     {
-    	m_connect.m_last_error = errno;
+        m_connect.m_last_error = errno;
         listen_success = FALSE;
     }
 
@@ -128,40 +118,42 @@ AR::boolean TcpServer::accept() noexcept
     struct sockaddr_in client;
 #ifdef _WIN32
     int length = sizeof(client);
-#elif defined (__unix__)
+#elif defined(__unix__)
     socklen_t length = sizeof(client);
 #else
 #endif
     const auto handle = m_connect.get_socket();
     // accept the connection on the socket.
-    const int data_socket = ::accept(handle, (struct sockaddr*)&client,
-                                     &length);
+    const int data_socket =
+        ::accept(handle, (struct sockaddr*)&client, &length);
+    std::cout << "Accepting connection from client...\n";
 
-    if ( data_socket >= 0 )
+    if (data_socket >= 0)
     {
-    	// we will copy the socket here to avoid interference between
-    	// the old data socket and a new one.
-		std::cout << "Closing possible previous socket...\n";
-	    m_data.close_socket();
-		std::cout << "Assign data socket from the accept call...";
-		const auto as = m_data.assign(data_socket);
+        // we will copy the socket here to avoid interference between
+        // the old data socket and a new one.
+        std::cout << "Closing possible previous socket...\n";
+        m_data.close_socket();
+        std::cout << "Assign data socket from the accept call...";
+        const auto as = m_data.assign(data_socket);
 
-		if ( as == TRUE )
-		{
-	    	std::cout << "success.\n";
-			accepted = TRUE;
-		}
-		else
-		{
-			accepted = FALSE;
-		}
+        if (as == TRUE)
+        {
+            std::cout << "success.\n";
+            accepted = TRUE;
+        }
+        else
+        {
+            std::cout << "failed.\n";
+            accepted = FALSE;
+        }
     }
     else
     {
-    	m_connect.m_last_error = errno;
+        std::cout << "failed.\n";
+        m_connect.m_last_error = errno;
         accepted = FALSE;
     }
 
     return accepted;
 }
-

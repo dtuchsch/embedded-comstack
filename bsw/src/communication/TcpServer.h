@@ -38,13 +38,13 @@
  */
 
 #ifndef TCPSERVER_H_
-# define TCPSERVER_H_
+#define TCPSERVER_H_
 
 /*******************************************************************************
  * MODULES USED
  *******************************************************************************/
-# include "IpAddress.h"
-# include "TcpSocket.h"
+#include "IpAddress.h"
+#include "TcpSocket.h"
 
 /*******************************************************************************
  * DEFINITIONS AND MACROS
@@ -60,8 +60,7 @@
  */
 class TcpServer
 {
-public:
-
+  public:
     /**
      * @brief The default instructor will open a socket.
      */
@@ -80,7 +79,7 @@ public:
      * @return true if listening is possible, false if listening is not
      * possible.
      */
-    AR::boolean listen(IpAddress&& ip, const AR::uint16&& port) noexcept;
+    AR::boolean listen(IpAddress ip, const AR::uint16 port) noexcept;
 
     /**
      * @brief Accepts a connection.
@@ -90,12 +89,12 @@ public:
 
     //! socket that accepts the connections from TCP clients.
     TcpSocket m_connect;
-    
+
     //! after accepting a connection via this socket data can be
     //! exchanged between TCP client and TCP server.
     TcpSocket m_data;
-    
-private:
+
+  private:
 };
 
 /*******************************************************************************
