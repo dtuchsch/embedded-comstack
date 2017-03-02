@@ -74,9 +74,6 @@
 TcpServer::TcpServer() noexcept : m_connect(), m_data() {}
 
 ////////////////////////////////////////////////////////////////////////////////
-TcpServer::~TcpServer() noexcept {}
-
-////////////////////////////////////////////////////////////////////////////////
 AR::boolean TcpServer::listen(IpAddress ip_address,
                               const AR::uint16 port) noexcept
 {
@@ -126,34 +123,44 @@ AR::boolean TcpServer::accept() noexcept
     // accept the connection on the socket.
     const int data_socket =
         ::accept(handle, (struct sockaddr*)&client, &length);
-    std::cout << "Accepting connection from client...\n";
+    // std::cout << "Accepting connection from client...\n";
 
     if (data_socket >= 0)
     {
         // we will copy the socket here to avoid interference between
         // the old data socket and a new one.
-        std::cout << "Closing possible previous socket...\n";
+        // std::cout << "Closing possible previous socket...\n";
         m_data.close_socket();
-        std::cout << "Assign data socket from the accept call...";
+        // std::cout << "Assign data socket from the accept call...";
         const auto as = m_data.assign(data_socket);
 
         if (as == TRUE)
         {
-            std::cout << "success.\n";
+            // std::cout << "success.\n";
             accepted = TRUE;
         }
         else
         {
-            std::cout << "failed.\n";
+            // std::cout << "failed.\n";
             accepted = FALSE;
         }
     }
     else
     {
-        std::cout << "failed.\n";
+        // std::cout << "failed.\n";
         m_connect.m_last_error = errno;
         accepted = FALSE;
     }
 
     return accepted;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+AR::boolean TcpServer::reuse_addr() noexcept
+{
+    int reuse_addr = 1;
+    const auto handle = m_connect.get_socket();
+    const auto reuse = setsockopt(handle, SOL_SOCKET, SO_REUSEADDR,
+                                  (char*)&reuse_addr, sizeof(reuse_addr));
+    return static_cast< AR::boolean >(reuse == 0);
 }

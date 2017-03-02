@@ -103,7 +103,6 @@ class CanSocket : public Socket< CanSocket >
         // before we set up the CAN interface, create a socket to send and
         // receive data through.
         AR::boolean sock_created = is_socket_initialized();
-        std::cout << "test\n";
 
         if (sock_created == TRUE)
         {
@@ -123,7 +122,7 @@ class CanSocket : public Socket< CanSocket >
                     // This makes it possible to send both standard frames and
                     // CAN FD frames.
                     // const bool canfd = enable_canfd();
-                    std::cout << "Initialized.\n";
+                    std::cout << "success.\n";
                     m_can_init = TRUE;
                 }
                 else

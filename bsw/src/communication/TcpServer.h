@@ -42,17 +42,17 @@
 
 /*******************************************************************************
  * MODULES USED
- *******************************************************************************/
+ ******************************************************************************/
 #include "IpAddress.h"
 #include "TcpSocket.h"
 
 /*******************************************************************************
  * DEFINITIONS AND MACROS
- *******************************************************************************/
+ ******************************************************************************/
 
 /*******************************************************************************
  * TYPEDEFS, ENUMERATIONS, CLASSES
- *******************************************************************************/
+ ******************************************************************************/
 
 /**
  * @brief The TcpServer class allows listening for pending connection requests
@@ -65,12 +65,6 @@ class TcpServer
      * @brief The default instructor will open a socket.
      */
     TcpServer() noexcept;
-
-    /**
-     * @brief The default destructor closes the socket, thus closing any
-     * opening connection.
-     */
-    ~TcpServer() noexcept;
 
     /**
      * @brief Listens for connections.
@@ -86,6 +80,15 @@ class TcpServer
      * @return true if a connection is accepted, false if not.
      */
     AR::boolean accept() noexcept;
+
+    /**
+     * @brief Reuse address let's you restart the server program without delay.
+     * Binding a server socket after a restart will fail, if you do not set this
+     * option.
+     * @return true if setting the socket option was successful, false if
+     * setting the option was not successful.
+     */
+    AR::boolean reuse_addr() noexcept;
 
     //! socket that accepts the connections from TCP clients.
     TcpSocket m_connect;
