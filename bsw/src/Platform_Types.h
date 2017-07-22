@@ -1,7 +1,7 @@
 /**
- * @file 	  Platform_Types.h
- * @author 	  dtuchscherer <daniel.tuchscherer@hs-heilbronn.de>
- * @brief	  Platform specific types mapping.
+ * @file      Platform_Types.h
+ * @author    dtuchscherer <daniel.tuchscherer@hs-heilbronn.de>
+ * @brief     Platform specific types mapping.
  * @details   The AUTOSAR platform types are platform and compiler dependent.
  *            Because the size of some arithmetic types may differ from platform
  *            to platform this header provides platform independent types of 
@@ -46,12 +46,12 @@
 /*******************************************************************************
  * MODULES USED
  *******************************************************************************/
-# ifdef __cplusplus
-#  include <cstdint>
-#  include <type_traits>
-# else
-#  include <stdint.h>
-# endif
+#ifdef __cplusplus
+#include <cstdint>
+#include <type_traits>
+#else
+#include <stdint.h>
+#endif
 
 //! all type-related things will be put into a namespace called AR for AUTOSAR.
 //! this avoids overlaps to other type definitions done in third party headers used.
@@ -117,7 +117,7 @@ namespace AR
 # endif
 
 /*******************************************************************************
- * TYPEDEFS, ENUMERATIONS, CLASSES											   *
+ * TYPEDEFS, ENUMERATIONS, CLASSES                                             *
  *******************************************************************************/
  
 //! @req SWS_Platform_00026 This standard AUTOSAR type shall only be used 
@@ -128,47 +128,83 @@ typedef bool                boolean;
 # else
 // in C there is no bool type. we use a byte to represent true or false with 1 and
 // 0 respectively.
-typedef std::int8_t         boolean;
+typedef int8_t         boolean;
 # endif
 
 //! @req SWS_Platform_00013 This standard AUTOSAR type shall be of 8 bit unsigned.
+#ifdef __cplusplus
 typedef std::uint8_t        uint8;
+#else
+typedef uint8_t             uint8;
+#endif
 
 //! @req SWS_Platform_00016 This standard AUTOSAR type shall be of 8 bit signed.
+#ifdef __cplusplus
 typedef std::int8_t         sint8;
+#else
+typedef int8_t             sint8;
+#endif
 
 //! @req SWS_Platform_00014 This standard AUTOSAR type shall be of 16 bit unsigned.
+#ifdef __cplusplus
 typedef std::uint16_t       uint16;
+#else
+typedef uint16_t            uint16;
+#endif
 
 //! @req SWS_Platform_00017 This standard AUTOSAR type shall be of 16 bit signed.
+#ifdef __cplusplus
 typedef std::int16_t        sint16;
+#else
+typedef int16_t             sint16;
+#endif
 
 //! @req SWS_Platform_00015 This standard AUTOSAR type shall be 32 bit unsigned.
+#ifdef __cplusplus
 typedef std::uint32_t       uint32;
+#else
+typedef uint32_t            uint32;
+#endif
 
 //! @req SWS_Platform_00018 This standard AUTOSAR type shall be 32 bit signed.
+#ifdef __cplusplus
 typedef std::int32_t        sint32;
+#endif
 
 //! @req SWS_Platform_00066 This standard AUTOSAR type shall be 64 bit unsigned.
+#ifdef __cplusplus
 typedef std::uint64_t       uint64;
+#endif
 
 //! @req SWS_Platform_00067 This standard AUTOSAR type shall be 64 bit signed.
+#ifdef __cplusplus
 typedef std::int64_t        sint64;
+#endif
 
 //! @req SWS_Platform_00020 This optimized AUTOSAR type shall be at least 8 bit unsigned.
+#ifdef __cplusplus
 typedef std::uint_least8_t  uint8_least;
+#endif
 
 //! This optimized type shall be at least 16 bit unsigned.
+#ifdef __cplusplus
 typedef std::uint_least16_t uint16_least;
+#endif
 
 //! This optimized type shall be at least 32 bit unsigned.
+#ifdef __cplusplus
 typedef std::uint_least32_t uint32_least;
+#endif
 
 //! @req SWS_Platform_00041 This standard AUTOSAR type shall be at least 32 bit float.
+#ifdef __cplusplus
 typedef float               float32;
+#endif
 
 //! @req SWS_Platform_00042 This standard AUTOSAR type shall be at least 64 bit float.
+#ifdef __cplusplus
 typedef double              float64;
+#endif
 
 //! We will directly check if the size of all types match.
 //! Otherwise it will throw a compile-error. if the types do not match and this
@@ -212,7 +248,9 @@ static_assert(std::is_floating_point< float64 >::value == true, "float64 is not 
 // namespace. on some systems uint8,... is typedefed already so we can define 
 // PLATFORM_TYPES_HIDE_NS for no conflicts and compilation errors.
 # ifndef PLATFORM_TYPES_HIDE_NS
+#ifdef __cplusplus
 using namespace AR;
+#endif
 # endif
 
 #endif /* PLATFORM_TYPES_H_ */
