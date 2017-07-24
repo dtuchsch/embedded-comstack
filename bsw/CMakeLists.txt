@@ -114,13 +114,6 @@ endif()
 ## C++14 support, all warnings, no rtti and no exceptions
 set(CMAKE_CXX_FLAGS "-std=c++14 -Wall -Wextra -Wpedantic -fno-rtti -fno-exceptions ${CMAKE_CXX_FLAGS}")
 
-## Build the basic software with the clang compiler
-option(CLANG "Option clang compiler" ON)
-if(CLANG)
-set(CMAKE_CXX_COMPILER "clang++-3.8")
-set(CMAKE_C_COMPILER "clang-3.8")
-endif()
-
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 # include_directories(include)
