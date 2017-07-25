@@ -4,13 +4,10 @@ project(bsw)
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-if(UNIX)
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   std_msgs
 )
-else()
-endif()
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -100,12 +97,10 @@ endif()
 ## LIBRARIES: libraries you create in this project that dependent projects also need
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
-if(UNIX)
 catkin_package(
 INCLUDE_DIRS src src/system src/communication
 LIBRARIES bsw
 )
-endif()
 
 ###########
 ## Build ##
@@ -121,9 +116,7 @@ include_directories(
     src
     src/system
     src/communication
-if(UNIX)
     ${catkin_INCLUDE_DIRS}
-endif()
 )
 
 ## Declare a C++ library
