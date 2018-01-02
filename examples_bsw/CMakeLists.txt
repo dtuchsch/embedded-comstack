@@ -134,6 +134,7 @@ include_directories(
 add_executable(tcp_ping_pong src/tcp_ping_pong.cpp)
 add_executable(rt_task src/rt_task.cpp)
 add_executable(vcan src/vcan.cpp)
+add_executable(can_send src/can_send.cpp)
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
@@ -149,6 +150,10 @@ target_link_libraries(rt_task
 )
 
 target_link_libraries(vcan
+   ${catkin_LIBRARIES}
+)
+
+target_link_libraries(can_send
    ${catkin_LIBRARIES}
 )
 

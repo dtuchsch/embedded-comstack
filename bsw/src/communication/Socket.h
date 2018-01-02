@@ -50,7 +50,7 @@
 #include <sys/socket.h>
 #include <unistd.h>
 #else
-#error "OS not defined! Please define an operating system."
+#error "OS not supported! Please define an operating system."
 #endif
 #include <iostream>
 
@@ -80,31 +80,19 @@ constexpr SocketHandleType get_invalid_alias()
 }
 
 /**
- * \brief Available concrete socket types.
- */
-enum class SocketType
-{
-    CAN,
-    TCP,
-    UDP
-};
-
-/**
  * \brief A generic socket implementation
- * @tparam Derived socket class for using CRTP. E.g. it could be a TCP, UDP or
+ * \tparam Derived socket class for using CRTP. E.g. it could be a TCP, UDP or
  * CAN socket.
  */
 template < typename Derived > class Socket
 {
   public:
     /**
-     * \brief Default constructor initializing the socket;
-     * \param[in] type defines how the socket will be initialized.
+     * \brief Default constructor initializing the socket
      */
-    Socket(SocketType type) noexcept
-        : m_last_error{0},
-          m_type(type), m_socket_init{false}, m_socket{get_invalid_alias()},
-          m_is_blocking(true)
+    Socket() noexcept
+        : m_last_error{0}, m_socket_init{false}, m_socket{get_invalid_alias()},
+          m_is_blocking{true}
     {
         // create one socket.
         initialize();
@@ -126,7 +114,8 @@ template < typename Derived > class Socket
 
     /**
      * \brief Closes the socket explicitly.
-     * \return true if a close was successful, false if not.
+     * \return true if a close was successful, false if the socket was not
+     * initialized, but close_socket() was called.
      */
     bool close_socket() noexcept
     {
@@ -141,7 +130,7 @@ template < typename Derived > class Socket
 #elif defined(_WIN32)
             const std::int16_t cl = ::closesocket(get_socket_handle());
 #else
-#error "Implementation of Socket::close_socket() failed. OS not defined!"
+#error "Implementation of Socket::close_socket() failed. OS not supported!"
 #endif
 
             if (cl == 0)
@@ -158,7 +147,7 @@ template < typename Derived > class Socket
         else
         {
             // is closed already.
-            std::cout << "Socket is closed already.\n";
+            std::cerr << "Socket is closed already.\n";
             closed = true;
         }
 
@@ -210,7 +199,7 @@ template < typename Derived > class Socket
         SocketHandleType socket = get_socket_handle();
         nfds = static_cast< SocketHandleType >(socket + 1);
 #else
-#error "OS not defined!"
+#error "OS not supported!"
 #endif
 
         struct timeval time_to_wait;
@@ -246,6 +235,8 @@ template < typename Derived > class Socket
 
     /**
      * \brief Set the socket into blocking or non-blocking mode.
+     * \param[in] blocking true if this socket shall be blocking on a receive;
+     * false if it shall be non-blocking on a read.
      * \return true if it was successful changed, false if not.
      */
     bool set_blocking(const bool blocking)
@@ -259,7 +250,7 @@ template < typename Derived > class Socket
 #elif defined(_WIN32)
             int status = 1;
 #else
-#error "OS not defined!"
+#error "OS not supported!"
 #endif
             if (status >= 0)
             {
@@ -333,7 +324,7 @@ template < typename Derived > class Socket
         const bool sock_created = create();
 #endif
 
-        if (sock_created == true)
+        if (sock_created)
         {
             m_socket_init = true;
         }
@@ -375,7 +366,7 @@ template < typename Derived > class Socket
      */
     bool create() noexcept
     {
-        bool created = false;
+        bool created{false};
 
         // only if the current socket is closed
         if (is_socket_initialized() == false)
@@ -383,22 +374,15 @@ template < typename Derived > class Socket
             // CRTP
             created = static_cast< Derived* >(this)->create();
         }
-        else
-        {
-            created = false;
-        }
 
         return created;
     }
-
-    /// this attribute shows if it's a socket for can, ethernet tcp/ip or udp
-    SocketType m_type;
 
   private:
     /// true if everything is set up and the instance can receive and send data
     bool m_socket_init;
 
-    /// this stores the socket handle.
+    /// This stores the socket handle.
     SocketHandleType m_socket;
 
     /// Either the socket is in blocking or non-blocking mode.

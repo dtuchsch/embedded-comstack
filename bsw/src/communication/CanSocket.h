@@ -42,8 +42,9 @@
 #define CAN_H_
 #ifndef _WIN32
 
-#include "Socket.h"        // uses sockets under Linux
-#include <array>           // rx, tx
+#include "Socket.h" // uses sockets under Linux
+#include <array>    // rx, tx
+#include <cassert>
 #include <cstring>         // strcopy for interface name
 #include <linux/can.h>     // sockaddr structure, protocols and can_filter
 #include <linux/can/raw.h> // filtering
@@ -51,12 +52,18 @@
 #include <sys/ioctl.h>     // blocking / non-blocking
 #include <unistd.h>        // write and read for CAN interface
 
+/**
+ * \brief Defining a struct that holds informations about standard CAN frames.
+ */
 struct CAN_STD
 {
     // the standard CAN frame contains a total maximum of 8 bytes of user data.
     static constexpr std::size_t DATA_LEN{8U};
 };
 
+/**
+ * \brief Defining a struct that holds informations about CAN FD frames.
+ */
 struct CAN_FD
 {
     // A CAN FD frame contains a total maximum of 64 bytes of user data.
@@ -83,11 +90,12 @@ class CanSocket : public Socket< CanSocket >
      */
     template < std::size_t N >
     explicit CanSocket(const char (&interface_str)[N]) noexcept
-        : Socket{SocketType::CAN}, m_can_init{false}
+        : Socket{}, m_can_init{false}
     {
         // before we set up the CAN interface, create a socket to send and
         // receive data through.
         bool sock_created = is_socket_initialized();
+        assert(sock_created);
 
         if (sock_created == true)
         {
@@ -98,15 +106,15 @@ class CanSocket : public Socket< CanSocket >
             if (interface_exists == true)
             {
                 bool bind_success = bind_if_socket();
-
-                if (bind_success == true)
+                assert(bind_success);
+                if (bind_success)
                 {
                     // we turn on CAN FD mode automatically as a standard
                     // setting.
                     // This makes it possible to send both standard frames and
                     // CAN FD frames.
-                    // const bool canfd = enable_canfd();
-                    std::cout << "success.\n";
+                    const bool canfd = enable_canfd();
+                    assert(canfd);
                     m_can_init = true;
                 }
                 else
@@ -127,13 +135,15 @@ class CanSocket : public Socket< CanSocket >
         }
         else
         {
-            std::cout << "Socket creation failed.\n";
+            std::cerr << "Socket creation failed.\n";
             m_can_init = false;
         }
     }
 
     /**
      * \brief Transmits a message on CAN bus.
+     * \tparam CANData Deduced type: Whether this is a standard CAN frame or a
+     * CAN FD frame.
      * \param[in] can_id CAN identifier to transmit the message.
      * \param[in] data This is an array of bytes that contains
      * data and is being transmitted on CAN bus with the given CAN ID and DLC.
@@ -143,11 +153,11 @@ class CanSocket : public Socket< CanSocket >
      * \return the length transmitted. If send was successfull this must be
      * the number of bytes equally to CAN_MTU = 16 for standard frames and
      * CANFD_MTU = 72 for CAN FD frames.
-     * @remarks If you want to send more than 8 byte as a complete
+     * \remarks If you want to send more than 8 byte as a complete
      * message, you need a transport layer such as CANTp / ISO-TP.
      */
-    template < typename CANFrame >
-    std::int8_t send(const CanIDType can_id, const CANFrame& data,
+    template < typename CANData >
+    std::int8_t send(const CanIDType can_id, const CANData& data,
                      const std::uint8_t len) noexcept
     {
         // initialize with zero value. uninitialized stack variables are a
@@ -155,19 +165,19 @@ class CanSocket : public Socket< CanSocket >
         std::int8_t data_sent{0};
         // must be the correct array size. minimizes static analysis efforts by
         // checking this at compile-time
-        static_assert(std::is_same< CanStdData, CANFrame >::value ||
-                          std::is_same< CanFDData, CANFrame >::value,
+        static_assert(std::is_same< CanStdData, CANData >::value ||
+                          std::is_same< CanFDData, CANData >::value,
                       "Must be a standard CAN frame or CAN FD frame.");
 
-        // select the can frame type: may be a standard CAN frame or CAN FD
+        // Select the can frame type: may be a standard CAN frame or CAN FD
         // frame
         typedef typename std::conditional<
-            std::is_same< CanStdData, CANFrame >::value, struct can_frame,
+            std::is_same< CanStdData, CANData >::value, struct can_frame,
             struct canfd_frame >::type SelectedFrame;
 
         // First check if the file descriptor for the socket was initialized
         // and the interface is up and running.
-        if ((is_can_initialized()) && (len > 0U))
+        if (is_can_initialized() && (len > 0U))
         {
             // Structure that is given to the POSIX write function.
             // We have to define CAN-ID, length (DLC) and copy the data to send.
