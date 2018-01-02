@@ -1,10 +1,10 @@
 /**
  * @file      Profile.h
- * @author    dtuchscherer <daniel.tuchscherer@hs-heilbronn.de>
+ * @author    dtuchscherer <daniel.tuchscherer@gmail.com>
  * @brief     Profiling function calls
  * @details   Measures the time between begin and end of a function.
  * @version   1.0
- * @copyright Copyright (c) 2015, dtuchscherer.
+ * @copyright Copyright (c) 2018, dtuchscherer.
  *            All rights reserved.
  *
  *            Redistributions and use in source and binary forms, with
@@ -37,67 +37,43 @@
  */
 
 #ifndef PROFILE_H_
-# define PROFILE_H_
+#define PROFILE_H_
 
-/*******************************************************************************
- * MODULES USED
- *******************************************************************************/
- 
-// uses C++11 STL std::chrono to profile execution times.
 #include <chrono>
 
-/*******************************************************************************
- * DEFINITIONS AND MACROS
- *******************************************************************************/
-
-/*******************************************************************************
- * TYPEDEFS, ENUMERATIONS, CLASSES
- *******************************************************************************/
-
 /**
- * @brief Profile for determination of time difference between two timepoints.
+ * \brief Profile for determination of time difference between two timepoints.
  */
 class Profile
 {
-public:
-
+  public:
     Profile() noexcept = default;
 
     /**
-     * @brief Start / begin the time measurement.
+     * \brief Start / begin the time measurement.
      */
-    void start() noexcept
-    {
-    	m_t1 = std::chrono::high_resolution_clock::now();
-    }
+    void start() noexcept { m_t1 = std::chrono::high_resolution_clock::now(); }
 
     /**
-     * @brief Takes the second timepoint and calculates the difference in 
+     * \brief Takes the second timepoint and calculates the difference in
      * seconds between two timepoints.
-     * @return the difference in seconds as floating point
+     * \return the difference in seconds as a floating point value
      */
     std::chrono::duration< double > end() noexcept
     {
-    	m_t2 = std::chrono::high_resolution_clock::now();
-    	// difference in time 
-    	std::chrono::duration< double > delta = m_t2 - m_t1;
-    	// delta t is returned
-    	return delta;
+        m_t2 = std::chrono::high_resolution_clock::now();
+        // difference in time
+        std::chrono::duration< double > delta = m_t2 - m_t1;
+        // delta t is returned
+        return delta;
     }
 
-private:
-    //! timepoint one / start
+  private:
+    /// timepoint one / start
     std::chrono::high_resolution_clock::time_point m_t1;
-    
-    //! timepoint two / end
+
+    /// timepoint two / end
     std::chrono::high_resolution_clock::time_point m_t2;
 };
-/*******************************************************************************
- * EXPORTED VARIABLES
- *******************************************************************************/
-
-/*******************************************************************************
- * EXPORTED FUNCTIONS
- *******************************************************************************/
 
 #endif /* PROFILE_H_ */
