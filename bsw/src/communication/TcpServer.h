@@ -59,7 +59,7 @@ class TcpServer
      * \brief Listens for connections.
      * \param[in] ip the IP4 address to listen on for incoming requests.
      * \param[in] port the port to listen on for incoming requests.
-     * @return true if listening is possible, false if listening is not
+     * \return true if listening is possible, false if listening is not
      * possible.
      */
     bool listen(IpAddress ip, const std::uint16_t port) noexcept;
@@ -74,16 +74,16 @@ class TcpServer
      * \brief Reuse address let's you restart the server program without delay.
      * Binding a server socket after a restart will fail, if you do not set this
      * option.
-     * @return true if setting the socket option was successful, false if
+     * \return true if setting the socket option was successful, false if
      * setting the option was not successful.
      */
     bool reuse_addr() noexcept;
 
-    //! socket that accepts the connections from TCP clients.
+    /// socket that accepts the connections from TCP clients.
     TcpSocket m_connect;
 
-    //! after accepting a connection via this socket data can be
-    //! exchanged between TCP client and TCP server.
+    /// after accepting a connection via this socket data can be
+    /// exchanged between TCP client and TCP server.
     TcpSocket m_data;
 
   private:

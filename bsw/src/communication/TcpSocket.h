@@ -85,15 +85,20 @@ class TcpSocket : public Socket< TcpSocket >
     std::int16_t receive(void* message, const std::uint16_t len) noexcept;
 
     /**
-     * \brief Create a TCP socket
-     * \return true if the socket is open or false if there was an error on
-     * creation.
+     * \brief Create a TCP socket; This method is called by the base class.
+     * \return true if the socket is created or false if there was an error when
+     * creating the socket.
      */
     bool create() noexcept;
 
     /**
      * \brief Disable the nagle algorithm and forces to send out data remaining
      * in the buffer immediately.
+     * \remark Setting this option to true should be chosen carefully and only
+     * if this is really needed (e.g. to get better "real-time behavior" when
+     * using TCP/IP).
+     * \return true if setting the option as given by the parameter was
+     * successful or not.
      */
     bool set_nodelay(const bool option) noexcept;
 };

@@ -41,7 +41,7 @@
 #include <netinet/tcp.h>
 
 ////////////////////////////////////////////////////////////////////////////////
-TcpSocket::TcpSocket() noexcept : Socket(SocketType::TCP)
+TcpSocket::TcpSocket() noexcept : Socket{}
 {
     // call the base class opening the socket.
 }
