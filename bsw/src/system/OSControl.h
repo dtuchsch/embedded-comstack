@@ -1,10 +1,10 @@
 /**
  * @file      OSControl.h
- * @author    dtuchscherer <daniel.tuchscherer@hs-heilbronn.de>
+ * @author    dtuchscherer <daniel.tuchscherer@gmail.com>
  * @brief     Task abstraction layer.
  * @details   Abstracting the management of real-time tasks.
  * @version   1.0
- * @copyright Copyright (c) 2015, dtuchscherer.
+ * @copyright Copyright (c) 2018, dtuchscherer.
  *            All rights reserved.
  *
  *            Redistributions and use in source and binary forms, with
@@ -37,42 +37,15 @@
  */
 
 #ifndef OSCONTROL_H_
-# define OSCONTROL_H_
+#define OSCONTROL_H_
 
-/*******************************************************************************
- * MODULES USED
- *******************************************************************************/
-
-// 
 #include <iostream>
-
-// check numeric limits of data types at compile-time.
-#include <limits>
-
-// POSIX threads for send and receive thread.
-#include <pthread.h>
-
+#include <limits>    // Check numeric limits of data types at compile-time.
+#include <pthread.h> // POSIX threads for send and receive thread.
+#include <sched.h> // Accessing the scheduler for the real-time tasks to set priority.
 #include <string.h>
-
-// Accessing the scheduler for the real-time tasks to set priority.
-#include <sched.h>
-
-// Memory management for the real-time tasks.
-#include <sys/mman.h>
-
-// Timestamps and nanosleep
-#include <time.h>
-
-// includes Platform_Types.h for uniform types often used.
-#include "Std_Types.h"
-
-/*******************************************************************************
- * DEFINITIONS AND MACROS
- *******************************************************************************/
-
-/*******************************************************************************
- * TYPEDEFS, ENUMERATIONS, CLASSES
- *******************************************************************************/
+#include <sys/mman.h> // Memory management for the real-time tasks.
+#include <time.h>     // Timestamps and nanosleep
 
 /**
  *
@@ -83,7 +56,7 @@ struct TaskMutex
 };
 
 /**
- * 
+ *
  */
 struct TaskHandle
 {
@@ -91,36 +64,36 @@ struct TaskHandle
 };
 
 /**
- * @brief OSControl is a system abstraction interface to manage (real-time) tasks.
- * This class tries to hide the whole configuration stuff needed to create a real-time
- * task from the developer. One is able to easily create tasks.
+ * @brief OSControl is a system abstraction interface to manage (real-time)
+ * tasks. This class tries to hide the whole configuration stuff needed to
+ * create a real-time task from the developer. One is able to easily create
+ * tasks.
  */
 class OSControl
 {
-public:
-
+  public:
     /**
      * @brief Creates a real-time task as pthread.
      * @tparam F is the function called after pthread creation.
      * @param[in] context is a pointer to an object that is used to get access
      * to class methods within the pthread context.
-     * @return TRUE if the task has been created, FALSE if the creation was
+     * @return true if the task has been created, false if the creation was
      * not successful.
      */
-    template< void* F(void* context) >
-    AR::boolean create_rt_thread(void* context, TaskHandle& handle) noexcept
+    template < void* F(void* context) >
+    bool create_rt_thread(void* context, TaskHandle& handle) noexcept
     {
-        AR::boolean created = FALSE;
-        const auto thread_running = pthread_create(&handle.m_handle, NULL_PTR,
-                                                   F, context);
+        bool created = false;
+        const auto thread_running =
+            pthread_create(&handle.m_handle, nullptr, F, context);
 
-        if ( thread_running == 0 )
+        if (thread_running == 0)
         {
-            created = TRUE;
+            created = true;
         }
         else
         {
-            created = FALSE;
+            created = false;
         }
 
         return created;
@@ -128,20 +101,20 @@ public:
 
     /**
      * @brief Waits until the thread is terminated.
-     * @param[in] handle the task handle of the task to 
+     * @param[in] handle the task handle of the task to
      */
-    AR::boolean close_rt_thread(TaskHandle& handle) noexcept
+    bool close_rt_thread(TaskHandle& handle) noexcept
     {
-        AR::boolean closed = FALSE;
-        const int joined = pthread_join(handle.m_handle, NULL_PTR);
+        bool closed = false;
+        const int joined = pthread_join(handle.m_handle, nullptr);
 
-        if ( joined == 0 )
+        if (joined == 0)
         {
-            closed = TRUE;
+            closed = true;
         }
         else
         {
-            closed = FALSE;
+            closed = false;
         }
 
         return closed;
@@ -153,47 +126,50 @@ public:
      * @param running
      * @param callee
      */
-    template< int Priority, long int Period, typename T >
-    void rt_task(AR::boolean& running, T& callee) noexcept
+    template < int Priority, long int Period, typename T >
+    void rt_task(bool& running, T& callee) noexcept
     {
         struct timespec t;
         struct sched_param sched_param;
-        
+
         // linux timespec calculates in nanoseconds. We convert the constant
-        // value from microseconds into nanoseconds. 
+        // value from microseconds into nanoseconds.
         constexpr auto INTERVAL = 1000 * Period; // 1000ns = 1us
-        
+
         // check at compile-time if the given interval exceeds the limit of an
         // integer value.
         static_assert(Priority < 99,
-                "Not able to set a priority greater than 98. Please specify the real-time priority between 1 and 98.");
-                
+                      "Not able to set a priority greater than 98. Please "
+                      "specify the real-time priority between 1 and 98.");
+
         static_assert(Priority >= 0,
-                "Not able to set a negative or zero priority. Please specify the real-time priority between 1 and 98.");
-                
+                      "Not able to set a negative or zero priority. Please "
+                      "specify the real-time priority between 1 and 98.");
+
         static_assert(INTERVAL <= std::numeric_limits< long int >::max(),
-                "Time interval is too big to fit into a long.");
-                
+                      "Time interval is too big to fit into a long.");
+
         // set the scheduler's priority
         sched_param.sched_priority = Priority;
-        
+
         // Set up the scheduler to round-robin algorithm.
         // Additionally to SCHED_FIFO SCHED_RR time slices
-        const int prio_policy_set = sched_setscheduler(0, SCHED_RR, &sched_param);
-                                                       
+        const int prio_policy_set =
+            sched_setscheduler(0, SCHED_RR, &sched_param);
+
         // check if the priority was set.
-        if ( prio_policy_set == -1 )
+        if (prio_policy_set == -1)
         {
             // if the high priority of the real-time task could not be assigned
             // we will leave immediately. If we're not able to set high
             // priority this may lead to unexpected behavior because the thread
             // is not executed on time!
-            std::cout << "Error on setting a high priority.\n";
+            std::cerr << "Error on setting a high priority.\n";
             return;
         }
 
         /* Lock memory */
-        if ( mlockall(MCL_CURRENT | MCL_FUTURE) == -1 )
+        if (mlockall(MCL_CURRENT | MCL_FUTURE) == -1)
         {
             // destroy this thread if locking memory failed.
             return;
@@ -201,29 +177,30 @@ public:
 
         /* Pre-fault our stack */
         stack_prefault();
-        
+
         // Write the time struct once.
         clock_gettime(CLOCK_MONOTONIC, &t);
-        
+
         // start after one second
         ++t.tv_sec;
 
         // we let the task running as long as this reference variable is true.
-        while ( running == TRUE )
+        while (running == true)
         {
             // Wait the given interval
-            // @remark Use nanosleep for high precision. Uses the high resolution timer.
+            // @remark Use nanosleep for high precision. Uses the high
+            // resolution timer.
             clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &t, NULL);
 
             // The method must always be named like this!
             const auto call_ok = callee.update();
-            
+
             // check if something bad has happened.
-            if ( call_ok == FALSE )
+            if (call_ok == false)
             {
                 // this will break the loop.
-                running = FALSE;
-            } 
+                running = false;
+            }
 
             // add for the next shot, otherwise clock_nanosleep has no effect
             t.tv_nsec += INTERVAL;
@@ -234,61 +211,15 @@ public:
     }
 
     /**
-     * @brief Initialize a mutex.
-     * @return true if initializing the mutex is okay, otherwise false.
-     */
-    AR::boolean mutex_init(TaskMutex& mutex) noexcept
-    {
-        AR::boolean init_success = FALSE;
-        const auto init = pthread_mutex_init(&mutex.m_mutex, NULL);
-
-        if ( init == 0 )
-        {
-            init_success = TRUE;
-        }
-        else
-        {
-            init_success = FALSE;
-        }
-
-        return init_success;
-    }
-
-    /**
-     * @brief Locks the mutex
-     */
-    void mutex_lock(TaskMutex& mutex) noexcept
-    {
-        pthread_mutex_lock(&mutex.m_mutex);
-    }
-
-    /**
-     * @brief Unlocks the mutex
-     */
-    void mutex_unlock(TaskMutex& mutex) noexcept
-    {
-        pthread_mutex_unlock(&mutex.m_mutex);
-    }
-
-    /**
-     * @brief Destroys the mutex.
-     */
-    void mutex_destroy(TaskMutex& mutex) noexcept
-    {
-        pthread_mutex_destroy(&mutex.m_mutex);
-    }
-
-    /**
      * @brief tries to allocate memory within a pthread.
      */
     void stack_prefault() noexcept
     {
-        AR::uint8 stack[8 * 1024];
+        std::uint8_t stack[8 * 1024];
         memset(stack, 0, 8 * 1024);
     }
 
-private:
-
+  private:
     /**
      * @brief Necessary to calculate the time correctly for the next
      * nanosleep. If the field nanoseconds of structure timespec exceeds
@@ -299,22 +230,14 @@ private:
     void normalize(struct timespec& t) noexcept
     {
         constexpr int NSEC_PER_SEC = 1000000000LL;
-        
+
         // Normalize the time structure to calculate the next shot.
-        while ( t.tv_nsec >= NSEC_PER_SEC )
+        while (t.tv_nsec >= NSEC_PER_SEC)
         {
             t.tv_nsec -= NSEC_PER_SEC;
             ++t.tv_sec;
         }
     }
 };
-
-/*******************************************************************************
- * EXPORTED VARIABLES
- *******************************************************************************/
-
-/*******************************************************************************
- * EXPORTED FUNCTIONS
- *******************************************************************************/
 
 #endif /* OSCONTROL_H_ */

@@ -1,10 +1,10 @@
 /**
  * @file      IpAddress.h
- * @author    dtuchscherer <daniel.tuchscherer@hs-heilbronn.de>
- * @brief     IP Address interface
+ * @author    dtuchscherer <daniel.tuchscherer@gmail.com>
+ * \brief     IP Address interface
  * @details   IP Address interface for abstracting pure strings.
  * @version   1.0
- * @copyright Copyright (c) 2015, dtuchscherer.
+ * @copyright Copyright (c) 2018, dtuchscherer.
  *            All rights reserved.
  *
  *            Redistributions and use in source and binary forms, with
@@ -37,82 +37,63 @@
  */
 
 #ifndef IPADDRESS_H_
-# define IPADDRESS_H_
+#define IPADDRESS_H_
 
-/*******************************************************************************
- * MODULES USED
- *******************************************************************************/
 #ifdef __unix__
-# include <netinet/in.h>
-# include <arpa/inet.h>
+#include <arpa/inet.h>
+#include <netinet/in.h>
 #endif
 
 #include "Socket.h"
 
-/*******************************************************************************
- * DEFINITIONS AND MACROS
- *******************************************************************************/
-
-/*******************************************************************************
- * TYPEDEFS, ENUMERATIONS, CLASSES
- *******************************************************************************/
-
 /**
- * @brief IpAddress class interface for interpreting ip addresses as string.
+ * \brief IpAddress class represents one IP address as a processible object.
  */
 class IpAddress
 {
-public:
+  public:
     /**
-     * @brief Construct the address from a C-style string
-     * @param[in] ip_address the IP4 address as C-style string e.g. "192.168.3.11"
-     * "255.255.255.0" means any ip address.
+     * \brief Construct the address from a C-style string
+     * \param[in] ip_address the IP4 address as a C-style string e.g.
+     * "192.168.3.11" "255.255.255.0" means "any" IP address.
      */
     IpAddress(const char* ip_address) noexcept;
 
     /**
      * Default destructor
      */
-    ~IpAddress() noexcept;
+    ~IpAddress() noexcept = default;
 
     /**
-     * @brief get the ip address for socket communication.
-     * @return the ip address in host-byte-order
+     * \brief get the ip address for socket communication.
+     * \return the ip address in host-byte-order
      */
-    AR::uint32 get_ip_address() const noexcept;
+    std::uint32_t get_ip_address() const noexcept;
 
     /**
-     * @brief creates a structure for connecting and listening.
-     * @param[in] ip_host_byte_order the IP4 address in host-byte-order
-     * @param[in] port the port to connect to
-     * @param[out] addr the structure to store the ip info to.
+     * \brief creates a structure for connecting and listening.
+     * \param[in] ip_host_byte_order the IP4 address in host-byte-order
+     * \param[in] port the port to connect to
+     * \param[out] addr the structure to store the ip info to.
      */
-    void create_address_struct(const AR::uint32 ip_host_byte_order,
-                               const AR::uint16 port, sockaddr_in& addr) noexcept;
+    void create_address_struct(const std::uint32_t ip_host_byte_order,
+                               const std::uint16_t port,
+                               sockaddr_in& addr) noexcept;
 
-private:
-
+  private:
     /**
-     * @brief Try to build a byte representation out of the address given as
+     * \brief Try to build a byte representation out of the address given as
      * string.
-     * @param[in] ip the IP4 address as C-style string
-     * @return true if the ip address is valid, false if not.
+     * \param[in] ip the IP4 address as C-style string
+     * \return true if the ip address is valid, false if not.
      */
-    AR::boolean is_valid(const char* ip) noexcept;
+    bool is_valid(const char* ip) noexcept;
 
-    //! the address in network-byte-order
-    AR::uint32 m_address_binary;
+    /// the address in network-byte-order
+    std::uint32_t m_address_binary;
 
-    //! if the configuration of the given ip was successful or not.
-    AR::boolean m_valid_ip;
+    /// if the configuration of the given ip was successful or not.
+    bool m_valid_ip;
 };
-
-/*******************************************************************************
- * EXPORTED VARIABLES
- *******************************************************************************/
-
-/*******************************************************************************
- * EXPORTED FUNCTIONS
- *******************************************************************************/
 
 #endif /* IPADDRESS_H_ */

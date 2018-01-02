@@ -1,10 +1,10 @@
 /**
  * @file      TcpClient.h
- * @author    dtuchscherer <daniel.tuchscherer@hs-heilbronn.de>
- * @brief     TCP client class interface
+ * @author    dtuchscherer <daniel.tuchscherer@gmail.com>
+ * \brief     TCP client class interface
  * @details   For connecting to and disconnecting from TCP servers.
  * @version   1.0
- * @copyright Copyright (c) 2015, dtuchscherer.
+ * @copyright Copyright (c) 2018, dtuchscherer.
  *            All rights reserved.
  *
  *            Redistributions and use in source and binary forms, with
@@ -37,67 +37,44 @@
  */
 
 #ifndef TCPCLIENT_H_
-# define TCPCLIENT_H_
+#define TCPCLIENT_H_
 
-/*******************************************************************************
- * MODULES USED
- *******************************************************************************/
 #include "IpAddress.h"
 #include "TcpSocket.h"
 
-/*******************************************************************************
- * DEFINITIONS AND MACROS
- *******************************************************************************/
-
-/*******************************************************************************
- * TYPEDEFS, ENUMERATIONS, CLASSES
- *******************************************************************************/
-
 /**
- * @brief The TcpClient class allows connecting and disconnecting to a TCP/IP
+ * \brief The TcpClient class allows connecting and disconnecting to a TCP/IP
  * server.
  */
 class TcpClient : public TcpSocket
 {
-public:
+  public:
     /**
-     * @brief Default constructor calls the base class Socket to
+     * \brief Default constructor calls the base class Socket to
      * create a socket.
      */
     TcpClient() noexcept;
 
     /**
-     * @brief Default destructor closing the socket,
+     * \brief Default destructor closing the socket,
      * thus closing any established connection.
      */
     ~TcpClient() noexcept;
 
     /**
-     * @brief Connect to a TCP/IP server.
-     * @param[in] ip_address the IP4 address
-     * @param[in] port the port we want to talk to
-     * @return true if connection is established, false if it fails to connect
+     * \brief Connect to a TCP/IP server.
+     * \param[in] ip_address the IP4 address
+     * \param[in] port the port we want to talk to
+     * \return true if connection is established, false if it fails to connect
      * to the server.
      */
-    AR::boolean connect(IpAddress ip_address, const AR::uint16 port) noexcept;
+    bool connect(IpAddress ip_address, const std::uint16_t port) noexcept;
 
     /**
-     * @brief explicitly close the socket for disconnection.
-     * @return true if disconnecting was possible, false if not.
+     * \brief explicitly close the socket for disconnection.
+     * \return true if disconnecting was possible, false if not.
      */
-    AR::boolean disconnect() noexcept;
-
-private:
+    bool disconnect() noexcept;
 };
-
-/*******************************************************************************
- * EXPORTED VARIABLES
- *******************************************************************************/
-
-/*******************************************************************************
- * EXPORTED FUNCTIONS
- *******************************************************************************/
-
-
 
 #endif /* TCPCLIENT_H_ */

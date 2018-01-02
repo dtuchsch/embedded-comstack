@@ -1,12 +1,12 @@
 /**
  * @file      Socket.h
- * @author    dtuchscherer <daniel.tuchscherer@hs-heilbronn.de>
- * @brief     Bare Socket Interface
+ * @author    dtuchscherer <daniel.tuchscherer@gmail.com>
+ * \brief     Bare Socket Interface
  * @details   This is an interface of an "abstract" socket,
  *            derived classes of the base class Socket will then implement
  *            their own way to create and open a socket.
  * @version   1.0
- * @copyright Copyright (c) 2015, dtuchscherer.
+ * @copyright Copyright (c) 2018, dtuchscherer.
  *            All rights reserved.
  *
  *            Redistributions and use in source and binary forms, with
@@ -39,55 +39,40 @@
  */
 
 #ifndef SOCKET_H_
-# define SOCKET_H_
+#define SOCKET_H_
 
-/*******************************************************************************
- * MODULES USED
- *******************************************************************************/
-
-# ifdef _WIN32
-#  include <winsock2.h>
-#  include <io.h>
-# elif defined(__unix__)
-#  include <sys/socket.h>
-#  include <fcntl.h>
-#  include <unistd.h>
-#  include <cerrno>
-# else
-#  error "OS not defined! Please define an operating system."
-# endif
+#ifdef _WIN32
+#include <io.h>
+#include <winsock2.h>
+#elif defined(__unix__)
+#include <cerrno>
+#include <fcntl.h>
+#include <sys/socket.h>
+#include <unistd.h>
+#else
+#error "OS not defined! Please define an operating system."
+#endif
 #include <iostream>
 
-# include "ComStack_Types.h"
-
-/*******************************************************************************
- * DEFINITIONS AND MACROS
- *******************************************************************************/
-
-# ifdef __unix__
+#ifdef __unix__
 using SocketHandleType = int;
 using SocketErrorType = int;
-# elif defined (_WIN32)
+#elif defined(_WIN32)
 using SocketHandleType = SOCKET;
 using SocketErrorType = int;
-#  undef errno
-#  define errno WSAGetLastError()
-# else
-#  error "OS not defined!"
-# endif
+#undef errno
+#define errno WSAGetLastError()
+#else
+#error "OS not supported!"
+#endif
 
-/*******************************************************************************
- * TYPEDEFS, ENUMERATIONS, CLASSES
- *******************************************************************************/
-
-enum class SocketState
-    : SocketHandleType
+enum class SocketState : SocketHandleType
 {
-        INVALID
+    INVALID
 };
 
 /**
- * @brief At init time the socket is not created, thus invalid.
+ * \brief At init time the socket is not created, thus invalid.
  */
 constexpr SocketHandleType get_invalid_alias()
 {
@@ -95,7 +80,7 @@ constexpr SocketHandleType get_invalid_alias()
 }
 
 /**
- * @brief Available concrete socket types.
+ * \brief Available concrete socket types.
  */
 enum class SocketType
 {
@@ -105,32 +90,28 @@ enum class SocketType
 };
 
 /**
- * @brief A generic socket implementation
- * @tparam Derived socket class for using CRTP. E.g. it could be a TCP, UDP or CAN
- * socket.
+ * \brief A generic socket implementation
+ * @tparam Derived socket class for using CRTP. E.g. it could be a TCP, UDP or
+ * CAN socket.
  */
-template< typename Derived >
-class Socket
+template < typename Derived > class Socket
 {
-public:
-
+  public:
     /**
-     * @brief Default constructor initializing the socket;
-     * @param[in] type defines how the socket will be initialized.
+     * \brief Default constructor initializing the socket;
+     * \param[in] type defines how the socket will be initialized.
      */
-    Socket(SocketType type) noexcept :
-			m_last_error{0},
-			m_type(type),
-			m_socket_init{FALSE},
-			m_socket{get_invalid_alias()},
-			m_is_blocking(TRUE)
+    Socket(SocketType type) noexcept
+        : m_last_error{0},
+          m_type(type), m_socket_init{false}, m_socket{get_invalid_alias()},
+          m_is_blocking(true)
     {
         // create one socket.
         initialize();
     }
 
     /**
-     * @brief Destructor closes the socket.
+     * \brief Destructor closes the socket.
      * Clean up / close the socket in this particular case.
      */
     ~Socket() noexcept
@@ -140,189 +121,183 @@ public:
         // the WSA clean up is valid under windows only.
         WSACleanup();
 #endif
-        m_socket_init = FALSE;
+        m_socket_init = false;
     }
 
     /**
-     * @brief Closes the socket explicitly.
-     * @return true if a close was successful, false if not.
+     * \brief Closes the socket explicitly.
+     * \return true if a close was successful, false if not.
      */
-    AR::boolean close_socket() noexcept
+    bool close_socket() noexcept
     {
-        AR::boolean closed = FALSE;
+        bool closed = false;
 
-        if ( is_socket_initialized() == TRUE )
+        if (is_socket_initialized() == true)
         {
-# ifdef __unix__
+#ifdef __unix__
             // close the socket if one is opened only
-        	::shutdown(get_socket_handle(), -2);
-            const AR::sint16 cl = ::close(get_socket_handle());
-# elif defined (_WIN32)
-            const AR::sint16 cl = ::closesocket(get_socket_handle());
-# else
-#  error "Implementation of Socket::close_socket() failed. OS not defined!"
-# endif
+            ::shutdown(get_socket_handle(), -2);
+            const std::int16_t cl = ::close(get_socket_handle());
+#elif defined(_WIN32)
+            const std::int16_t cl = ::closesocket(get_socket_handle());
+#else
+#error "Implementation of Socket::close_socket() failed. OS not defined!"
+#endif
 
-            if ( cl == 0 )
+            if (cl == 0)
             {
-                m_socket_init = FALSE;
-                closed = TRUE;
+                m_socket_init = false;
+                closed = true;
             }
             else
             {
-                closed = FALSE;
+                closed = false;
                 m_last_error = errno;
             }
         }
         else
         {
-        	// is closed already.
-        	std::cout << "Socket is closed already.\n";
-        	closed = TRUE;
+            // is closed already.
+            std::cout << "Socket is closed already.\n";
+            closed = true;
         }
 
         return closed;
     }
 
     /**
-     * @brief Gets the last error of the socket communication for
+     * \brief Gets the last error of the socket communication for
      * error handling purposes.
-     * @return The last stored error in the socket communication from errno.
+     * \return The last stored error in the socket communication from errno.
      */
-    SocketErrorType get_last_error() const noexcept
-    {
-        return m_last_error;
-    }
+    SocketErrorType get_last_error() const noexcept { return m_last_error; }
 
     /**
-     * @brief The socket handle for the derived classes as a reference.
-     * @return the socket number as reference for write and read
+     * \brief The socket handle for the derived classes as a reference.
+     * \return the socket number as reference for write and read
      */
-    const SocketHandleType& get_socket() const noexcept
-    {
-        return m_socket;
-    }
+    const SocketHandleType& get_socket() const noexcept { return m_socket; }
 
     /**
-     * @brief If the interface is initialized.
-     * @return true if the socket is open, false if not.
+     * \brief If the interface is initialized.
+     * \return true if the socket is open, false if not.
      */
-    AR::boolean is_socket_initialized() noexcept
-    {
-        return m_socket_init;
-    }
+    bool is_socket_initialized() noexcept { return m_socket_init; }
 
     /**
-     * @brief This method looks for an "event" on the socket by calling
+     * \brief This method looks for an "event" on the socket by calling
      * select. If the socket is blocking, we can now look for data to receive
      * or if a TCP client wants to connect to the server, before entering
      * a blocking read or write.
-     * @return true if there is some kind of response (data or connect)
+     * \return true if there is some kind of response (data or connect)
      * on the socket, false if not.
      */
-    AR::boolean poll_activity(const AR::uint16 timeout_us) noexcept
+    bool poll_activity(const std::uint16_t timeout_us) noexcept
     {
         SocketHandleType nfds;
-        AR::boolean response_on_socket = FALSE;
+        bool response_on_socket = false;
 
         /* OS specific declarations */
-# ifdef _WIN32
+#ifdef _WIN32
         SocketHandleType socket = get_socket_handle();
 
         /* The first argument of the "select()" system call must be the length
-         * of the bitfield. Under Windows the first argument of "select()" should be 0. */
+         * of the bitfield. Under Windows the first argument of "select()"
+         * should be 0. */
         nfds = static_cast< SocketHandleType >(0);
 
-# elif defined __unix__
+#elif defined __unix__
         SocketHandleType socket = get_socket_handle();
         nfds = static_cast< SocketHandleType >(socket + 1);
-# else
-#  error "OS not defined!"
-# endif
+#else
+#error "OS not defined!"
+#endif
 
         struct timeval time_to_wait;
         time_to_wait.tv_sec = static_cast< decltype(time_to_wait.tv_sec) >(0);
-        time_to_wait.tv_usec = static_cast< decltype(time_to_wait.tv_sec) >(timeout_us);
+        time_to_wait.tv_usec =
+            static_cast< decltype(time_to_wait.tv_sec) >(timeout_us);
 
         fd_set fd_read;
         FD_ZERO(&fd_read);
         FD_SET(socket, &fd_read);
 
-        const auto select_return = select(nfds, &fd_read, NULL_PTR, NULL_PTR,
-                &time_to_wait);
+        const auto select_return =
+            select(nfds, &fd_read, nullptr, nullptr, &time_to_wait);
 
-        if ( select_return > 0 )
+        if (select_return > 0)
         {
             /*
              * If the return value of function call select() isn't -1,
              * there is data on the socket to receive.
              * The select returns 0 if the time expired (timeout).
              */
-            response_on_socket = TRUE;
+            response_on_socket = true;
         }
         else
         {
-            /* The return value of the function select is -1 (SOCKET_ERROR) or a timeout occurred. */
-            response_on_socket = FALSE;
+            /* The return value of the function select is -1 (SOCKET_ERROR) or a
+             * timeout occurred. */
+            response_on_socket = false;
         }
 
         return response_on_socket;
     }
 
     /**
-     * @brief Set the socket into blocking or non-blocking mode.
-     * @return true if it was successful changed, false if not.
+     * \brief Set the socket into blocking or non-blocking mode.
+     * \return true if it was successful changed, false if not.
      */
-    AR::boolean set_blocking(const AR::boolean blocking)
+    bool set_blocking(const bool blocking)
     {
-        AR::boolean success = FALSE;
+        bool success = false;
 
-        if ( is_socket_initialized() == TRUE )
+        if (is_socket_initialized() == true)
         {
-# ifdef __unix__
+#ifdef __unix__
             int status = fcntl(m_socket, F_GETFL);
-# elif defined (_WIN32)
+#elif defined(_WIN32)
             int status = 1;
-# else
-#  error "OS not defined!"
-# endif
-            if ( status >= 0 )
+#else
+#error "OS not defined!"
+#endif
+            if (status >= 0)
             {
-                if ( blocking == TRUE )
+                if (blocking == true)
                 {
-# ifdef __unix__
+#ifdef __unix__
                     status = fcntl(m_socket, F_SETFL, status & ~O_NONBLOCK);
-# elif defined (_WIN32)
+#elif defined(_WIN32)
                     u_long nblock = 0;
                     status = ioctlsocket(m_socket, FIONBIO, &nblock);
-# else
-#  error "OS not defined!"
-# endif
-                    success = TRUE;
+#else
+#error "OS not defined!"
+#endif
+                    success = true;
                 }
                 else
                 {
-# ifdef __unix__
+#ifdef __unix__
                     status = fcntl(m_socket, F_SETFL, status | O_NONBLOCK);
-# elif defined (_WIN32)
+#elif defined(_WIN32)
                     u_long nblock = 1;
                     status = ioctlsocket(m_socket, FIONBIO, &nblock);
-# else
-#  error "OS not defined!"
-# endif 
-                    success = TRUE;
+#else
+#error "OS not defined!"
+#endif
+                    success = true;
                 }
             }
 
-            if ( status >= 0 )
+            if (status >= 0)
             {
                 m_is_blocking = blocking;
-                success = TRUE;
+                success = true;
             }
             else
             {
                 m_last_error = errno;
-                success = FALSE;
+                success = false;
             }
         }
 
@@ -330,126 +305,109 @@ public:
     }
 
     /**
-     * @brief Check if this socket is blocking or non-blocking.
-     * @return true if the socket is blocking or false if non-blocking.
+     * \brief Check if this socket is blocking or non-blocking.
+     * \return true if the socket is blocking or false if non-blocking.
      */
-    AR::boolean is_blocking() const noexcept
-    {
-        return m_is_blocking;
-    }
+    bool is_blocking() const noexcept { return m_is_blocking; }
 
     /**
-     * @brief initializes the socket.
-     * @return true if initialization was successful, false if there was an error
-     * initializing the socket.
+     * \brief initializes the socket.
+     * \return true if initialization was successful, false if there was an
+     * error initializing the socket.
      */
-    AR::boolean initialize() noexcept
+    bool initialize() noexcept
     {
-# ifdef _WIN32
+#ifdef _WIN32
         const int wsa_start = WSAStartup(MAKEWORD(2, 2), &m_wsa_data);
-        AR::boolean sock_created{FALSE};
+        bool sock_created{false};
 
-        if ( wsa_start == 0 )
+        if (wsa_start == 0)
         {
             sock_created = create();
         }
         else
         {
-            sock_created = FALSE;
+            sock_created = false;
         }
-# else
-        const AR::boolean sock_created = create();
-# endif
+#else
+        const bool sock_created = create();
+#endif
 
-        if ( sock_created == TRUE )
+        if (sock_created == true)
         {
-            m_socket_init = TRUE;
+            m_socket_init = true;
         }
         else
         {
-            m_socket_init = FALSE;
+            m_socket_init = false;
         }
 
         return sock_created;
     }
 
-
     /**
-     * @brief Assign a new socket.
+     * \brief Assign a new socket.
      */
-    AR::boolean assign(const SocketHandleType& new_handle) noexcept
+    bool assign(const SocketHandleType& new_handle) noexcept
     {
-        AR::boolean created = FALSE;
-		m_socket = new_handle;
-		m_socket_init = TRUE;
-		created = TRUE;
+        bool created = false;
+        m_socket = new_handle;
+        m_socket_init = true;
+        created = true;
         return created;
     }
 
-    //! stores the last error occurred.
+    /// stores the last error occurred.
     SocketErrorType m_last_error;
 
-protected:
-
+  protected:
     /**
-     * @brief The socket handle for the derived classes as a reference.
-     * @return the socket number as reference for write and read
+     * \brief The socket handle for the derived classes as a reference.
+     * \return the socket number as reference for write and read
      */
-    SocketHandleType& get_socket_handle() noexcept
-    {
-        return m_socket;
-    }
+    SocketHandleType& get_socket_handle() noexcept { return m_socket; }
 
     /**
-     * @brief A socket will be opened. Because the parameters for opening a
+     * \brief A socket will be opened. Because the parameters for opening a
      * socket strongly relies on the protocol this method calls a method
      * of the class derived.
-     * @return true if the socket creation was successful, false if not.
+     * \return true if the socket creation was successful, false if not.
      */
-    AR::boolean create() noexcept
+    bool create() noexcept
     {
-        AR::boolean created = FALSE;
+        bool created = false;
 
         // only if the current socket is closed
-        if ( is_socket_initialized() == FALSE )
+        if (is_socket_initialized() == false)
         {
             // CRTP
             created = static_cast< Derived* >(this)->create();
         }
         else
         {
-            created = FALSE;
+            created = false;
         }
 
         return created;
     }
 
-    //! this attribute shows if it's a socket for can, ethernet tcp/ip or udp
+    /// this attribute shows if it's a socket for can, ethernet tcp/ip or udp
     SocketType m_type;
 
-private:
+  private:
+    /// true if everything is set up and the instance can receive and send data
+    bool m_socket_init;
 
-    //! true if everything is set up and the instance can receive and send data
-    AR::boolean m_socket_init;
-
-    //! this stores the socket handle.
+    /// this stores the socket handle.
     SocketHandleType m_socket;
 
-    //! Either the socket is in blocking or non-blocking mode.
-    AR::boolean m_is_blocking;
+    /// Either the socket is in blocking or non-blocking mode.
+    bool m_is_blocking;
 
-# ifdef _WIN32
-    //! for windows sockets the WSAdata is necessary
+#ifdef _WIN32
+    /// for windows sockets the WSAdata is necessary
     WSADATA m_wsa_data;
-# endif
+#endif
 };
-
-/*******************************************************************************
- * EXPORTED VARIABLES
- *******************************************************************************/
-
-/*******************************************************************************
- * EXPORTED FUNCTIONS
- *******************************************************************************/
 
 #endif /* SOCKET_H_ */

@@ -1,11 +1,11 @@
 /**
  * @file      TcpServer.h
- * @author    dtuchscherer <daniel.tuchscherer@hs-heilbronn.de>
- * @brief     Ethernet TCP/IP Server interface
+ * @author    dtuchscherer <daniel.tuchscherer@gmail.com>
+ * \brief     Ethernet TCP/IP Server interface
  * @details   This is the TCP/IP Server interface for listening and accepting
  *            connections.
  * @version   1.0
- * @copyright Copyright (c) 2015, dtuchscherer.
+ * @copyright Copyright (c) 2018, dtuchscherer.
  *            All rights reserved.
  *
  *            Redistributions and use in source and binary forms, with
@@ -40,55 +40,44 @@
 #ifndef TCPSERVER_H_
 #define TCPSERVER_H_
 
-/*******************************************************************************
- * MODULES USED
- ******************************************************************************/
 #include "IpAddress.h"
 #include "TcpSocket.h"
 
-/*******************************************************************************
- * DEFINITIONS AND MACROS
- ******************************************************************************/
-
-/*******************************************************************************
- * TYPEDEFS, ENUMERATIONS, CLASSES
- ******************************************************************************/
-
 /**
- * @brief The TcpServer class allows listening for pending connection requests
+ * \brief The TcpServer class allows listening for pending connection requests
  * and then accepting incoming connections.
  */
 class TcpServer
 {
   public:
     /**
-     * @brief The default instructor will open a socket.
+     * \brief The default instructor will open a socket.
      */
     TcpServer() noexcept;
 
     /**
-     * @brief Listens for connections.
-     * @param[in] ip the IP4 address to listen on for incoming requests.
-     * @param[in] port the port to listen on for incoming requests.
+     * \brief Listens for connections.
+     * \param[in] ip the IP4 address to listen on for incoming requests.
+     * \param[in] port the port to listen on for incoming requests.
      * @return true if listening is possible, false if listening is not
      * possible.
      */
-    AR::boolean listen(IpAddress ip, const AR::uint16 port) noexcept;
+    bool listen(IpAddress ip, const std::uint16_t port) noexcept;
 
     /**
-     * @brief Accepts a connection.
+     * \brief Accepts a connection.
      * @return true if a connection is accepted, false if not.
      */
-    AR::boolean accept() noexcept;
+    bool accept() noexcept;
 
     /**
-     * @brief Reuse address let's you restart the server program without delay.
+     * \brief Reuse address let's you restart the server program without delay.
      * Binding a server socket after a restart will fail, if you do not set this
      * option.
      * @return true if setting the socket option was successful, false if
      * setting the option was not successful.
      */
-    AR::boolean reuse_addr() noexcept;
+    bool reuse_addr() noexcept;
 
     //! socket that accepts the connections from TCP clients.
     TcpSocket m_connect;

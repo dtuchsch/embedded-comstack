@@ -1,7 +1,7 @@
 /**
  * @file      TcpSocket.h
  * @author    dtuchscherer <daniel.tuchscherer@hs-heilbronn.de>
- * @brief     TCP socket implementation for sending, receiving and polling.
+ * \brief     TCP socket implementation for sending, receiving and polling.
  * @details   TCP socket implementation for sending, receiving and polling.
  * @version   1.0
  * @edit      27.09.2016
@@ -40,10 +40,6 @@
 #ifndef TCPSOCKET_H_
 #define TCPSOCKET_H_
 
-/*******************************************************************************
- * MODULES USED
- ******************************************************************************/
-
 #ifdef __unix__
 #include <arpa/inet.h>
 #include <cstring>
@@ -54,71 +50,52 @@
 
 #include "Socket.h"
 
-/*******************************************************************************
- * DEFINITIONS AND MACROS
- ******************************************************************************/
-
-/*******************************************************************************
- * TYPEDEFS, ENUMERATIONS, CLASSES
- ******************************************************************************/
-
 /**
- * @brief Concrete class for a Ethernet TCP/IP communication.
+ * \brief Concrete class for a Ethernet TCP/IP communication.
  */
 class TcpSocket : public Socket< TcpSocket >
 {
   public:
     /**
-     * @brief Default constructor
+     * \brief Default constructor
      */
     TcpSocket() noexcept;
 
     /**
-     * @brief Default destructor
+     * \brief Default destructor
      */
-    ~TcpSocket() noexcept;
+    ~TcpSocket() noexcept = default;
 
     /**
-     * @brief Send via the TCP/IP socket
-     * @param[in] message is the data to send
-     * @param[in] len is the length to send
-     * @return the number of bytes that have been sent or -1 if there is an
+     * \brief Send via the TCP/IP socket
+     * \param[in] message is the data to send
+     * \param[in] len is the length to send
+     * \return the number of bytes that have been sent or -1 if there is an
      * error
      */
-    AR::sint16 send(const void* message, const AR::uint16 len) noexcept;
+    std::int16_t send(const void* message, const std::uint16_t len) noexcept;
 
     /**
-     * @brief Receive via the TCP/IP socket
-     * @param[out] is the message container to store the received data
-     * @param[in] the length to receive
-     * @return how much data has been received. if there is an error the return
+     * \brief Receive via the TCP/IP socket
+     * \param[out] is the message container to store the received data
+     * \param[in] the length to receive
+     * \return how much data has been received. if there is an error the return
      * is smaller than 0.
      */
-    AR::sint16 receive(void* message, const AR::uint16 len) noexcept;
+    std::int16_t receive(void* message, const std::uint16_t len) noexcept;
 
     /**
-     * @brief Create a TCP socket
-     * @return true if the socket is open or false if there was an error on
+     * \brief Create a TCP socket
+     * \return true if the socket is open or false if there was an error on
      * creation.
      */
-    AR::boolean create() noexcept;
+    bool create() noexcept;
 
     /**
-     * @brief Disable the nagle algorithm and forces to send out data remaining
+     * \brief Disable the nagle algorithm and forces to send out data remaining
      * in the buffer immediately.
      */
-    AR::boolean set_nodelay(const AR::boolean option) noexcept;
-
-  protected:
-  private:
+    bool set_nodelay(const bool option) noexcept;
 };
-
-/*******************************************************************************
- * EXPORTED VARIABLES
- ******************************************************************************/
-
-/*******************************************************************************
- * EXPORTED FUNCTIONS
- ******************************************************************************/
 
 #endif /* TCPSOCKET_H_ */

@@ -26,7 +26,7 @@ enum class GameStatus
 };
 
 ////////////////////////////////////////////////////////////////////////////////
-enum class Players
+enum class Players : std::uint8_t
 {
     PLAYER1,
     PLAYER2
@@ -82,7 +82,7 @@ std::pair< Events, GameStatus > player_act(Events event) noexcept
 ////////////////////////////////////////////////////////////////////////////////
 void player2() noexcept
 {
-    CanSocket can_player2("vcan0");
+    CanSocket can_player2{"vcan0"};
     GameStatus status{GameStatus::READY};
 
     for (;;)
@@ -97,7 +97,8 @@ void player2() noexcept
             ball_flies();
             CanFDData data{static_cast< std::uint8_t >(action.first),
                            static_cast< std::uint8_t >(action.second), 6};
-            can_player2.send(static_cast< int >(Players::PLAYER2), data, 10);
+            can_player2.send(static_cast< std::uint8_t >(Players::PLAYER2),
+                             data, 10);
         }
         else
         {
@@ -149,6 +150,7 @@ int main() noexcept
     }
     else
     {
+        std::cerr << "Sending CAN frame not possible.\n";
     }
 
     p2.join();

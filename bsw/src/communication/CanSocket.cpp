@@ -1,12 +1,12 @@
 /**
  * @file      CanSocket.cpp
- * @author    dtuchscherer <daniel.tuchscherer@hs-heilbronn.de>
+ * @author    dtuchscherer <daniel.tuchscherer@gmail.com>
  * @brief     SocketCAN implementation in C++
  * @details   These are the methods of class CanSocket to
  *            initialize the CAN interface, send and receive data via Linux
  *            SocketCAN.
  * @version   2.1
- * @copyright Copyright (c) 2015, dtuchscherer.
+ * @copyright Copyright (c) 2018, Daniel Tuchscherer.
  *            All rights reserved.
  *
  *            Redistributions and use in source and binary forms, with
@@ -38,67 +38,37 @@
  *            POSSIBILITY OF SUCH DAMAGE.
  */
 
-/*******************************************************************************
- * MODULES USED
- *******************************************************************************/
-#ifndef _WIN32
+#ifdef _WIN32
+#error "SocketCAN for Linux OS only."
+#endif
 #include "CanSocket.h"
-#include "Debug.h"
-#include <type_traits> // checks, decisions at compile-time
-
-/*******************************************************************************
- * DEFINITIONS AND MACROS
- ******************************************************************************/
-
-/*******************************************************************************
- * TYPEDEFS, ENUMERATIONS, CLASSES
- ******************************************************************************/
-
-/*******************************************************************************
- * PROTOTYPES OF LOCAL FUNCTIONS
- ******************************************************************************/
-
-/*******************************************************************************
- * EXPORTED VARIABLES
- ******************************************************************************/
-
-/*******************************************************************************
- * GLOBAL MODULE VARIABLES
- ******************************************************************************/
-
-/*******************************************************************************
- * EXPORTED FUNCTIONS
- ******************************************************************************/
-
-/*******************************************************************************
- * FUNCTION DEFINITIONS
- ******************************************************************************/
+#include <type_traits> // Checks & decisions at compile-time
 
 ////////////////////////////////////////////////////////////////////////////////
-AR::sint8 CanSocket::receive(CanIDType& can_id, CanFDData& data_ref) noexcept
+std::int8_t CanSocket::receive(CanIDType& can_id, CanFDData& data_ref) noexcept
 {
-    // complete length of the CAN frame
-    AR::sint8 can_received{-1};
+    // Complete length of the CAN frame
+    std::int8_t can_received{-1};
 
-    if (is_can_initialized() == TRUE)
+    if (is_can_initialized() == true)
     {
         struct canfd_frame frame;
         const auto socket = get_socket_handle();
         const ssize_t nbytes = read(socket, &frame, m_can_mtu);
-        can_received = static_cast< AR::sint8 >(nbytes);
+        can_received = static_cast< std::int8_t >(nbytes);
 
-        // check if data is on the socket to receive
+        // Check if data is on the socket to receive
         if (can_received > 0)
         {
             // The id is stored in the var given by ref.
             can_id = frame.can_id;
             // Give the data length code to the return val.
-            can_received = static_cast< AR::sint8 >(frame.len);
-            // limit the maximum length
+            can_received = static_cast< std::int8_t >(frame.len);
+            // Limit the maximum length
             const auto data_len = std::min(
                 static_cast< std::size_t >(frame.len), data_ref.size());
             // Transfer the byte stream into the data structure given by ref.
-            for (AR::uint8 i = 0U; i < data_len; ++i)
+            for (std::uint8_t i = 0U; i < data_len; ++i)
             {
                 data_ref[i] = frame.data[i];
             }
@@ -108,7 +78,7 @@ AR::sint8 CanSocket::receive(CanIDType& can_id, CanFDData& data_ref) noexcept
             // Error or timeout.
             can_received = -1;
             m_last_error = errno;
-            DEBUG_ERROR("Receive failed: %d", errno);
+            std::cerr << "Receive failed: " << errno << "\n";
         }
     }
 
@@ -116,17 +86,17 @@ AR::sint8 CanSocket::receive(CanIDType& can_id, CanFDData& data_ref) noexcept
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-AR::sint8 CanSocket::receive(CanIDType& can_id, CanDataType& data_ref,
-                             const AR::uint16 timeout_us) noexcept
+std::int8_t CanSocket::receive(CanIDType& can_id, CanDataType& data_ref,
+                               const std::uint16_t timeout_us) noexcept
 {
     // complete length of the CAN frame
-    AR::sint8 can_received{-1};
+    std::int8_t can_received{-1};
 
     if (is_can_initialized())
     {
         // before we go in a blocking read, we will check if there is
         // activity on the socket.
-        AR::boolean event = poll_activity(timeout_us);
+        bool event = poll_activity(timeout_us);
 
         // check the return value of the select. if there is data to read the
         // return value of select will be greater than zero.
@@ -135,7 +105,7 @@ AR::sint8 CanSocket::receive(CanIDType& can_id, CanDataType& data_ref,
             struct can_frame frame;
             const auto handle = get_socket_handle();
             const auto nbytes = read(handle, &frame, m_can_mtu);
-            can_received = static_cast< AR::sint8 >(nbytes);
+            can_received = static_cast< std::int8_t >(nbytes);
 
             // check if the read from the socket was successful
             if (can_received > 0)
@@ -143,11 +113,11 @@ AR::sint8 CanSocket::receive(CanIDType& can_id, CanDataType& data_ref,
                 // The id is stored in the var given by ref.
                 can_id = frame.can_id;
                 // Set the DLC of the CAN frame as return.
-                can_received = (AR::sint8)frame.can_dlc;
+                can_received = (std::int8_t)frame.can_dlc;
 
                 // Transfer the byte stream into the data structure given by
                 // ref.
-                for (AR::uint8 i = 0U; i < frame.can_dlc; ++i)
+                for (std::uint8_t i = 0U; i < frame.can_dlc; ++i)
                 {
                     // Obviously copying data.
                     data_ref[i] = frame.data[i];
@@ -155,14 +125,14 @@ AR::sint8 CanSocket::receive(CanIDType& can_id, CanDataType& data_ref,
             }
             else if (can_received == 0)
             {
-                // timeout on zero return
-                DEBUG_INFO("Time out reached");
+                // Timeout on zero return
+                std::cerr << "Timeout reached\n";
                 m_last_error = errno;
                 can_received = 0;
             }
             else
             {
-                DEBUG_ERROR("Receive failed: %d", errno);
+                std::cerr << "Receive failed: " << errno << "\n";
                 m_last_error = errno;
                 can_received = -1;
             }
@@ -173,9 +143,9 @@ AR::sint8 CanSocket::receive(CanIDType& can_id, CanDataType& data_ref,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-AR::boolean CanSocket::create() noexcept
+bool CanSocket::create() noexcept
 {
-    AR::boolean socket_created = FALSE;
+    bool socket_created = false;
     SocketHandleType& handle = get_socket_handle();
     handle = socket(PF_CAN, SOCK_RAW, CAN_RAW);
 
@@ -195,9 +165,9 @@ AR::boolean CanSocket::create() noexcept
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-AR::boolean CanSocket::enable_canfd() noexcept
+bool CanSocket::enable_canfd() noexcept
 {
-    AR::boolean enabled{false};
+    bool enabled{false};
     const auto socket = get_socket_handle();
     // retrieve the mtu via ioctrl
     const int info = ioctl(socket, SIOCGIFMTU, &m_ifr);
@@ -230,10 +200,9 @@ AR::boolean CanSocket::enable_canfd() noexcept
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-AR::boolean CanSocket::bind_if_socket() noexcept
+bool CanSocket::bind_if_socket() noexcept
 {
-    AR::boolean bind_success = FALSE;
-
+    bool bind_success = false;
     // Define the address family.
     m_sockaddr.can_family = AF_CAN;
     // Bind the interface number to the socket.
@@ -242,33 +211,25 @@ AR::boolean CanSocket::bind_if_socket() noexcept
     // Bind the socket to the CAN interface.
     const int bind_res =
         bind(handle, (struct sockaddr*)&m_sockaddr, sizeof(m_sockaddr));
-
     // Check if binding the socket to the interface was successful.
     // It's negative if there was an error.
     if (bind_res < 0)
     {
         // Error binding the socket to the CAN interface.
         // store this as the last error other application layers may access.
-        bind_success = FALSE;
+        bind_success = false;
         m_last_error = errno;
-        DEBUG_ERROR("Bind of socket and interface failed.");
+        std::cerr << "Bind of socket and interface failed.\n";
     }
     else
     {
         // Everything went fine.
         // Return true for other methods of this class.
-        bind_success = TRUE;
+        bind_success = true;
     }
 
     return bind_success;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-AR::boolean CanSocket::is_can_initialized() const noexcept
-{
-    return m_can_init;
-}
-
-#else
-#error "SocketCAN for Linux OS only."
-#endif /* WIN32 */
+bool CanSocket::is_can_initialized() const noexcept { return m_can_init; }

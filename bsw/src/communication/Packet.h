@@ -1,13 +1,12 @@
 /**
- * @file      Packet.h
- * @author    dtuchscherer <daniel.tuchscherer@hs-heilbronn.de>
- * @brief     Packet class for network streams
- * @details   This is inspired by SFML Packet, but is also capable for embedded.
+ * \file      Packet.h
+ * \author    dtuchscherer <daniel.tuchscherer@gmail.com>
+ * \brief     Packet class for network streams
+ * \details   This is inspired by SFML Packet, but is also capable for embedded.
  *            Instead of using std::vector as a container we use a fixed size
  *            container std::array.
- * @edit      18.10.2016
- * @version   1.0
- * @copyright Copyright (c) 2015, dtuchscherer.
+ * \version   1.0
+ * \copyright Copyright (c) 2018, dtuchscherer.
  *            All rights reserved.
  *
  *            Redistributions and use in source and binary forms, with
@@ -40,99 +39,63 @@
  */
 
 #ifndef PACKET_H_
-# define PACKET_H_
+#define PACKET_H_
 
-/*******************************************************************************
- * MODULES USED
- *******************************************************************************/
-
-// container
+#include "Endianess.h" // converting to and from host-byte-order
 #include <array>
-
-// for copying bytes
 #include <cstring>
 
-// communication relevant types
-#include "ComStack_Types.h"
-
-// converting to and from host-byte-order
-#include "Endianess.h"
-
-/*******************************************************************************
- * DEFINITIONS AND MACROS
- *******************************************************************************/
-
-/*******************************************************************************
- * TYPEDEFS, ENUMERATIONS, CLASSES
- *******************************************************************************/
-
 /**
- * @brief Packet class for unified data (network) transport.
- * @tparam Size of the container
+ * \brief Packet class for unified data (network) transport.
+ * \tparam Size of the container
  */
-template< std::size_t Size >
-class Packet
+template < std::size_t Size > class Packet
 {
-public:
-
+  public:
     using DataContainer = std::array< uint8, Size >;
 
     /**
-     * @brief Default constructor initializes the write and read position.
+     * \brief Default constructor initializes the write and read position.
      */
-    Packet() noexcept :
-            m_write_pos{0U},
-            m_read_pos{0U}
+    Packet() noexcept : m_write_pos{0U}, m_read_pos{0U}
     {
         static_assert(Size > 0, "Size must be greater than zero!");
     }
 
     /**
-     * @brief Default destructor
+     * \brief Default destructor
      * Nothing to clean up here.
      */
     ~Packet() noexcept = default;
 
     /**
-     * @brief returns the static size of the packet's data to send or receive.
-     * @return the static size.
+     * \brief returns the static size of the packet's data to send or receive.
+     * \return the static size.
      */
-    constexpr AR::uint16 get_size() const noexcept
+    constexpr std::uint16_t get_size() const noexcept
     {
-        return static_cast< AR::uint16 >(m_data.size());
+        return static_cast< std::uint16_t >(m_data.size());
     }
 
     /**
-     * @brief direct link to the data.
+     * \brief direct link to the data.
      */
-    const DataContainer& get_data() const noexcept
-    {
-        return m_data;
-    }
+    const DataContainer& get_data() const noexcept { return m_data; }
 
     /**
-     * @brief direct link to the data.
+     * \brief direct link to the data.
      */
-    DataContainer& get_data() noexcept
-    {
-        return m_data;
-    }
+    DataContainer& get_data() noexcept { return m_data; }
 
     /**
-     * @brief the complete packet as a constant reference.
+     * \brief the complete packet as a constant reference.
      */
-    const Packet& get_packet() const noexcept
-    {
-        return *this;
-    }
+    const Packet& get_packet() const noexcept { return *this; }
 
-    Packet& get_packet() noexcept
-    {
-        return *this;
-    }
+    Packet& get_packet() noexcept { return *this; }
 
     /**
-     * @brief Clearing the indices for a new storage.
+     * \brief Clearing the indices for a new storage.
      */
     void clear() noexcept
     {
@@ -141,46 +104,53 @@ public:
     }
 
     /**
-     * @brief This method is extremly helpful for returning a type T variable from
-     * the packet without modifying it from a given position.
-     * @tparam T the value type to return
-     * @tparam Position the position at what the value begins.
+     * \brief This method is extremly helpful for returning a type T variable
+     * from the packet without modifying it from a given position.
+     * \tparam T the value type to return
+     * \tparam Position the position at what the value begins.
      */
-    template< typename T, std::size_t Position >
-    T peek() const noexcept
+    template < typename T, std::size_t Position > T peek() const noexcept
     {
-        static_assert(std::is_arithmetic< T >::value, "Type must be integral or floating point.");
-        static_assert(Position < Size, "The position to read is greater than the actual Packet size.");
+        static_assert(std::is_arithmetic< T >::value,
+                      "Type must be integral or floating point.");
+        static_assert(
+            Position < Size,
+            "The position to read is greater than the actual Packet size.");
         using MyType = T;
         MyType data{static_cast< MyType >(0)};
-        const MyType* data_ptr = reinterpret_cast< const MyType* >(&m_data[Position]);
+        const MyType* data_ptr =
+            reinterpret_cast< const MyType* >(&m_data[Position]);
         data = from_network< MyType >(*data_ptr);
         return data;
     }
 
     /**
-     * @brief This will store a value of template parameter T at the given position
-     * into the packet with network-byte-order.
+     * \brief This will store a value of template parameter T at the given
+     * position into the packet with network-byte-order.
      */
-    template< typename T, std::size_t Position >
+    template < typename T, std::size_t Position >
     void store(const T& data) noexcept
     {
-        static_assert(std::is_arithmetic< T >::value, "Type must be integral or floating point.");
-        static_assert(Position < Size, "The position to write is greater than the actual Packet size.");
+        static_assert(std::is_arithmetic< T >::value,
+                      "Type must be integral or floating point.");
+        static_assert(
+            Position < Size,
+            "The position to write is greater than the actual Packet size.");
         using MyType = T;
         static constexpr auto bytes = sizeof(T);
 
         // swap to network-byte-order
         MyType network_data = to_network< MyType >(data);
         // we need it byte by byte.
-        const AR::uint8* data_ptr = reinterpret_cast< const AR::uint8* >(&network_data);
+        const std::uint8_t* data_ptr =
+            reinterpret_cast< const std::uint8_t* >(&network_data);
         std::memcpy(&m_data[Position], data_ptr, bytes);
     }
 
     /**
-     * @brief Checks if the length of bytes to write is possible.
-     * @param[in] bytes_to_write is the number of bytes to store in the Packet.
-     * @return true if there is enough space in the container to store the
+     * \brief Checks if the length of bytes to write is possible.
+     * \param[in] bytes_to_write is the number of bytes to store in the Packet.
+     * \return true if there is enough space in the container to store the
      * bytes, false if the bytes would exceed the Packet.
      */
     bool is_writable(const std::size_t bytes_to_write) const noexcept
@@ -190,9 +160,9 @@ public:
     }
 
     /**
-     * @brief Checks if there are bytes left to read from the Packet.
-     * @param[in] bytes_to_read the number of bytes to read.
-     * @return true if there are bytes left to read or false if the end of
+     * \brief Checks if there are bytes left to read from the Packet.
+     * \param[in] bytes_to_read the number of bytes to read.
+     * \return true if there are bytes left to read or false if the end of
      * the Packet is reached.
      */
     bool is_readable(const std::size_t bytes_to_read) const noexcept
@@ -202,38 +172,39 @@ public:
     }
 
     /**
-     * @brief Appends data to the container.
-     * @tparam T is the type of data to store to determine the number of bytes
+     * \brief Appends data to the container.
+     * \tparam T is the type of data to store to determine the number of bytes
      * to write into the container.
-     * @param[in] data is the data to store storing to the end of the current
+     * \param[in] data is the data to store storing to the end of the current
      * write position. This data will be copied, but not modified.
      */
-    template< typename T >
-    void append(const T& data) noexcept
+    template < typename T > void append(const T& data) noexcept
     {
         static constexpr uint8 bytes_to_write = sizeof(T);
 
-        if ( is_writable(bytes_to_write) )
+        if (is_writable(bytes_to_write))
         {
-            const AR::uint8* data_ptr = reinterpret_cast< const AR::uint8* >(&data);
+            const std::uint8_t* data_ptr =
+                reinterpret_cast< const std::uint8_t* >(&data);
             std::memcpy(&m_data[m_write_pos], data_ptr, bytes_to_write);
             m_write_pos += bytes_to_write;
         }
     }
 
     /**
-     * @brief Appends the container with a char array.
-     * @param[in] data the char array.
+     * \brief Appends the container with a char array.
+     * \param[in] data the char array.
      */
     void append(const char* data) noexcept
     {
         // determine the length of the char array
-        AR::uint32 bytes_to_write = static_cast< AR::uint32 >(std::strlen(data));
+        std::uint32_t bytes_to_write =
+            static_cast< std::uint32_t >(std::strlen(data));
 
         // store the length first
         *this << bytes_to_write;
 
-        if ( is_writable(bytes_to_write) )
+        if (is_writable(bytes_to_write))
         {
             std::memcpy(&m_data[m_write_pos], data, bytes_to_write);
             m_write_pos += bytes_to_write;
@@ -241,35 +212,35 @@ public:
     }
 
     /**
-     * @brief Skipping the following bytes incrementing the read position.
-     * @param[in] bytes to skip
+     * \brief Skipping the following bytes incrementing the read position.
+     * \param[in] bytes to skip
      */
-    boolean skip(const std::size_t bytes) noexcept
+    bool skip(const std::size_t bytes) noexcept
     {
-        boolean skipped = FALSE;
+        bool skipped = false;
 
-        if ( is_readable(bytes) == TRUE )
+        if (is_readable(bytes) == true)
         {
             m_read_pos += bytes;
-            skipped = TRUE;
+            skipped = true;
         }
 
         return skipped;
     }
 
     /**
-     * @brief Extract a boolean from this packet to host byte order.
-     * @param[out] data is a reference to a variable to store the extracted
+     * \brief Extract a bool from this packet to host byte order.
+     * \param[out] data is a reference to a variable to store the extracted
      * data from the container in.
-     * @return the current packet object.
+     * \return the current packet object.
      */
-    Packet& operator >>(bool& data) noexcept
+    Packet& operator>>(bool& data) noexcept
     {
-        static constexpr uint8 bytes_to_read = sizeof(AR::uint8);
-        AR::uint8 bool_as_num = 0U;
+        static constexpr uint8 bytes_to_read = sizeof(std::uint8_t);
+        std::uint8_t bool_as_num = 0U;
         *this >> bool_as_num;
 
-        if ( bool_as_num == 0U )
+        if (bool_as_num == 0U)
         {
             data = false;
         }
@@ -282,16 +253,16 @@ public:
     }
 
     /**
-     * @brief Extract an unsigned byte from this packet to host byte order.
-     * @param[out] data is a reference to a variable to store the extracted
+     * \brief Extract an unsigned byte from this packet to host byte order.
+     * \param[out] data is a reference to a variable to store the extracted
      * data from the container in.
-     * @return the packet object
+     * \return the packet object
      */
-    Packet& operator >>(AR::uint8& data) noexcept
+    Packet& operator>>(std::uint8_t& data) noexcept
     {
         static constexpr uint8 bytes_to_read = sizeof(uint8);
 
-        if ( is_readable(bytes_to_read) )
+        if (is_readable(bytes_to_read))
         {
             data = m_data[m_read_pos];
             m_read_pos += bytes_to_read;
@@ -301,16 +272,16 @@ public:
     }
 
     /**
-     * @brief Extract a signed byte from this packet to host byte order.
-     * @param[out] data is a reference to a variable to store the extracted
+     * \brief Extract a signed byte from this packet to host byte order.
+     * \param[out] data is a reference to a variable to store the extracted
      * data from the container in.
-     * @return the packet object
+     * \return the packet object
      */
-    Packet& operator >>(AR::sint8& data) noexcept
+    Packet& operator>>(std::int8_t& data) noexcept
     {
-        static constexpr auto bytes_to_read = sizeof(AR::sint8);
+        static constexpr auto bytes_to_read = sizeof(std::int8_t);
 
-        if ( is_readable(bytes_to_read) )
+        if (is_readable(bytes_to_read))
         {
             data = m_data[m_read_pos];
             m_read_pos += bytes_to_read;
@@ -320,19 +291,20 @@ public:
     }
 
     /**
-     * @brief Extract an unsigned word from this packet to host byte order.
-     * @param[out] data is a reference to a variable to store the extracted
+     * \brief Extract an unsigned word from this packet to host byte order.
+     * \param[out] data is a reference to a variable to store the extracted
      * data from the container in.
-     * @return the packet object
+     * \return the packet object
      */
-    Packet& operator >>(AR::uint16& data) noexcept
+    Packet& operator>>(std::uint16_t& data) noexcept
     {
-        static constexpr auto bytes_to_read = sizeof(AR::uint16);
+        static constexpr auto bytes_to_read = sizeof(std::uint16_t);
 
-        if ( is_readable(bytes_to_read) )
+        if (is_readable(bytes_to_read))
         {
-            const AR::uint16* data_ptr = reinterpret_cast< const AR::uint16* >(&m_data[m_read_pos]);
-            data = from_network< AR::uint16 >(*data_ptr);
+            const std::uint16_t* data_ptr =
+                reinterpret_cast< const std::uint16_t* >(&m_data[m_read_pos]);
+            data = from_network< std::uint16_t >(*data_ptr);
             m_read_pos += bytes_to_read;
         }
 
@@ -340,18 +312,19 @@ public:
     }
 
     /**
-     * @brief Extract a singed word from this packet to host byte order.
-     * @param[out] data is a reference to a variable to store the extracted
+     * \brief Extract a singed word from this packet to host byte order.
+     * \param[out] data is a reference to a variable to store the extracted
      * data from the container in.
-     * @return the packet object
+     * \return the packet object
      */
-    Packet& operator >>(AR::sint16& data) noexcept
+    Packet& operator>>(std::int16_t& data) noexcept
     {
-        static constexpr auto bytes_to_read = sizeof(AR::sint16);
+        static constexpr auto bytes_to_read = sizeof(std::int16_t);
 
-        if ( is_readable(bytes_to_read) )
+        if (is_readable(bytes_to_read))
         {
-            const AR::sint16* data_ptr = reinterpret_cast< const AR::sint16* >(&m_data[m_read_pos]);
+            const std::int16_t* data_ptr =
+                reinterpret_cast< const std::int16_t* >(&m_data[m_read_pos]);
             data = from_network< sint16 >(*data_ptr);
             m_read_pos += bytes_to_read;
         }
@@ -360,19 +333,20 @@ public:
     }
 
     /**
-     * @brief Extract an unsigned double word from this
+     * \brief Extract an unsigned double word from this
      * packet to host byte order.
-     * @param[out] data is a reference to a variable to store the extracted
+     * \param[out] data is a reference to a variable to store the extracted
      * data from the container in.
-     * @return the packet object
+     * \return the packet object
      */
-    Packet& operator >>(AR::uint32& data) noexcept
+    Packet& operator>>(std::uint32_t& data) noexcept
     {
-        static constexpr auto bytes_to_read = sizeof(AR::uint32);
+        static constexpr auto bytes_to_read = sizeof(std::uint32_t);
 
-        if ( is_readable(bytes_to_read) )
+        if (is_readable(bytes_to_read))
         {
-            const AR::uint32* data_ptr = reinterpret_cast< const AR::uint32* >(&m_data[m_read_pos]);
+            const std::uint32_t* data_ptr =
+                reinterpret_cast< const std::uint32_t* >(&m_data[m_read_pos]);
             data = from_network< uint32 >(*data_ptr);
             m_read_pos += bytes_to_read;
         }
@@ -381,19 +355,20 @@ public:
     }
 
     /**
-     * @brief Extract a signed double word from this packet to host byte order.
-     * @param[out] data is a reference to a variable to store the extracted
+     * \brief Extract a signed double word from this packet to host byte order.
+     * \param[out] data is a reference to a variable to store the extracted
      * data from the container in.
-     * @return the packet object
+     * \return the packet object
      */
-    Packet& operator >>(AR::sint32& data) noexcept
+    Packet& operator>>(std::int32_t& data) noexcept
     {
-        static constexpr auto bytes_to_read = sizeof(AR::sint32);
+        static constexpr auto bytes_to_read = sizeof(std::int32_t);
 
-        if ( is_readable(bytes_to_read) )
+        if (is_readable(bytes_to_read))
         {
-            const AR::sint32* data_ptr = reinterpret_cast< const AR::sint32* >(&m_data[m_read_pos]);
-            data = from_network< AR::sint32 >(*data_ptr);
+            const std::int32_t* data_ptr =
+                reinterpret_cast< const std::int32_t* >(&m_data[m_read_pos]);
+            data = from_network< std::int32_t >(*data_ptr);
             m_read_pos += bytes_to_read;
         }
 
@@ -401,19 +376,20 @@ public:
     }
 
     /**
-     * @brief Extract an unsigned quad word from this packet to host byte order.
-     * @param[out] data is a reference to a variable to store the extracted
+     * \brief Extract an unsigned quad word from this packet to host byte order.
+     * \param[out] data is a reference to a variable to store the extracted
      * data from the container in.
-     * @return the packet object
+     * \return the packet object
      */
-    Packet& operator >>(AR::uint64& data) noexcept
+    Packet& operator>>(std::uint64_t& data) noexcept
     {
-        static constexpr auto bytes_to_read = sizeof(AR::uint64);
+        static constexpr auto bytes_to_read = sizeof(std::uint64_t);
 
-        if ( is_readable(bytes_to_read) )
+        if (is_readable(bytes_to_read))
         {
-            const AR::uint64* data_ptr = reinterpret_cast< const AR::uint64* >(&m_data[m_read_pos]);
-            data = from_network< AR::uint64 >(*data_ptr);
+            const std::uint64_t* data_ptr =
+                reinterpret_cast< const std::uint64_t* >(&m_data[m_read_pos]);
+            data = from_network< std::uint64_t >(*data_ptr);
             m_read_pos += bytes_to_read;
         }
 
@@ -421,19 +397,20 @@ public:
     }
 
     /**
-     * @brief Extract a signed quad word from this packet to host byte order.
-     * @param[out] data is a reference to a variable where the data from the
+     * \brief Extract a signed quad word from this packet to host byte order.
+     * \param[out] data is a reference to a variable where the data from the
      * packet is stored.
-     * @return the packet object.
+     * \return the packet object.
      */
-    Packet& operator >>(AR::sint64& data) noexcept
+    Packet& operator>>(std::int64_t& data) noexcept
     {
-        static constexpr auto bytes_to_read = sizeof(AR::sint64);
+        static constexpr auto bytes_to_read = sizeof(std::int64_t);
 
-        if ( is_readable(bytes_to_read) )
+        if (is_readable(bytes_to_read))
         {
-            const AR::sint64* data_ptr = reinterpret_cast< const AR::sint64* >(&m_data[m_read_pos]);
-            data = from_network< AR::sint64 >(*data_ptr);
+            const std::int64_t* data_ptr =
+                reinterpret_cast< const std::int64_t* >(&m_data[m_read_pos]);
+            data = from_network< std::int64_t >(*data_ptr);
             m_read_pos += bytes_to_read;
         }
 
@@ -441,20 +418,21 @@ public:
     }
 
     /**
-     * @brief Extract a floating point of 32 bits from this packet
+     * \brief Extract a floating point of 32 bits from this packet
      * to host byte order.
-     * @param[out] data the variable where to store the float32 in.
-     * @return this object.
+     * \param[out] data the variable where to store the float32 in.
+     * \return this object.
      */
-    Packet& operator >>(AR::float32& data) noexcept
+    Packet& operator>>(float& data) noexcept
     {
-        static constexpr auto bytes_to_read = sizeof(AR::float32);
+        static constexpr auto bytes_to_read = sizeof(float);
 
-        if ( is_readable(bytes_to_read) )
+        if (is_readable(bytes_to_read))
         {
-            AR::uint32 f_as_num = *(reinterpret_cast< AR::uint32* >(&m_data[m_read_pos]));
+            std::uint32_t f_as_num =
+                *(reinterpret_cast< std::uint32_t* >(&m_data[m_read_pos]));
             // first swap the bytes and then convert into a floating point
-            f_as_num = from_network< AR::uint32 >(f_as_num);
+            f_as_num = from_network< std::uint32_t >(f_as_num);
             std::memcpy(&data, &f_as_num, bytes_to_read);
             // update the read position
             m_read_pos += bytes_to_read;
@@ -464,35 +442,36 @@ public:
     }
 
     /**
-     * @brief Extract a floating point from this packet to host byte order.
-     * @param[out] data the variable where to store the float64 in.
+     * \brief Extract a floating point from this packet to host byte order.
+     * \param[out] data the variable where to store the float64 in.
      */
-    Packet& operator >>(AR::float64& data) noexcept
+    Packet& operator>>(double& data) noexcept
     {
-        static constexpr auto bytes_to_read = sizeof(AR::float64);
+        static constexpr auto bytes_to_read = sizeof(double);
 
-        if ( is_readable(bytes_to_read) )
+        if (is_readable(bytes_to_read))
         {
-            AR::uint64 f_as_num = *(reinterpret_cast< uint64* >(&m_data[m_read_pos]));
+            std::uint64_t f_as_num =
+                *(reinterpret_cast< uint64* >(&m_data[m_read_pos]));
             // first swap the bytes and then convert into a floating point
-            f_as_num = from_network< AR::uint64 >(f_as_num);
+            f_as_num = from_network< std::uint64_t >(f_as_num);
             std::memcpy(&data, &f_as_num, bytes_to_read);
-            m_read_pos += bytes_to_read;    // update the read position
+            m_read_pos += bytes_to_read; // update the read position
         }
 
         return *this;
     }
 
     /**
-     * @brief Extract a char array from this packet.
-     * @param[out] data the array were to store the C-array in.
+     * \brief Extract a char array from this packet.
+     * \param[out] data the array were to store the C-array in.
      */
-    Packet& operator >>(char* data) noexcept
+    Packet& operator>>(char* data) noexcept
     {
         uint32 bytes_to_read = 0U;
         *this >> bytes_to_read;
 
-        if ( is_readable(bytes_to_read) )
+        if (is_readable(bytes_to_read))
         {
             std::memcpy(data, &m_data[m_read_pos], bytes_to_read);
             // we need to add the char terminator
@@ -505,46 +484,46 @@ public:
     }
 
     /**
-     * @brief Store a unsigned int of 8 bytes in this packet in network
+     * \brief Store a unsigned int of 8 bytes in this packet in network
      * byte order.
-     * @param[in] data the unsigned byte to store in the packet.
+     * \param[in] data the unsigned byte to store in the packet.
      */
-    Packet& operator <<(AR::uint8& data) noexcept
+    Packet& operator<<(std::uint8_t& data) noexcept
     {
-        append< AR::uint8 >(data);
+        append< std::uint8_t >(data);
         return *this;
     }
 
     /**
-     * @brief Store a signed int of 8 bytes in this packet in network
+     * \brief Store a signed int of 8 bytes in this packet in network
      * byte order.
-     * @param[in] data is the rhs and the signed byte to store in the
+     * \param[in] data is the rhs and the signed byte to store in the
      * packet.
      */
-    Packet& operator <<(AR::sint8& data) noexcept
+    Packet& operator<<(std::int8_t& data) noexcept
     {
-        append< AR::sint8 >(data);
+        append< std::int8_t >(data);
         return *this;
     }
 
     /**
-     * @brief Store a boolean in this packet in network
+     * \brief Store a bool in this packet in network
      * byte order.
-     * @param[in] data is the rhs and the boolean to store in the
+     * \param[in] data is the rhs and the bool to store in the
      * packet.
-     * @return the packet object.
+     * \return the packet object.
      */
-    Packet& operator <<(bool& data) noexcept
+    Packet& operator<<(bool& data) noexcept
     {
         // forwards to the uint8 operator
-        if ( data == true )
+        if (data == true)
         {
-            AR::uint8 num_as_bool = 1U;
+            std::uint8_t num_as_bool = 1U;
             *this << num_as_bool;
         }
         else
         {
-            AR::uint8 num_as_bool = 0U;
+            std::uint8_t num_as_bool = 0U;
             *this << num_as_bool;
         }
 
@@ -552,132 +531,132 @@ public:
     }
 
     /**
-     * @brief Store a unsigned int of 16 bytes in this packet in network
+     * \brief Store a unsigned int of 16 bytes in this packet in network
      * byte order.
-     * @param[in] data is the rhs and the unsigned word to store in the
+     * \param[in] data is the rhs and the unsigned word to store in the
      * packet.
      */
-    Packet& operator <<(AR::uint16& data) noexcept
+    Packet& operator<<(std::uint16_t& data) noexcept
     {
-        AR::uint16 network_data = to_network< AR::uint16 >(data);
-        append< AR::uint16 >(network_data);
+        std::uint16_t network_data = to_network< std::uint16_t >(data);
+        append< std::uint16_t >(network_data);
         return *this;
     }
 
     /**
-     * @brief Store a signed int of 16 bytes in this packet in network
+     * \brief Store a signed int of 16 bytes in this packet in network
      * byte order.
-     * @param[in] data is the rhs and the signed word to store in the
+     * \param[in] data is the rhs and the signed word to store in the
      * packet.
      */
-    Packet& operator <<(AR::sint16& data) noexcept
+    Packet& operator<<(std::int16_t& data) noexcept
     {
-        AR::sint16 network_data = to_network< AR::sint16 >(data);
-        append< AR::sint16 >(network_data);
+        std::int16_t network_data = to_network< std::int16_t >(data);
+        append< std::int16_t >(network_data);
         return *this;
     }
 
     /**
-     * @brief Store a unsigned int of 32 bytes in this packet in network
+     * \brief Store a unsigned int of 32 bytes in this packet in network
      * byte order.
-     * @param[in] data is the rhs and the signed double word to store in the
+     * \param[in] data is the rhs and the signed double word to store in the
      * packet.
      */
-    Packet& operator <<(AR::uint32& data) noexcept
+    Packet& operator<<(std::uint32_t& data) noexcept
     {
-        AR::uint32 network_data = to_network< AR::uint32 >(data);
-        append< AR::uint32 >(network_data);
+        std::uint32_t network_data = to_network< std::uint32_t >(data);
+        append< std::uint32_t >(network_data);
         return *this;
     }
 
     /**
-     * @brief Store a signed int of 32 bytes in this packet in network
+     * \brief Store a signed int of 32 bytes in this packet in network
      * byte order.
-     * @param[in] data the signed double word to store in the packet.
+     * \param[in] data the signed double word to store in the packet.
      */
-    Packet& operator <<(AR::sint32& data) noexcept
+    Packet& operator<<(std::int32_t& data) noexcept
     {
-        AR::sint32 network_data = to_network< AR::sint32 >(data);
-        append< AR::uint32 >(network_data);
+        std::int32_t network_data = to_network< std::int32_t >(data);
+        append< std::uint32_t >(network_data);
         return *this;
     }
 
     /**
-     * @brief Store a unsigned int of 64 bytes in this packet in network
+     * \brief Store a unsigned int of 64 bytes in this packet in network
      * byte order.
-     * @param[in] the unsigned quad word to store in the packet.
+     * \param[in] the unsigned quad word to store in the packet.
      */
-    Packet& operator <<(AR::uint64& data) noexcept
+    Packet& operator<<(std::uint64_t& data) noexcept
     {
-        AR::uint64 network_data = to_network< AR::uint64 >(data);
-        append< AR::uint64 >(network_data);
+        std::uint64_t network_data = to_network< std::uint64_t >(data);
+        append< std::uint64_t >(network_data);
         return *this;
     }
 
     /**
-     * @brief Store a unsigned int of 64 bytes in this packet in network
+     * \brief Store a unsigned int of 64 bytes in this packet in network
      * byte order.
-     * @param[in] data the signed quad word to store in the packet.
+     * \param[in] data the signed quad word to store in the packet.
      */
-    Packet& operator <<(AR::sint64& data) noexcept
+    Packet& operator<<(std::int64_t& data) noexcept
     {
-        AR::sint64 network_data = to_network< AR::sint64 >(data);
-        append< AR::sint64 >(network_data);
+        std::int64_t network_data = to_network< std::int64_t >(data);
+        append< std::int64_t >(network_data);
         return *this;
     }
 
     /**
-     * @brief Store a floating point of 32 bytes in this packet in network
+     * \brief Store a floating point of 32 bytes in this packet in network
      * byte order.
-     * @param[in] data the float to store.
+     * \param[in] data the float to store.
      */
-    Packet& operator <<(AR::float32& data) noexcept
+    Packet& operator<<(float& data) noexcept
     {
         // first we will convert it to an equivalent byte representation.
-        AR::uint32 num_as_float = *(reinterpret_cast< AR::uint32* >(&data));
-        AR::uint32 network_data = to_network< AR::uint32 >(num_as_float);
-        append< AR::uint32 >(network_data);
+        std::uint32_t num_as_float =
+            *(reinterpret_cast< std::uint32_t* >(&data));
+        std::uint32_t network_data = to_network< std::uint32_t >(num_as_float);
+        append< std::uint32_t >(network_data);
         return *this;
     }
 
     /**
-     * @brief Store a floating point of 64 bytes in this packet in network
+     * \brief Store a floating point of 64 bytes in this packet in network
      * byte order.
-     * @param[in] data the double to store
+     * \param[in] data the double to store
      */
-    Packet& operator <<(AR::float64& data) noexcept
+    Packet& operator<<(double& data) noexcept
     {
         // first we will convert it to an equivalent byte representation.
-        AR::uint64 num_as_float = *(reinterpret_cast< AR::uint64* >(&data));
-        AR::uint64 network_data = to_network< AR::uint64 >(num_as_float);
-        append< AR::uint64 >(network_data);
+        std::uint64_t num_as_float =
+            *(reinterpret_cast< std::uint64_t* >(&data));
+        std::uint64_t network_data = to_network< std::uint64_t >(num_as_float);
+        append< std::uint64_t >(network_data);
         return *this;
     }
 
     /**
-     * @brief Store a char array in this packet in network
+     * \brief Store a char array in this packet in network
      * byte order.
-     * @param[in] data the C-string to store in the packet
+     * \param[in] data the C-string to store in the packet
      */
-    Packet& operator <<(const char* data) noexcept
+    Packet& operator<<(const char* data) noexcept
     {
         append(data);
         return *this;
     }
 
-protected:
-
-private:
-
+  protected:
+  private:
     //! This is the container that holds the data stored via << operator.
     DataContainer m_data;
 
     //! Current position where data is appended in the packet.
-    AR::uint32 m_write_pos;
+    std::uint32_t m_write_pos;
 
-    //! current position where data is read from, until this packet is completely
-    //! read.
-    AR::uint32 m_read_pos;
+    //! current position where data is read from, until this packet is
+    //! completely read.
+    std::uint32_t m_read_pos;
 };
 
 /*******************************************************************************

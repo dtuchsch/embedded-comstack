@@ -1,10 +1,10 @@
 /**
  * @file      TcpClient.cpp
- * @author    dtuchscherer <daniel.tuchscherer@hs-heilbronn.de>
+ * @author    dtuchscherer <daniel.tuchscherer@gmail.com>
  * @brief     TCP client implementation
  * @details   For connecting to and disconnecting from TCP servers.
  * @version   1.0
- * @copyright Copyright (c) 2015, dtuchscherer.
+ * @copyright Copyright (c) 2018, dtuchscherer.
  *            All rights reserved.
  *
  *            Redistributions and use in source and binary forms, with
@@ -36,38 +36,7 @@
  *            POSSIBILITY OF SUCH DAMAGE.
  */
 
-/*******************************************************************************
- * MODULES USED
- ******************************************************************************/
 #include "TcpClient.h"
-
-/*******************************************************************************
- * DEFINITIONS AND MACROS
- ******************************************************************************/
-
-/*******************************************************************************
- * TYPEDEFS, ENUMERATIONS, CLASSES
- ******************************************************************************/
-
-/*******************************************************************************
- * PROTOTYPES OF LOCAL FUNCTIONS
- ******************************************************************************/
-
-/*******************************************************************************
- * EXPORTED VARIABLES
- ******************************************************************************/
-
-/*******************************************************************************
- * GLOBAL MODULE VARIABLES
- ******************************************************************************/
-
-/*******************************************************************************
- * EXPORTED FUNCTIONS
- ******************************************************************************/
-
-/*******************************************************************************
- * FUNCTION DEFINITIONS
- ******************************************************************************/
 
 ////////////////////////////////////////////////////////////////////////////////
 TcpClient::TcpClient() noexcept : TcpSocket() {}
@@ -76,18 +45,17 @@ TcpClient::TcpClient() noexcept : TcpSocket() {}
 TcpClient::~TcpClient() noexcept {}
 
 ////////////////////////////////////////////////////////////////////////////////
-AR::boolean TcpClient::connect(IpAddress ip_address,
-                               const AR::uint16 port) noexcept
+bool TcpClient::connect(IpAddress ip_address, const std::uint16_t port) noexcept
 {
     // return value
-    AR::boolean connected_r = FALSE;
-    AR::boolean socket_created = is_socket_initialized();
+    bool connected_r = false;
+    bool socket_created = is_socket_initialized();
 
     // look if the socket is there
-    if (socket_created == TRUE)
+    if (socket_created == true)
     {
         // first build the address
-        AR::uint32 ip = ip_address.get_ip_address();
+        std::uint32_t ip = ip_address.get_ip_address();
         struct sockaddr_in server;
         ip_address.create_address_struct(ip, port, server);
 
@@ -98,21 +66,21 @@ AR::boolean TcpClient::connect(IpAddress ip_address,
 
         if (connected >= 0)
         {
-            connected_r = TRUE;
+            connected_r = true;
         }
         else
         {
-            connected_r = FALSE;
+            connected_r = false;
             m_last_error = errno;
         }
     }
     else
     {
-        connected_r = FALSE;
+        connected_r = false;
     }
 
     return connected_r;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-AR::boolean TcpClient::disconnect() noexcept { return close_socket(); }
+bool TcpClient::disconnect() noexcept { return close_socket(); }

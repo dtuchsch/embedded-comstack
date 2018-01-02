@@ -1,11 +1,11 @@
 /**
  * @file      TcpServer.cpp
- * @author    dtuchscherer <daniel.tuchscherer@hs-heilbronn.de>
+ * @author    dtuchscherer <daniel.tuchscherer@gmail.com>
  * @brief     Ethernet TCP/IP Server implementation
  * @details   This is the module implementing the listening for and accepting of
  *            connections from TCP Clients.
  * @version   1.0
- * @copyright Copyright (c) 2015, dtuchscherer.
+ * @copyright Copyright (c) 2018, dtuchscherer.
  *            All rights reserved.
  *
  *            Redistributions and use in source and binary forms, with
@@ -37,49 +37,17 @@
  *            POSSIBILITY OF SUCH DAMAGE.
  */
 
-/*******************************************************************************
- * MODULES USED
- *******************************************************************************/
 #include "TcpServer.h"
-
-/*******************************************************************************
- * DEFINITIONS AND MACROS
- ******************************************************************************/
-
-/*******************************************************************************
- * TYPEDEFS, ENUMERATIONS, CLASSES
- ******************************************************************************/
-
-/*******************************************************************************
- * PROTOTYPES OF LOCAL FUNCTIONS
- ******************************************************************************/
-
-/*******************************************************************************
- * EXPORTED VARIABLES
- ******************************************************************************/
-
-/*******************************************************************************
- * GLOBAL MODULE VARIABLES
- ******************************************************************************/
-
-/*******************************************************************************
- * EXPORTED FUNCTIONS
- ******************************************************************************/
-
-/*******************************************************************************
- * FUNCTION DEFINITIONS
- ******************************************************************************/
 
 ////////////////////////////////////////////////////////////////////////////////
 TcpServer::TcpServer() noexcept : m_connect(), m_data() {}
 
 ////////////////////////////////////////////////////////////////////////////////
-AR::boolean TcpServer::listen(IpAddress ip_address,
-                              const AR::uint16 port) noexcept
+bool TcpServer::listen(IpAddress ip_address, const std::uint16_t port) noexcept
 {
-    AR::boolean listen_success = FALSE;
+    bool listen_success = false;
     // first build the address
-    AR::uint32 ip = ip_address.get_ip_address();
+    std::uint32_t ip = ip_address.get_ip_address();
     struct sockaddr_in client;
     ip_address.create_address_struct(ip, port, client);
     const auto handle = m_connect.get_socket();
@@ -91,39 +59,39 @@ AR::boolean TcpServer::listen(IpAddress ip_address,
         const int li = ::listen(handle, 10);
         if (li >= 0)
         {
-            listen_success = TRUE;
+            listen_success = true;
         }
         else
         {
             m_connect.m_last_error = errno;
-            listen_success = FALSE;
+            listen_success = false;
         }
     }
     else
     {
         m_connect.m_last_error = errno;
-        listen_success = FALSE;
+        listen_success = false;
     }
 
     return listen_success;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-AR::boolean TcpServer::accept() noexcept
+bool TcpServer::accept() noexcept
 {
-    AR::boolean accepted{FALSE};
+    bool accepted{false};
     struct sockaddr_in client;
 #ifdef _WIN32
     int length = sizeof(client);
 #elif defined(__unix__)
     socklen_t length = sizeof(client);
 #else
+#error "OS not supported."
 #endif
     const auto handle = m_connect.get_socket();
     // accept the connection on the socket.
     const int data_socket =
         ::accept(handle, (struct sockaddr*)&client, &length);
-    // std::cout << "Accepting connection from client...\n";
 
     if (data_socket >= 0)
     {
@@ -134,33 +102,32 @@ AR::boolean TcpServer::accept() noexcept
         // std::cout << "Assign data socket from the accept call...";
         const auto as = m_data.assign(data_socket);
 
-        if (as == TRUE)
+        if (as)
         {
-            // std::cout << "success.\n";
-            accepted = TRUE;
+            accepted = true;
         }
         else
         {
-            // std::cout << "failed.\n";
-            accepted = FALSE;
+            std::cerr << "failed.\n";
+            accepted = false;
         }
     }
     else
     {
-        // std::cout << "failed.\n";
+        std::cerr << "failed.\n";
         m_connect.m_last_error = errno;
-        accepted = FALSE;
+        accepted = false;
     }
 
     return accepted;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-AR::boolean TcpServer::reuse_addr() noexcept
+bool TcpServer::reuse_addr() noexcept
 {
     int reuse_addr = 1;
     const auto handle = m_connect.get_socket();
     const auto reuse = setsockopt(handle, SOL_SOCKET, SO_REUSEADDR,
                                   (char*)&reuse_addr, sizeof(reuse_addr));
-    return static_cast< AR::boolean >(reuse == 0);
+    return static_cast< bool >(reuse == 0);
 }

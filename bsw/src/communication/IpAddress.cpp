@@ -1,10 +1,10 @@
 /**
  * @file      IpAddress.cpp
- * @author    dtuchscherer <daniel.tuchscherer@hs-heilbronn.de>
+ * @author    dtuchscherer <daniel.tuchscherer@gmail.com>
  * @brief     short description...
  * @details   long description...
  * @version   1.0
- * @copyright Copyright (c) 2015, dtuchscherer.
+ * @copyright Copyright (c) 2018, dtuchscherer.
  *            All rights reserved.
  *
  *            Redistributions and use in source and binary forms, with
@@ -36,98 +36,58 @@
  *            POSSIBILITY OF SUCH DAMAGE.
  */
 
-/*******************************************************************************
- * MODULES USED
- *******************************************************************************/
-
-// used for string comparison of an IP address
+#include "IpAddress.h"
 #include <cstring>
 
-// module interface
-#include "IpAddress.h"
-
-/*******************************************************************************
- * DEFINITIONS AND MACROS
- *******************************************************************************/
-
-/*******************************************************************************
- * TYPEDEFS, ENUMERATIONS, CLASSES
- *******************************************************************************/
-
-/*******************************************************************************
- * PROTOTYPES OF LOCAL FUNCTIONS
- *******************************************************************************/
-
-/*******************************************************************************
- * EXPORTED VARIABLES
- *******************************************************************************/
-
-/*******************************************************************************
- * GLOBAL MODULE VARIABLES
- *******************************************************************************/
-
-/*******************************************************************************
- * EXPORTED FUNCTIONS
- *******************************************************************************/
-
-/*******************************************************************************
- * FUNCTION DEFINITIONS
- *******************************************************************************/
- 
 ////////////////////////////////////////////////////////////////////////////////
-IpAddress::IpAddress(const char* ip_address) noexcept :
-        m_address_binary(0U),
-        m_valid_ip(FALSE)
+IpAddress::IpAddress(const char* ip_address) noexcept
+    : m_address_binary{0U}, m_valid_ip{false}
 {
-    if ( ip_address != NULL_PTR )
+    if (ip_address != nullptr)
     {
         m_valid_ip = is_valid(ip_address);
-    }
-    else
-    {
-        m_valid_ip = FALSE;
     }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-AR::uint32 IpAddress::get_ip_address() const noexcept
+std::uint32_t IpAddress::get_ip_address() const noexcept
 {
-    AR::uint32 ip_host_byte_order = 0U;
+    std::uint32_t ip_host_byte_order = 0U;
     ip_host_byte_order = ntohl(m_address_binary);
     return ip_host_byte_order;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-AR::boolean IpAddress::is_valid(const char* ip) noexcept
+bool IpAddress::is_valid(const char* ip) noexcept
 {
-    AR::boolean ip_valid = FALSE;
+    bool ip_valid = false;
 
-    // we will check here, because inet_addr() call has limited checking.
-    if ( std::strcmp(ip, "0.0.0.0") == 0 )
+    // We will check here, because inet_addr() call has limited checking.
+    if (std::strcmp(ip, "0.0.0.0") == 0)
     {
         m_address_binary = INADDR_BROADCAST;
-        ip_valid = TRUE;
+        ip_valid = true;
     }
-    else if ( std::strcmp(ip, "255.255.255.0") == 0 )
+    else if (std::strcmp(ip, "255.255.255.0") == 0)
     {
         m_address_binary = INADDR_ANY;
-        ip_valid = TRUE;
+        ip_valid = true;
     }
     else
     {
         // convert it into a network-byte-order representation
-        AR::uint32 ip_conv = inet_addr(ip);
+        std::uint32_t ip_conv = inet_addr(ip);
 
         // check if the address is valid or not
-        if ( ip_conv != INADDR_NONE )
+        if (ip_conv != INADDR_NONE)
         {
             // assign
             m_address_binary = ip_conv;
-            ip_valid = TRUE;
+            ip_valid = true;
         }
         else
         {
-            ip_valid = FALSE;
+            ip_valid = false;
         }
     }
 
@@ -135,19 +95,12 @@ AR::boolean IpAddress::is_valid(const char* ip) noexcept
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-void IpAddress::create_address_struct(const AR::uint32 ip_host_byte_order,
-                                      const AR::uint16 port, 
+void IpAddress::create_address_struct(const std::uint32_t ip_host_byte_order,
+                                      const std::uint16_t port,
                                       sockaddr_in& addr) noexcept
 {
     std::memset(&addr, 0, sizeof(addr));
     addr.sin_addr.s_addr = htonl(ip_host_byte_order);
-    addr.sin_family      = AF_INET;
-    addr.sin_port        = htons(port);
+    addr.sin_family = AF_INET;
+    addr.sin_port = htons(port);
 }
-
-////////////////////////////////////////////////////////////////////////////////
-IpAddress::~IpAddress() noexcept
-{
-
-}
-

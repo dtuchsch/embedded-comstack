@@ -1,11 +1,11 @@
 /**
  * @file      Endianess.h
- * @author    dtuchscherer <daniel.tuchscherer@hs-heilbronn.de>
+ * @author    dtuchscherer <daniel.tuchscherer@gmail.com>
  * @brief     Endianess interface for byte-swapping
  * @details   This header interface allows byte-swapping between little-
  * 			  and big-endian machines.
  * @version   1.0
- * @copyright Copyright (c) 2015, dtuchscherer.
+ * @copyright Copyright (c) 2018, dtuchscherer.
  *            All rights reserved.
  *
  *            Redistributions and use in source and binary forms, with
@@ -40,9 +40,6 @@
 #ifndef ENDIANESS_H_
 #define ENDIANESS_H_
 
-/*******************************************************************************
- * MODULES USED
- ******************************************************************************/
 #ifdef __unix__
 #include <endian.h> //< under unix OS there is a BYTE_ORDER define.
 #elif defined(_WIN32)
@@ -50,22 +47,6 @@
 #else
 #error "Please #define BYTE_ORDER for your system architecture."
 #endif
-
-/*******************************************************************************
- * DEFINITIONS AND MACROS
- ******************************************************************************/
-
-/*******************************************************************************
- * TYPEDEFS, ENUMERATIONS, CLASSES
- ******************************************************************************/
-
-/*******************************************************************************
- * EXPORTED VARIABLES
- ******************************************************************************/
-
-/*******************************************************************************
- * EXPORTED FUNCTIONS
- ******************************************************************************/
 
 ////////////////////////////////////////////////////////////////////////////////
 template < typename T, size_t Sz > T swap_bytes(const T& val) noexcept;
@@ -85,7 +66,7 @@ template <> inline uint8 swap_bytes< uint8, 1 >(const uint8& val) noexcept
  * @brief template specialization to swap an unsgined word.
  * @return an unsigned word with swapped bytes.
  */
-template <> inline uint16 swap_bytes< uint16, 2 >(const uint16& val) noexcept
+template <> inline uint16 swap_bytes< uint16, 2U >(const uint16& val) noexcept
 {
     uint16 temp = 0U;
     temp = ((val >> 8U) & 0x00FFU);
@@ -98,7 +79,7 @@ template <> inline uint16 swap_bytes< uint16, 2 >(const uint16& val) noexcept
  * @brief template specialization to swap an unsgined word.
  * @return a signed word with swapped bytes.
  */
-template <> inline sint16 swap_bytes< sint16, 2 >(const sint16& val) noexcept
+template <> inline sint16 swap_bytes< sint16, 2U >(const sint16& val) noexcept
 {
     sint16 temp = 0;
     temp = ((val >> 8) & 0x00FF);

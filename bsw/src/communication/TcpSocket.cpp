@@ -37,39 +37,8 @@
  *            POSSIBILITY OF SUCH DAMAGE.
  */
 
-/*******************************************************************************
- * MODULES USED
- ******************************************************************************/
 #include "TcpSocket.h"
 #include <netinet/tcp.h>
-
-/*******************************************************************************
- * DEFINITIONS AND MACROS
- ******************************************************************************/
-
-/*******************************************************************************
- * TYPEDEFS, ENUMERATIONS, CLASSES
- ******************************************************************************/
-
-/*******************************************************************************
- * PROTOTYPES OF LOCAL FUNCTIONS
- ******************************************************************************/
-
-/*******************************************************************************
- * EXPORTED VARIABLES
- ******************************************************************************/
-
-/*******************************************************************************
- * GLOBAL MODULE VARIABLES
- ******************************************************************************/
-
-/*******************************************************************************
- * EXPORTED FUNCTIONS
- ******************************************************************************/
-
-/*******************************************************************************
- * FUNCTION DEFINITIONS
- ******************************************************************************/
 
 ////////////////////////////////////////////////////////////////////////////////
 TcpSocket::TcpSocket() noexcept : Socket(SocketType::TCP)
@@ -78,16 +47,9 @@ TcpSocket::TcpSocket() noexcept : Socket(SocketType::TCP)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-TcpSocket::~TcpSocket() noexcept
+bool TcpSocket::create() noexcept
 {
-    // do not close the socket here,
-    // this is done by the base class Socket
-}
-
-////////////////////////////////////////////////////////////////////////////////
-AR::boolean TcpSocket::create() noexcept
-{
-    AR::boolean socket_created = FALSE;
+    bool socket_created = false;
 
     SocketHandleType& handle = get_socket_handle();
     handle = socket(AF_INET, SOCK_STREAM, 0);
@@ -108,13 +70,14 @@ AR::boolean TcpSocket::create() noexcept
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-AR::sint16 TcpSocket::send(const void* message, const AR::uint16 len) noexcept
+std::int16_t TcpSocket::send(const void* message,
+                             const std::uint16_t len) noexcept
 {
-    const AR::boolean socket_open = is_socket_initialized();
-    AR::sint16 data_sent = -1;
+    const bool socket_open = is_socket_initialized();
+    std::int16_t data_sent = -1;
 
     // sending only makes sense if at least the socket is open.
-    if (socket_open == TRUE)
+    if (socket_open)
     {
 #ifdef _WIN32
         const char* msg = static_cast< const char* >(message);
@@ -142,13 +105,13 @@ AR::sint16 TcpSocket::send(const void* message, const AR::uint16 len) noexcept
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-AR::sint16 TcpSocket::receive(void* message, const AR::uint16 len) noexcept
+std::int16_t TcpSocket::receive(void* message, const std::uint16_t len) noexcept
 {
-    const AR::boolean socket_open = is_socket_initialized();
-    AR::sint16 data_received = -1;
+    const bool socket_open = is_socket_initialized();
+    std::int16_t data_received = -1;
 
     // sending only makes sense if at least the socket is open.
-    if (socket_open == TRUE)
+    if (socket_open)
     {
 #ifdef _WIN32
         char* msg = static_cast< char* >(message);
@@ -174,9 +137,9 @@ AR::sint16 TcpSocket::receive(void* message, const AR::uint16 len) noexcept
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-AR::boolean TcpSocket::set_nodelay(const AR::boolean option) noexcept
+bool TcpSocket::set_nodelay(const bool option) noexcept
 {
-    AR::boolean success{false};
+    bool success{false};
     int flag = static_cast< int >(option);
     const SocketHandleType handle = get_socket_handle();
     const int result =

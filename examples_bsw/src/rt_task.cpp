@@ -4,62 +4,54 @@
 // header to include to get access to the class
 #include "RTTask.h"
 
-// configuration stuff. this normally should be placed into a configuration header
-// and source file.
-// the real-time task shall run with highest priority possible.
+// configuration stuff. this normally should be placed into a configuration
+// header and source file. the real-time task shall run with highest priority
+// possible.
 constexpr int RT_TASK_PRIO = 98;
 
-// the sample time of the real-time thread shall be 1000 microseconds which 
+// the sample time of the real-time thread shall be 1000 microseconds which
 // equals 1 millisecond.
 constexpr int RT_PERIOD_US = 1000000;
 
 // create a class that declares and defines the methods pre(), update() and
-// post(). 
+// post().
 // 1. Method pre() is called by the base class RTTask before the real-time
-// loop is started. 
-// 2. Then, the task will execute the real-time task periodically at a given 
+// loop is started.
+// 2. Then, the task will execute the real-time task periodically at a given
 // rate specified.
 class MyRTTask : public RTTask< MyRTTask, RT_TASK_PRIO, RT_PERIOD_US >
 {
-public:
-
+  public:
     /**
      * @brief pre conditions to execute.
      */
-    AR::boolean pre() noexcept;
-    
+    bool pre() noexcept;
+
     /**
      * @brief periodic update
      */
-    AR::boolean update() noexcept;
-    
+    bool update() noexcept;
+
     /**
      * @brief post-conditions after task execution.
      */
     void post() noexcept;
-    
-private:
 
+  private:
 };
 
 ////////////////////////////////////////////////////////////////////////////////
-AR::boolean MyRTTask::pre() noexcept
-{
-    return true;
-}
+bool MyRTTask::pre() noexcept { return true; }
 
 ////////////////////////////////////////////////////////////////////////////////
-AR::boolean MyRTTask::update() noexcept
+bool MyRTTask::update() noexcept
 {
     std::cout << "RT TASK CALLED\n";
     return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-void MyRTTask::post() noexcept
-{
-
-}
+void MyRTTask::post() noexcept {}
 
 ////////////////////////////////////////////////////////////////////////////////
 int main() noexcept
@@ -70,4 +62,3 @@ int main() noexcept
     // the task is executed periodically.
     rt_task.task_entry();
 }
-

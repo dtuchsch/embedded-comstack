@@ -1,6 +1,6 @@
 /**
  * @file      RTTask.h
- * @author    dtuchscherer <daniel.tuchscherer@hs-heilbronn.de>
+ * @author    dtuchscherer <daniel.tuchscherer@gmail.com>
  * @brief     Real-Time Task abstraction
  * @details   The template class RTTask covers the simple creation of real-time
  *            tasks with pre and post-routines.
@@ -39,45 +39,32 @@
  */
 
 #ifndef RTTASK_H_
-# define RTTASK_H_
-
-/*******************************************************************************
- * MODULES USED
- *******************************************************************************/
+#define RTTASK_H_
 
 // OSControl to create threads.
 #include "OSControl.h"
 
-/*******************************************************************************
- * DEFINITIONS AND MACROS
- *******************************************************************************/
-
-/*******************************************************************************
- * TYPEDEFS, ENUMERATIONS, CLASSES
- *******************************************************************************/
-
 /**
  * @tparam Derived A class that holds at least three methods pre(), update() and
  * post().
- * @tparam Derived 
+ * @tparam Derived
  * @tparam Priority of this real-time task
  * @tparam PeriodMicro task period in microseconds
  */
-template< typename Derived, int Priority, long int PeriodMicro >
+template < typename Derived, int Priority, long int PeriodMicro >
 class RTTask : public OSControl
 {
-public:
-
-    // Get the type for giving it to the template method of OSControl.
+  public:
+    /// Get the type for giving it to the template method of OSControl.
     using TaskType = RTTask< Derived, Priority, PeriodMicro >;
-    
+
     /**
      * @brief Default constructor creating the real-time task.
      */
-    RTTask() noexcept :
-            // initially we set this to false until the pre-condition has been
-            // executed.
-            m_task_running(FALSE)
+    RTTask() noexcept
+        : // initially we set this to false until the pre-condition has been
+          // executed.
+          m_task_running(false)
     {
     }
 
@@ -88,14 +75,14 @@ public:
     {
         // make sure a thread is not executed after the constructor of RTTask
         // was called.
-        m_task_running = FALSE;
+        m_task_running = false;
     }
 
     /**
      * @brief Called once before the real-time loop is entered.
      * The update method is only called if the pre-condition is fulfilled.
      */
-    AR::boolean pre() noexcept
+    bool pre() noexcept
     {
         // CRTP like call to the concrete method which implements the behavior
         return static_cast< Derived* >(this)->pre();
@@ -104,7 +91,7 @@ public:
     /**
      * @brief Periodically called.
      */
-    AR::boolean update() noexcept
+    bool update() noexcept
     {
         // call the update method of the concrete derived class which implements
         // the application-specific behavior.
@@ -128,16 +115,17 @@ public:
      */
     void* task_entry() noexcept
     {
-        // before we enter the real-time task loop we will call the pre-condition.
+        // before we enter the real-time task loop we will call the
+        // pre-condition.
         const auto precond_ok = pre();
-        
-        if ( precond_ok )
+
+        if (precond_ok)
         {
             // after the pre it will enter the periodic update.
-            m_task_running = TRUE;
+            m_task_running = true;
             // calls the update method cyclically at a given rate.
             rt_task< Priority, PeriodMicro, TaskType >(m_task_running, *this);
-            // post-conditions after 
+            // post-conditions after
             post();
         }
     }
@@ -159,12 +147,11 @@ public:
     //! Static period in microseconds.
     static constexpr int m_period = PeriodMicro;
 
-protected:
-
+  protected:
     /**
      * @brief Creates an independent thread from another thread.
      */
-    AR::boolean create_thread() noexcept
+    bool create_thread() noexcept
     {
         return create_rt_thread< TaskType::thread_helper >(this, m_task_handle);
     }
@@ -172,54 +159,35 @@ protected:
     /**
      * @brief Closes the thread.
      */
-    AR::boolean close_thread() noexcept
-    {
-        return close_rt_thread(m_task_handle);
-    }
+    bool close_thread() noexcept { return close_rt_thread(m_task_handle); }
 
-    //! if the loop of the thread will run or not.
-    AR::boolean m_task_running;
+    /// if the loop of the thread will run or not.
+    bool m_task_running;
 
-    //! The handle to manage this task.
+    /// The handle to manage this task.
     TaskHandle m_task_handle;
 
-private:
-
+  private:
 };
 
 /**
  * @brief We differentiate between a task and a thread for Linux systems.
- * Each thread can has only one task, but may spawn other threads which also have
- * their real-time tasks.
+ * Each thread can has only one task, but may spawn other threads which also
+ * have their real-time tasks.
  */
-template< typename Derived, int Priority, int PeriodMicro >
+template < typename Derived, int Priority, int PeriodMicro >
 class RTThread : public RTTask< Derived, Priority, PeriodMicro >
 {
-public:
-    
+  public:
     /**
      * @brief Constructor creating a real-time thread.
      */
-    RTThread() noexcept
-    {
-        const auto created = this->create_thread();
-    }
+    RTThread() noexcept { const auto created = this->create_thread(); }
 
     /**
      * @brief Destructor will close the thread.
      */
-    ~RTThread() noexcept
-    {
-        const auto closed = this->close_thread();
-    }
+    ~RTThread() noexcept { const auto closed = this->close_thread(); }
 };
-
-/*******************************************************************************
- * EXPORTED VARIABLES
- *******************************************************************************/
-
-/*******************************************************************************
- * EXPORTED FUNCTIONS
- *******************************************************************************/
 
 #endif /* RTTASK_H_ */
