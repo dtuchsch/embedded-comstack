@@ -1,9 +1,10 @@
 # What is embedded-comstack?
-`embedded-comstack` is a lightweight cross-platform communication and operating system library. Its purpose is to provide a reusable middleware. It is programmed in Modern C++ (C++11 / C++14) and provides some easy-to-use features for developing embedded software. To use `embedded-comstack` a recent C++14 compiler such as gcc/g++ or clang is necessary.
+
+`embedded-comstack` is a lightweight cross-platform communication and operating system library written in Modern C++. Its purpose is to provide a reusable middleware. It is programmed in Modern C++ (C++11 / C++14) and provides some easy-to-use features for developing embedded software. To use `embedded-comstack` a recent C++14 compiler such as gcc/g++ (> gcc v4.9) or clang (clang-3.8) is necessary.
 
 ## Motivation
 
-Socket programming in C to commmunicate over Ethernet TCP/IP, UDP or even CAN under Linux is possible, but in my personal opinion limited in reusability, maintainability and as a consequence not very elegant. I often found myself in doing repetitive tasks for programming embedded communication software in C. The same applies to working with threads (pthreads) and real-time schedulers of Linux. We can do better... 
+Socket programming in C to commmunicate over Ethernet TCP/IP, UDP or even CAN under Linux is possible, but in my personal opinion limited in reusability, maintainability and as a consequence not very elegant. I often found myself in doing repetitive tasks for programming embedded communication software in C. The same applies to working with threads (pthreads) and real-time schedulers of Linux. We can do better...
 
 For me it's important to have a library to wrap this not-so-elegant solutions, so I can reuse a well-defined interface for the majority of my applications without rewriting code I've implemented multiple times. So the goal of `embedded-comstack` is to have a general library that is easily applied. This library shall be reusable, maintainable, and easier-to-use.
 
@@ -30,7 +31,7 @@ const auto connected = client.connect("127.0.0.1", 5555U);
 const auto sent = client.send(&data, data.size());
 ```
 
-We are now able to create multiple clients or servers easily. In addition, all of the protocols using sockets do have the most implementation part in common. The type `TcpClient` is derived from type `Socket`, which implements sockets in the most general possible way.
+We are now able to create multiple clients or servers easily. In addition, all of the protocols using sockets do have the most implementation part in common. The type `TcpClient` is derived from type `Socket`, which implements sockets in the most generic way possible.
 
 ## Operating systems supported
 
@@ -75,25 +76,31 @@ The use of `embedded-comstack` in Linux und ROS is recommended. You need at leas
 First, get a local work copy of this Git repository by cloning it into the `src` folder of your catkin workspace:
 
 ```shell
-git clone https://github.com/dtuchsch/embedded-comstack.git
+$ git clone https://github.com/dtuchsch/embedded-comstack.git
 ```
 
 Then, build the catkin workspace from the root directory.
 
+```shell
+$ cd catkin_ws
+$ catkin_make
 ```
-cd catkin_ws
-catkin_make
+
+For debugging use the following command:
+
+```shell
+$ catkin_make -DCMAKE_BUILD_TYPE=Debug
 ```
 
 This command builds the basic software library as a library which can be linked against your ROS package that holds the application.
 
-### Using bsw in your applications
+### Using embedded-comstack in your applications
 
 All you have to do is to create a new ROS catkin package and add the `bsw` package as a dependency:
 
 ```shell
-cd catkin_ws
-catkin_create_pkg my_app std_msgs roscpp bsw
+$ cd catkin_ws
+$ catkin_create_pkg my_app std_msgs roscpp bsw
 ```
 
 Add the following line to your `CMakeLists.txt` of your application to edit the compiler flags and add C++14 support:
@@ -102,7 +109,7 @@ Add the following line to your `CMakeLists.txt` of your application to edit the 
 set(CMAKE_CXX_FLAGS "-std=c++14 ${CMAKE_CXX_FLAGS}")
 ```
 
-This compiler switch is mandatory, otherwise on compile-time it will throw hundreds of compiler errors, only because you forgot to turn on the C++14 standard.
+This compiler switch is mandatory, otherwise on compile-time it will throw of compiler errors, only because you forgot to turn on C++14.
 
 Program your application and add the cpp file as the executable to your `CMakeLists.txt`:
 
@@ -125,14 +132,15 @@ Linking against the bsw library is mandatory. Otherwise the linker will throw er
 There is a ROS package that contains some example applications on how to use the basic software library. I will add more examples as time passes by. If you're working on Ubuntu Linux with ROS installed you can try out the examples by copying the ROS package `examples_bsw` into your catkin workspace. After copying, build your catkin workspace and source the setup.bash unless you have done it already.
 
 ```
-catkin_make
-source devel/setup.bash
+$ cd catkin_ws
+$ catkin_make
+$ . devel/setup.bash
 ```
 
 Running an example such as the TCP server/client application is done by `rosrun` and calling the desired ROS node of the ROS package `examples_bsw`:
 
 ```shell
-rosrun examples_bsw tcp_ping_pong
+$ rosrun examples_bsw tcp_ping_pong
 ```
 
 ## Windows
