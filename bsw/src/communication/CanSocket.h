@@ -1,12 +1,11 @@
 /**
- * @file      CanSocket.h
- * @author    dtuchscherer <daniel.tuchscherer@gmail.com>
+ * \file      CanSocket.h
+ * \author    dtuchscherer <daniel.tuchscherer@gmail.com>
  * \brief     CAN interface to send and receive CAN frames over SocketCAN.
- * @details   This is a CAN module to send and receive data over CAN bus.
+ * \details   This is a CAN module to send and receive data over CAN bus.
  *            It is designed for Linux systems. The CAN communication
  *            is done via SocketCAN.
- * @version   2.0
- * @copyright Copyright (c) 2018, dtuchscherer.
+ * \copyright Copyright (c) 2018, dtuchscherer.
  *            All rights reserved.
  *
  *            Redistributions and use in source and binary forms, with
@@ -70,7 +69,8 @@ struct CAN_FD
     static constexpr std::size_t DATA_LEN{64U};
 };
 
-/// Forward type. You may use these types to declare data packets to send.
+/// Forward type. You may use these types to declare data packets to send and
+/// receive.
 using CanDataType = std::array< std::uint8_t, CAN_STD::DATA_LEN >;
 using CanStdData = CanDataType;
 using CanFDData = std::array< std::uint8_t, CAN_FD::DATA_LEN >;
@@ -90,7 +90,7 @@ class CanSocket : public Socket< CanSocket >
      */
     template < std::size_t N >
     explicit CanSocket(const char (&interface_str)[N]) noexcept
-        : Socket{}, m_can_init{false}
+        : Socket{}, can_init_{false}
     {
         // before we set up the CAN interface, create a socket to send and
         // receive data through.
@@ -100,7 +100,7 @@ class CanSocket : public Socket< CanSocket >
         if (sock_created == true)
         {
             // check if the interface is registered
-            bool interface_exists = check_interface(interface_str, m_ifr);
+            bool interface_exists = check_interface(interface_str, ifr_);
 
             // socket creation successful and interface exists
             if (interface_exists == true)
@@ -115,13 +115,13 @@ class CanSocket : public Socket< CanSocket >
                     // CAN FD frames.
                     const bool canfd = enable_canfd();
                     assert(canfd);
-                    m_can_init = true;
+                    can_init_ = true;
                 }
                 else
                 {
                     std::cerr << "Binding the interface to the created socket "
                                  "failed.\n";
-                    m_can_init = false;
+                    can_init_ = false;
                 }
             }
             else
@@ -130,13 +130,13 @@ class CanSocket : public Socket< CanSocket >
                 std::cerr << "CAN interface " << interface_str
                           << " you've specified is not found!\nAre you "
                              "sure you've added the device?\n";
-                m_can_init = false;
+                can_init_ = false;
             }
         }
         else
         {
             std::cerr << "Socket creation failed.\n";
-            m_can_init = false;
+            can_init_ = false;
         }
     }
 
@@ -213,7 +213,7 @@ class CanSocket : public Socket< CanSocket >
                 // store the transport layer error number, other layers may
                 // access to do an advanced and application specific error
                 // handling.
-                m_last_error = errno;
+                last_error_ = errno;
                 data_sent = -1;
             }
         }
@@ -246,8 +246,9 @@ class CanSocket : public Socket< CanSocket >
      * If there is a timeout it returns zero.
      * If there was an error, -1 is transmitted.
      */
+    template < typename Duration >
     std::int8_t receive(CanIDType& can_id, CanDataType& data_ref,
-                        const std::uint16_t timeout_us) noexcept;
+                        const Duration&& deadline) noexcept;
 
     /**
      * \brief Create a CAN socket / file descriptor to send and receive.
@@ -312,27 +313,19 @@ class CanSocket : public Socket< CanSocket >
 
     /// Holds the index of the interface in a struct if
     /// the interface exists. Works as a handle for configuration.
-    struct ifreq m_ifr;
+    struct ifreq ifr_;
 
     /// Holds the address family CAN and
     /// the interface index to bind the socket to.
-    struct sockaddr_can m_sockaddr;
+    struct sockaddr_can sockaddr_;
 
     /// Whether the socket creation, binding and interface is ok, configured or
     /// not.
-    bool m_can_init;
+    bool can_init_;
 
     // determine the MTU with the help of the struct on compile-time
-    static constexpr auto m_can_mtu = sizeof(struct canfd_frame);
+    static constexpr auto can_mtu_ = sizeof(struct canfd_frame);
 };
-
-/*******************************************************************************
- * EXPORTED VARIABLES
- ******************************************************************************/
-
-/*******************************************************************************
- * EXPORTED FUNCTIONS
- ******************************************************************************/
 
 #endif // WIN32 detection
 #endif // CAN_H

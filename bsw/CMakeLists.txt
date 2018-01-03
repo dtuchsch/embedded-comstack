@@ -107,7 +107,7 @@ LIBRARIES bsw
 ###########
 
 ## C++14 support, all warnings, no rtti and no exceptions
-set(CMAKE_CXX_FLAGS "-std=c++14 -Wall -Wextra -Wpedantic -fno-rtti -fno-exceptions ${CMAKE_CXX_FLAGS}")
+set(CMAKE_CXX_FLAGS "-std=c++14 -Wall -Wextra -Wpedantic -Werror -fno-rtti -fno-exceptions ${CMAKE_CXX_FLAGS}")
 
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
@@ -203,10 +203,10 @@ add_custom_target(
 endif()
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_bsw.cpp)
-# if(TARGET ${PROJECT_NAME}-test)
-#   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
-# endif()
+catkin_add_gtest(${PROJECT_NAME}-test test/test_bsw.cpp)
+if(TARGET ${PROJECT_NAME}-test)
+    target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME} ${catkin_LIBRARIES})
+endif()
 
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)

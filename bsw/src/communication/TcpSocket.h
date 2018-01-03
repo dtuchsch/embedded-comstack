@@ -1,11 +1,9 @@
 /**
- * @file      TcpSocket.h
- * @author    dtuchscherer <daniel.tuchscherer@hs-heilbronn.de>
+ * \file      TcpSocket.h
+ * \author    dtuchscherer <daniel.tuchscherer@hs-heilbronn.de>
  * \brief     TCP socket implementation for sending, receiving and polling.
- * @details   TCP socket implementation for sending, receiving and polling.
- * @version   1.0
- * @edit      27.09.2016
- * @copyright Copyright (c) 2015, dtuchscherer.
+ * \details   TCP socket implementation for sending, receiving and polling.
+ * \copyright Copyright (c) 2015, dtuchscherer.
  *            All rights reserved.
  *
  *            Redistributions and use in source and binary forms, with
@@ -71,7 +69,7 @@ class TcpSocket : public Socket< TcpSocket >
      * \param[in] message is the data to send
      * \param[in] len is the length to send
      * \return the number of bytes that have been sent or -1 if there is an
-     * error
+     * error.
      */
     std::int16_t send(const void* message, const std::uint16_t len) noexcept;
 

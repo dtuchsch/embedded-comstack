@@ -1,11 +1,11 @@
 /**
- * @file      TcpServer.cpp
- * @author    dtuchscherer <daniel.tuchscherer@gmail.com>
- * @brief     Ethernet TCP/IP Server implementation
- * @details   This is the module implementing the listening for and accepting of
+ * \file      TcpServer.cpp
+ * \author    dtuchscherer <daniel.tuchscherer@gmail.com>
+ * \brief     Ethernet TCP/IP Server implementation
+ * \details   This is the module implementing the listening for and accepting of
  *            connections from TCP Clients.
- * @version   1.0
- * @copyright Copyright (c) 2018, dtuchscherer.
+ * \version   1.0
+ * \copyright Copyright (c) 2018, dtuchscherer.
  *            All rights reserved.
  *
  *            Redistributions and use in source and binary forms, with
@@ -63,13 +63,13 @@ bool TcpServer::listen(IpAddress ip_address, const std::uint16_t port) noexcept
         }
         else
         {
-            m_connect.m_last_error = errno;
+            m_connect.SetErrorNumber(errno);
             listen_success = false;
         }
     }
     else
     {
-        m_connect.m_last_error = errno;
+        m_connect.SetErrorNumber(errno);
         listen_success = false;
     }
 
@@ -115,7 +115,7 @@ bool TcpServer::accept() noexcept
     else
     {
         std::cerr << "failed.\n";
-        m_connect.m_last_error = errno;
+        m_connect.SetErrorNumber(errno);
         accepted = false;
     }
 

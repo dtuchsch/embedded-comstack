@@ -1,11 +1,10 @@
 /**
- * @file      TcpSocket.cpp
- * @author    dtuchscherer <daniel.tuchscherer@hs-heilbronn.de>
- * @brief     Ethernet TCP/IP communication
- * @details
- * @version   1.0
- * @edit      27.09.2016
- * @copyright Copyright (c) 2015, dtuchscherer.
+ * \file      TcpSocket.cpp
+ * \author    dtuchscherer <daniel.tuchscherer@gmail.com>
+ * \brief     Ethernet TCP/IP communication
+ * \details
+ * \version   1.0
+ * \copyright Copyright (c) 2015, dtuchscherer.
  *            All rights reserved.
  *
  *            Redistributions and use in source and binary forms, with
@@ -50,9 +49,7 @@ TcpSocket::TcpSocket() noexcept : Socket{}
 bool TcpSocket::create() noexcept
 {
     bool socket_created = false;
-
-    SocketHandleType& handle = get_socket_handle();
-    handle = socket(AF_INET, SOCK_STREAM, 0);
+    socket_ = socket(AF_INET, SOCK_STREAM, 0);
 
     // check here if the socket was opened.
     if (get_socket_handle() > 0)
@@ -93,7 +90,7 @@ std::int16_t TcpSocket::send(const void* message,
 
         if (data_sent < 0)
         {
-            m_last_error = errno;
+            SetErrorNumber(errno);
         }
     }
     else
@@ -125,7 +122,7 @@ std::int16_t TcpSocket::receive(void* message, const std::uint16_t len) noexcept
 
         if (data_received < 0)
         {
-            m_last_error = errno;
+            SetErrorNumber(errno);
         }
     }
     else
@@ -151,7 +148,7 @@ bool TcpSocket::set_nodelay(const bool option) noexcept
     }
     else
     {
-        m_last_error = errno;
+        SetErrorNumber(errno);
         success = false;
     }
 

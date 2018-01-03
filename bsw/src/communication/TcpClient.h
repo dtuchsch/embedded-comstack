@@ -1,10 +1,9 @@
 /**
- * @file      TcpClient.h
- * @author    dtuchscherer <daniel.tuchscherer@gmail.com>
+ * \file      TcpClient.h
+ * \author    dtuchscherer <daniel.tuchscherer@gmail.com>
  * \brief     TCP client class interface
- * @details   For connecting to and disconnecting from TCP servers.
- * @version   1.0
- * @copyright Copyright (c) 2018, dtuchscherer.
+ * \details   For connecting to and disconnecting from TCP servers.
+ * \copyright Copyright (c) 2018, dtuchscherer.
  *            All rights reserved.
  *
  *            Redistributions and use in source and binary forms, with

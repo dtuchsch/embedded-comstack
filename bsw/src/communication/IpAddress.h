@@ -1,10 +1,9 @@
 /**
- * @file      IpAddress.h
- * @author    dtuchscherer <daniel.tuchscherer@gmail.com>
+ * \file      IpAddress.h
+ * \author    dtuchscherer <daniel.tuchscherer@gmail.com>
  * \brief     IP Address interface
- * @details   IP Address interface for abstracting pure strings.
- * @version   1.0
- * @copyright Copyright (c) 2018, dtuchscherer.
+ * \details   IP Address interface for modeling IP addresses as objects..
+ * \copyright Copyright (c) 2018, dtuchscherer.
  *            All rights reserved.
  *
  *            Redistributions and use in source and binary forms, with

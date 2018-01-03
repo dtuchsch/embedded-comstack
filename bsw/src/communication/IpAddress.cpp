@@ -1,10 +1,9 @@
 /**
- * @file      IpAddress.cpp
- * @author    dtuchscherer <daniel.tuchscherer@gmail.com>
- * @brief     short description...
- * @details   long description...
- * @version   1.0
- * @copyright Copyright (c) 2018, dtuchscherer.
+ * \file      IpAddress.cpp
+ * \author    dtuchscherer <daniel.tuchscherer@gmail.com>
+ * \brief     short description...
+ * \details   long description...
+ * \copyright Copyright (c) 2018, dtuchscherer.
  *            All rights reserved.
  *
  *            Redistributions and use in source and binary forms, with

@@ -1,11 +1,9 @@
 /**
- * @file      Endianess.h
- * @author    dtuchscherer <daniel.tuchscherer@gmail.com>
- * @brief     Endianess interface for byte-swapping
- * @details   This header interface allows byte-swapping between little-
- * 			  and big-endian machines.
- * @version   1.0
- * @copyright Copyright (c) 2018, dtuchscherer.
+ * \file      Endianness.h
+ * \author    dtuchscherer <daniel.tuchscherer@gmail.com>
+ * \brief     Endianess interface for byte-swapping
+ * \details   This header interface allows byte-swapping between little-
+ * and big-endian machines.
  *            All rights reserved.
  *
  *            Redistributions and use in source and binary forms, with
@@ -53,8 +51,8 @@ template < typename T, size_t Sz > T swap_bytes(const T& val) noexcept;
 
 ////////////////////////////////////////////////////////////////////////////////
 /**
- * @brief template specialization to swap an unsigned byte.
- * @return this will only return the byte again.
+ * \brief template specialization to swap an unsigned byte.
+ * \return this will only return the byte again.
  */
 template <> inline uint8 swap_bytes< uint8, 1 >(const uint8& val) noexcept
 {
@@ -63,8 +61,8 @@ template <> inline uint8 swap_bytes< uint8, 1 >(const uint8& val) noexcept
 
 ////////////////////////////////////////////////////////////////////////////////
 /**
- * @brief template specialization to swap an unsgined word.
- * @return an unsigned word with swapped bytes.
+ * \brief template specialization to swap an unsgined word.
+ * \return an unsigned word with swapped bytes.
  */
 template <> inline uint16 swap_bytes< uint16, 2U >(const uint16& val) noexcept
 {
@@ -76,8 +74,8 @@ template <> inline uint16 swap_bytes< uint16, 2U >(const uint16& val) noexcept
 
 ////////////////////////////////////////////////////////////////////////////////
 /**
- * @brief template specialization to swap an unsgined word.
- * @return a signed word with swapped bytes.
+ * \brief template specialization to swap an unsgined word.
+ * \return a signed word with swapped bytes.
  */
 template <> inline sint16 swap_bytes< sint16, 2U >(const sint16& val) noexcept
 {
@@ -89,10 +87,10 @@ template <> inline sint16 swap_bytes< sint16, 2U >(const sint16& val) noexcept
 
 ////////////////////////////////////////////////////////////////////////////////
 /**
- * @brief Template specialization for swapping 4 bytes of an unsgined double
+ * \brief Template specialization for swapping 4 bytes of an unsgined double
  * word.
- * @param[in] val the value to byte-swap
- * @return a byte-swapped unsigned double word
+ * \param[in] val the value to byte-swap
+ * \return a byte-swapped unsigned double word
  */
 template <> inline uint32 swap_bytes< uint32, 4 >(const uint32& val) noexcept
 {
@@ -106,9 +104,9 @@ template <> inline uint32 swap_bytes< uint32, 4 >(const uint32& val) noexcept
 
 ////////////////////////////////////////////////////////////////////////////////
 /**
- * @brief Template specialization for swapping 4 bytes of a double word.
- * @param[in] val the value to byte-swap
- * @return a byte-swapped unsigned double word
+ * \brief Template specialization for swapping 4 bytes of a double word.
+ * \param[in] val the value to byte-swap
+ * \return a byte-swapped unsigned double word
  */
 template <> inline sint32 swap_bytes< sint32, 4 >(const sint32& val) noexcept
 {
@@ -122,9 +120,9 @@ template <> inline sint32 swap_bytes< sint32, 4 >(const sint32& val) noexcept
 
 ////////////////////////////////////////////////////////////////////////////////
 /**
- * @brief Template specialization for swapping 8 bytes of unsigned quad word.
- * @param[in] val to swap the bytes
- * @return the swapped value
+ * \brief Template specialization for swapping 8 bytes of unsigned quad word.
+ * \param[in] val to swap the bytes
+ * \return the swapped value
  */
 template <> inline uint64 swap_bytes< uint64, 8 >(const uint64& val) noexcept
 {
@@ -142,9 +140,9 @@ template <> inline uint64 swap_bytes< uint64, 8 >(const uint64& val) noexcept
 
 ////////////////////////////////////////////////////////////////////////////////
 /**
- * @brief Template specialization for swapping 8 bytes of a signed quad word.
- * @param[in] val to swap the bytes
- * @return the swapped value
+ * \brief Template specialization for swapping 8 bytes of a signed quad word.
+ * \param[in] val to swap the bytes
+ * \return the swapped value
  */
 template <> inline sint64 swap_bytes< sint64, 8 >(const sint64& val) noexcept
 {
@@ -196,12 +194,12 @@ inline float64 swap_bytes< float64, 8 >(const float64& fval) noexcept
 
 ////////////////////////////////////////////////////////////////////////////////
 /**
- * @brief Convert a value of type T from host-byte-order into
+ * \brief Convert a value of type T from host-byte-order into
  * network-byte-order, which is big endian. A byte swap is only necessary if the
  * host is little endian.
- * @tparam T is the type of the value to convert.
- * @param[in] value to convert.
- * @return the network-byte-order value.
+ * \tparam T is the type of the value to convert.
+ * \param[in] value to convert.
+ * \return the network-byte-order value.
  */
 template < typename T > inline T to_network(const T& value) noexcept
 {
@@ -216,11 +214,11 @@ template < typename T > inline T to_network(const T& value) noexcept
 
 ////////////////////////////////////////////////////////////////////////////////
 /**
- * @brief Convert a value of type T from network-byte-order to host-byte-order.
+ * \brief Convert a value of type T from network-byte-order to host-byte-order.
  * A byte swap is only necessary if the host is little endian.
- * @tparam T is the type of the value to convert.
- * @param[in] value to convert
- * @return the host-byte-order value.
+ * \tparam T is the type of the value to convert.
+ * \param[in] value to convert
+ * \return the host-byte-order value.
  */
 template < typename T > inline T from_network(const T& value) noexcept
 {

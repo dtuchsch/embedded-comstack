@@ -5,7 +5,6 @@
  * \details   This is inspired by SFML Packet, but is also capable for embedded.
  *            Instead of using std::vector as a container we use a fixed size
  *            container std::array.
- * \version   1.0
  * \copyright Copyright (c) 2018, dtuchscherer.
  *            All rights reserved.
  *

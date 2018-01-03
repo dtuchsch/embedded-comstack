@@ -1,12 +1,12 @@
 /**
- * @file      Socket.h
- * @author    dtuchscherer <daniel.tuchscherer@gmail.com>
- * \brief     Bare Socket Interface
- * @details   This is an interface of an "abstract" socket,
+ * \file      Socket.h
+ * \author    dtuchscherer <daniel.tuchscherer@gmail.com>
+ * \brief     Bare socket interface as a base for concrete socket
+ * implementations.
+ * \details   This is an interface of an "abstract" socket,
  *            derived classes of the base class Socket will then implement
  *            their own way to create and open a socket.
- * @version   1.0
- * @copyright Copyright (c) 2018, dtuchscherer.
+ * \copyright Copyright (c) 2018, dtuchscherer.
  *            All rights reserved.
  *
  *            Redistributions and use in source and binary forms, with
@@ -52,6 +52,7 @@
 #else
 #error "OS not supported! Please define an operating system."
 #endif
+#include <chrono>
 #include <iostream>
 
 #ifdef __unix__
@@ -68,7 +69,7 @@ using SocketErrorType = int;
 
 enum class SocketState : SocketHandleType
 {
-    INVALID
+    INVALID = -1
 };
 
 /**
@@ -81,7 +82,7 @@ constexpr SocketHandleType get_invalid_alias()
 
 /**
  * \brief A generic socket implementation
- * \tparam Derived socket class for using CRTP. E.g. it could be a TCP, UDP or
+ * \tparam Derived socket type. For instance this could be a TCP, UDP or
  * CAN socket.
  */
 template < typename Derived > class Socket
@@ -91,11 +92,11 @@ template < typename Derived > class Socket
      * \brief Default constructor initializing the socket
      */
     Socket() noexcept
-        : m_last_error{0}, m_socket_init{false}, m_socket{get_invalid_alias()},
-          m_is_blocking{true}
+        : last_error_{0}, socket_{get_invalid_alias()}, socket_init_{false},
+          is_blocking_{true}
     {
-        // create one socket.
-        initialize();
+        // Create one socket on construction.
+        socket_init_ = initialize();
     }
 
     /**
@@ -109,7 +110,7 @@ template < typename Derived > class Socket
         // the WSA clean up is valid under windows only.
         WSACleanup();
 #endif
-        m_socket_init = false;
+        socket_init_ = false;
     }
 
     /**
@@ -135,13 +136,13 @@ template < typename Derived > class Socket
 
             if (cl == 0)
             {
-                m_socket_init = false;
+                socket_init_ = false;
                 closed = true;
             }
             else
             {
                 closed = false;
-                m_last_error = errno;
+                last_error_ = errno;
             }
         }
         else
@@ -159,29 +160,31 @@ template < typename Derived > class Socket
      * error handling purposes.
      * \return The last stored error in the socket communication from errno.
      */
-    SocketErrorType get_last_error() const noexcept { return m_last_error; }
+    SocketErrorType get_last_error() const noexcept { return last_error_; }
 
     /**
      * \brief The socket handle for the derived classes as a reference.
      * \return the socket number as reference for write and read
      */
-    const SocketHandleType& get_socket() const noexcept { return m_socket; }
+    const SocketHandleType& get_socket() const noexcept { return socket_; }
 
     /**
      * \brief If the interface is initialized.
      * \return true if the socket is open, false if not.
      */
-    bool is_socket_initialized() noexcept { return m_socket_init; }
+    bool is_socket_initialized() noexcept { return socket_init_; }
 
     /**
      * \brief This method looks for an "event" on the socket by calling
      * select. If the socket is blocking, we can now look for data to receive
      * or if a TCP client wants to connect to the server, before entering
      * a blocking read or write.
+     * \param[in] deadline Time to wait for pending data on the socket.
      * \return true if there is some kind of response (data or connect)
      * on the socket, false if not.
      */
-    bool poll_activity(const std::uint16_t timeout_us) noexcept
+    template < typename Duration >
+    bool wait_for(const Duration&& deadline) noexcept
     {
         SocketHandleType nfds;
         bool response_on_socket = false;
@@ -203,9 +206,15 @@ template < typename Derived > class Socket
 #endif
 
         struct timeval time_to_wait;
-        time_to_wait.tv_sec = static_cast< decltype(time_to_wait.tv_sec) >(0);
+        const std::chrono::seconds sec =
+            std::chrono::duration_cast< std::chrono::seconds >(deadline);
+        const std::chrono::microseconds usec =
+            std::chrono::duration_cast< std::chrono::microseconds >(deadline -
+                                                                    sec);
+        time_to_wait.tv_sec =
+            static_cast< decltype(time_to_wait.tv_sec) >(sec.count());
         time_to_wait.tv_usec =
-            static_cast< decltype(time_to_wait.tv_sec) >(timeout_us);
+            static_cast< decltype(time_to_wait.tv_usec) >(usec.count());
 
         fd_set fd_read;
         FD_ZERO(&fd_read);
@@ -236,8 +245,9 @@ template < typename Derived > class Socket
     /**
      * \brief Set the socket into blocking or non-blocking mode.
      * \param[in] blocking true if this socket shall be blocking on a receive;
-     * false if it shall be non-blocking on a read.
-     * \return true if it was successful changed, false if not.
+     * false if it shall be non-blocking on a read on the socket.
+     * \return true if the change was successful, false if setting the socket
+     * option failed.
      */
     bool set_blocking(const bool blocking)
     {
@@ -246,7 +256,7 @@ template < typename Derived > class Socket
         if (is_socket_initialized() == true)
         {
 #ifdef __unix__
-            int status = fcntl(m_socket, F_GETFL);
+            int status = fcntl(socket_, F_GETFL);
 #elif defined(_WIN32)
             int status = 1;
 #else
@@ -254,13 +264,13 @@ template < typename Derived > class Socket
 #endif
             if (status >= 0)
             {
-                if (blocking == true)
+                if (blocking)
                 {
 #ifdef __unix__
-                    status = fcntl(m_socket, F_SETFL, status & ~O_NONBLOCK);
+                    status = fcntl(socket_, F_SETFL, status & ~O_NONBLOCK);
 #elif defined(_WIN32)
                     u_long nblock = 0;
-                    status = ioctlsocket(m_socket, FIONBIO, &nblock);
+                    status = ioctlsocket(socket_, FIONBIO, &nblock);
 #else
 #error "OS not defined!"
 #endif
@@ -269,10 +279,10 @@ template < typename Derived > class Socket
                 else
                 {
 #ifdef __unix__
-                    status = fcntl(m_socket, F_SETFL, status | O_NONBLOCK);
+                    status = fcntl(socket_, F_SETFL, status | O_NONBLOCK);
 #elif defined(_WIN32)
                     u_long nblock = 1;
-                    status = ioctlsocket(m_socket, FIONBIO, &nblock);
+                    status = ioctlsocket(socket_, FIONBIO, &nblock);
 #else
 #error "OS not defined!"
 #endif
@@ -282,12 +292,12 @@ template < typename Derived > class Socket
 
             if (status >= 0)
             {
-                m_is_blocking = blocking;
+                is_blocking_ = blocking;
                 success = true;
             }
             else
             {
-                m_last_error = errno;
+                last_error_ = errno;
                 success = false;
             }
         }
@@ -299,17 +309,17 @@ template < typename Derived > class Socket
      * \brief Check if this socket is blocking or non-blocking.
      * \return true if the socket is blocking or false if non-blocking.
      */
-    bool is_blocking() const noexcept { return m_is_blocking; }
+    bool is_blocking() const noexcept { return is_blocking_; }
 
     /**
-     * \brief initializes the socket.
+     * \brief Initializes the socket.
      * \return true if initialization was successful, false if there was an
      * error initializing the socket.
      */
     bool initialize() noexcept
     {
 #ifdef _WIN32
-        const int wsa_start = WSAStartup(MAKEWORD(2, 2), &m_wsa_data);
+        const int wsa_start = WSAStartup(MAKEWORD(2, 2), &wsa_data_);
         bool sock_created{false};
 
         if (wsa_start == 0)
@@ -318,50 +328,46 @@ template < typename Derived > class Socket
         }
         else
         {
+            std::cerr << "WSAStartup failed.\n";
             sock_created = false;
         }
 #else
         const bool sock_created = create();
 #endif
 
-        if (sock_created)
-        {
-            m_socket_init = true;
-        }
-        else
-        {
-            m_socket_init = false;
-        }
-
         return sock_created;
     }
 
     /**
-     * \brief Assign a new socket.
+     * \brief Assign a new socket handle to this socket object.
+     * \param[in] new_handle The socket handle to assign.
      */
-    bool assign(const SocketHandleType& new_handle) noexcept
+    bool assign(const SocketHandleType new_handle) noexcept
     {
         bool created = false;
-        m_socket = new_handle;
-        m_socket_init = true;
+        socket_ = new_handle;
+        socket_init_ = true;
         created = true;
         return created;
     }
 
-    /// stores the last error occurred.
-    SocketErrorType m_last_error;
+    /**
+     * \brief Sets the error number for this socket to ease debugging.
+     */
+    void SetErrorNumber(SocketErrorType value) { last_error_ = value; }
 
   protected:
     /**
      * \brief The socket handle for the derived classes as a reference.
-     * \return the socket number as reference for write and read
+     * \return the socket number as reference for write/read and setting
+     * options.
      */
-    SocketHandleType& get_socket_handle() noexcept { return m_socket; }
+    SocketHandleType get_socket_handle() const noexcept { return socket_; }
 
     /**
      * \brief A socket will be opened. Because the parameters for opening a
-     * socket strongly relies on the protocol this method calls a method
-     * of the class derived.
+     * socket heavily relies on the protocol this method calls a method
+     * of the concrete implementation (derived).
      * \return true if the socket creation was successful, false if not.
      */
     bool create() noexcept
@@ -378,19 +384,22 @@ template < typename Derived > class Socket
         return created;
     }
 
-  private:
-    /// true if everything is set up and the instance can receive and send data
-    bool m_socket_init;
+    /// Stores the last error occurred.
+    SocketErrorType last_error_;
 
     /// This stores the socket handle.
-    SocketHandleType m_socket;
+    SocketHandleType socket_;
+
+  private:
+    /// true if everything is set up and the instance can receive and send data
+    bool socket_init_;
 
     /// Either the socket is in blocking or non-blocking mode.
-    bool m_is_blocking;
+    bool is_blocking_;
 
 #ifdef _WIN32
-    /// for windows sockets the WSAdata is necessary
-    WSADATA m_wsa_data;
+    /// For windows sockets the WSAdata is necessary in addition.
+    WSADATA wsa_data_;
 #endif
 };
 

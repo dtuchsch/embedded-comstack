@@ -1,12 +1,12 @@
 /**
- * @file      CanSocket.cpp
- * @author    dtuchscherer <daniel.tuchscherer@gmail.com>
- * @brief     SocketCAN implementation in C++
- * @details   These are the methods of class CanSocket to
+ * \file      CanSocket.cpp
+ * \author    dtuchscherer <daniel.tuchscherer@gmail.com>
+ * \brief     SocketCAN implementation in C++
+ * \details   These are the methods of class CanSocket to
  *            initialize the CAN interface, send and receive data via Linux
  *            SocketCAN.
- * @version   2.1
- * @copyright Copyright (c) 2018, Daniel Tuchscherer.
+ * \version   2.1
+ * \copyright Copyright (c) 2018, Daniel Tuchscherer.
  *            All rights reserved.
  *
  *            Redistributions and use in source and binary forms, with
@@ -47,14 +47,14 @@
 ////////////////////////////////////////////////////////////////////////////////
 std::int8_t CanSocket::receive(CanIDType& can_id, CanFDData& data_ref) noexcept
 {
-    // Complete length of the CAN frame
+    // Complete length of the CAN frame received
     std::int8_t can_received{-1};
 
     if (is_can_initialized() == true)
     {
         struct canfd_frame frame;
         const auto socket = get_socket_handle();
-        const ssize_t nbytes = read(socket, &frame, m_can_mtu);
+        const ssize_t nbytes = read(socket, &frame, can_mtu_);
         can_received = static_cast< std::int8_t >(nbytes);
 
         // Check if data is on the socket to receive
@@ -77,7 +77,7 @@ std::int8_t CanSocket::receive(CanIDType& can_id, CanFDData& data_ref) noexcept
         {
             // Error or timeout.
             can_received = -1;
-            m_last_error = errno;
+            last_error_ = errno;
             std::cerr << "Receive failed: " << errno << "\n";
         }
     }
@@ -86,17 +86,18 @@ std::int8_t CanSocket::receive(CanIDType& can_id, CanFDData& data_ref) noexcept
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+template < typename Duration >
 std::int8_t CanSocket::receive(CanIDType& can_id, CanDataType& data_ref,
-                               const std::uint16_t timeout_us) noexcept
+                               const Duration&& deadline) noexcept
 {
-    // complete length of the CAN frame
+    // Complete length of the CAN frame received
     std::int8_t can_received{-1};
 
     if (is_can_initialized())
     {
         // before we go in a blocking read, we will check if there is
         // activity on the socket.
-        bool event = poll_activity(timeout_us);
+        bool event = wait_for(deadline);
 
         // check the return value of the select. if there is data to read the
         // return value of select will be greater than zero.
@@ -104,7 +105,7 @@ std::int8_t CanSocket::receive(CanIDType& can_id, CanDataType& data_ref,
         {
             struct can_frame frame;
             const auto handle = get_socket_handle();
-            const auto nbytes = read(handle, &frame, m_can_mtu);
+            const auto nbytes = read(handle, &frame, can_mtu_);
             can_received = static_cast< std::int8_t >(nbytes);
 
             // check if the read from the socket was successful
@@ -127,13 +128,13 @@ std::int8_t CanSocket::receive(CanIDType& can_id, CanDataType& data_ref,
             {
                 // Timeout on zero return
                 std::cerr << "Timeout reached\n";
-                m_last_error = errno;
+                last_error_ = errno;
                 can_received = 0;
             }
             else
             {
                 std::cerr << "Receive failed: " << errno << "\n";
-                m_last_error = errno;
+                last_error_ = errno;
                 can_received = -1;
             }
         }
@@ -145,20 +146,19 @@ std::int8_t CanSocket::receive(CanIDType& can_id, CanDataType& data_ref,
 ////////////////////////////////////////////////////////////////////////////////
 bool CanSocket::create() noexcept
 {
-    bool socket_created = false;
-    SocketHandleType& handle = get_socket_handle();
-    handle = socket(PF_CAN, SOCK_RAW, CAN_RAW);
+    bool socket_created{false};
+    socket_ = socket(PF_CAN, SOCK_RAW, CAN_RAW);
 
     // check here if the socket was opened.
-    if (handle < 0)
+    if (get_socket_handle() > 0)
     {
-        // ... error opening the socket.
-        socket_created = false;
+        // ... successfully opened.
+        socket_created = true;
     }
     else
     {
-        // ... successfull opened.
-        socket_created = true;
+        // ... error opening the socket.
+        socket_created = false;
     }
 
     return socket_created;
@@ -170,12 +170,12 @@ bool CanSocket::enable_canfd() noexcept
     bool enabled{false};
     const auto socket = get_socket_handle();
     // retrieve the mtu via ioctrl
-    const int info = ioctl(socket, SIOCGIFMTU, &m_ifr);
+    const int info = ioctl(socket, SIOCGIFMTU, &ifr_);
 
     if (info >= 0)
     {
         // get the mtu of the CAN device configured
-        const auto mtu = m_ifr.ifr_mtu;
+        const auto mtu = ifr_.ifr_mtu;
 
         if (mtu == CANFD_MTU)
         {
@@ -190,7 +190,7 @@ bool CanSocket::enable_canfd() noexcept
             }
             else
             {
-                m_last_error = errno;
+                last_error_ = errno;
                 enabled = false;
             }
         }
@@ -204,13 +204,13 @@ bool CanSocket::bind_if_socket() noexcept
 {
     bool bind_success = false;
     // Define the address family.
-    m_sockaddr.can_family = AF_CAN;
+    sockaddr_.can_family = AF_CAN;
     // Bind the interface number to the socket.
-    m_sockaddr.can_ifindex = m_ifr.ifr_ifindex;
+    sockaddr_.can_ifindex = ifr_.ifr_ifindex;
     const auto handle = get_socket_handle();
     // Bind the socket to the CAN interface.
     const int bind_res =
-        bind(handle, (struct sockaddr*)&m_sockaddr, sizeof(m_sockaddr));
+        bind(handle, (struct sockaddr*)&sockaddr_, sizeof(sockaddr_));
     // Check if binding the socket to the interface was successful.
     // It's negative if there was an error.
     if (bind_res < 0)
@@ -218,7 +218,7 @@ bool CanSocket::bind_if_socket() noexcept
         // Error binding the socket to the CAN interface.
         // store this as the last error other application layers may access.
         bind_success = false;
-        m_last_error = errno;
+        last_error_ = errno;
         std::cerr << "Bind of socket and interface failed.\n";
     }
     else
@@ -232,4 +232,4 @@ bool CanSocket::bind_if_socket() noexcept
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-bool CanSocket::is_can_initialized() const noexcept { return m_can_init; }
+bool CanSocket::is_can_initialized() const noexcept { return can_init_; }

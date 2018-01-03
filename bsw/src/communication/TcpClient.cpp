@@ -71,7 +71,7 @@ bool TcpClient::connect(IpAddress ip_address, const std::uint16_t port) noexcept
         else
         {
             connected_r = false;
-            m_last_error = errno;
+            SetErrorNumber(errno);
         }
     }
     else
