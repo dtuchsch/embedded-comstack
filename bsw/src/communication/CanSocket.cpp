@@ -87,7 +87,7 @@ std::int8_t CanSocket::receive(CanIDType& can_id, CanFDData& data_ref) noexcept
 
 ////////////////////////////////////////////////////////////////////////////////
 template < typename Duration >
-std::int8_t CanSocket::receive(CanIDType& can_id, CanDataType& data_ref,
+std::int8_t CanSocket::receive(CanIDType& can_id, CanFDData& data_ref,
                                const Duration&& deadline) noexcept
 {
     // Complete length of the CAN frame received

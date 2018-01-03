@@ -177,7 +177,7 @@ class CanSocket : public Socket< CanSocket >
 
         // First check if the file descriptor for the socket was initialized
         // and the interface is up and running.
-        if (is_can_initialized() && (len > 0U))
+        if (is_can_initialized())
         {
             // Structure that is given to the POSIX write function.
             // We have to define CAN-ID, length (DLC) and copy the data to send.
@@ -213,13 +213,13 @@ class CanSocket : public Socket< CanSocket >
                 // store the transport layer error number, other layers may
                 // access to do an advanced and application specific error
                 // handling.
-                last_error_ = errno;
+                SetErrorNumber(errno);
                 data_sent = -1;
             }
         }
         else
         {
-            // the CAN interface is not initialized correctly.
+            // The CAN interface is not initialized correctly.
             data_sent = -1;
         }
 
@@ -244,10 +244,10 @@ class CanSocket : public Socket< CanSocket >
      * \param[in] timeout timeout of the read function in micro seconds
      * \return Greater than zero if data was received.
      * If there is a timeout it returns zero.
-     * If there was an error, -1 is transmitted.
+     * If there was an error, -1 is returned.
      */
     template < typename Duration >
-    std::int8_t receive(CanIDType& can_id, CanDataType& data_ref,
+    std::int8_t receive(CanIDType& can_id, CanFDData& data_ref,
                         const Duration&& deadline) noexcept;
 
     /**
