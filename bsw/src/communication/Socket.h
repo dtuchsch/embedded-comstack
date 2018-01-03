@@ -82,7 +82,11 @@ constexpr SocketHandleType get_invalid_alias()
 
 /**
  * \brief A generic socket implementation
+<<<<<<< HEAD
  * \tparam Derived socket type. For instance this could be a TCP, UDP or
+=======
+ * \tparam Derived socket class for using CRTP. E.g. it could be a TCP, UDP or
+>>>>>>> 08470d087e7481166db9570113988589489e4518
  * CAN socket.
  */
 template < typename Derived > class Socket
@@ -92,8 +96,13 @@ template < typename Derived > class Socket
      * \brief Default constructor initializing the socket
      */
     Socket() noexcept
+<<<<<<< HEAD
         : last_error_{0}, socket_{get_invalid_alias()}, socket_init_{false},
           is_blocking_{true}
+=======
+        : m_last_error{0}, m_socket_init{false}, m_socket{get_invalid_alias()},
+          m_is_blocking{true}
+>>>>>>> 08470d087e7481166db9570113988589489e4518
     {
         // Create one socket on construction.
         socket_init_ = initialize();
@@ -245,9 +254,14 @@ template < typename Derived > class Socket
     /**
      * \brief Set the socket into blocking or non-blocking mode.
      * \param[in] blocking true if this socket shall be blocking on a receive;
+<<<<<<< HEAD
      * false if it shall be non-blocking on a read on the socket.
      * \return true if the change was successful, false if setting the socket
      * option failed.
+=======
+     * false if it shall be non-blocking on a read.
+     * \return true if it was successful changed, false if not.
+>>>>>>> 08470d087e7481166db9570113988589489e4518
      */
     bool set_blocking(const bool blocking)
     {
@@ -335,6 +349,18 @@ template < typename Derived > class Socket
         const bool sock_created = create();
 #endif
 
+<<<<<<< HEAD
+=======
+        if (sock_created)
+        {
+            m_socket_init = true;
+        }
+        else
+        {
+            m_socket_init = false;
+        }
+
+>>>>>>> 08470d087e7481166db9570113988589489e4518
         return sock_created;
     }
 
@@ -384,6 +410,7 @@ template < typename Derived > class Socket
         return created;
     }
 
+<<<<<<< HEAD
     /// Stores the last error occurred.
     SocketErrorType last_error_;
 
@@ -393,6 +420,14 @@ template < typename Derived > class Socket
   private:
     /// true if everything is set up and the instance can receive and send data
     bool socket_init_;
+=======
+  private:
+    /// true if everything is set up and the instance can receive and send data
+    bool m_socket_init;
+
+    /// This stores the socket handle.
+    SocketHandleType m_socket;
+>>>>>>> 08470d087e7481166db9570113988589489e4518
 
     /// Either the socket is in blocking or non-blocking mode.
     bool is_blocking_;

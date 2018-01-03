@@ -90,7 +90,11 @@ class CanSocket : public Socket< CanSocket >
      */
     template < std::size_t N >
     explicit CanSocket(const char (&interface_str)[N]) noexcept
+<<<<<<< HEAD
         : Socket{}, can_init_{false}
+=======
+        : Socket{}, m_can_init{false}
+>>>>>>> 08470d087e7481166db9570113988589489e4518
     {
         // before we set up the CAN interface, create a socket to send and
         // receive data through.
@@ -115,7 +119,11 @@ class CanSocket : public Socket< CanSocket >
                     // CAN FD frames.
                     const bool canfd = enable_canfd();
                     assert(canfd);
+<<<<<<< HEAD
                     can_init_ = true;
+=======
+                    m_can_init = true;
+>>>>>>> 08470d087e7481166db9570113988589489e4518
                 }
                 else
                 {
@@ -136,7 +144,11 @@ class CanSocket : public Socket< CanSocket >
         else
         {
             std::cerr << "Socket creation failed.\n";
+<<<<<<< HEAD
             can_init_ = false;
+=======
+            m_can_init = false;
+>>>>>>> 08470d087e7481166db9570113988589489e4518
         }
     }
 
